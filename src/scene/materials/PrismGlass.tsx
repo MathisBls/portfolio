@@ -1,36 +1,37 @@
 // Storyboard hero (docs/storyboards/hero.md) §5 Budget : verre du prisme selon le palier.
-// Desktop : MeshTransmissionMaterial (réfracte le titre 3D et les rayons). Reduced-motion : transmission
-// native de three (rendu unique, pas de boucle). Mobile : verre sans transmission (additif,
-// clearcoat, iridescence légère). Remplace le matériau 'Glass' du GLB (CLAUDE.md, Assets 3D).
-import { MeshTransmissionMaterial } from '@react-three/drei'
+// Desktop : MeshTransmissionMaterial (réfracte le titre 3D et les rayons).
+// Mobile et reduced-motion : verre SANS transmission (CLAUDE.md règle 1, review Phase 1), en mélange
+// normal pour rester lisible sur fond noir, avec des arêtes fines comme le poster SVG.
+// Rendu comme enfant du mesh du prisme : le matériau s'attache au mesh, les arêtes en sont un enfant.
+// Remplace le matériau 'Glass' du GLB (CLAUDE.md, Assets 3D).
+import { Edges, MeshTransmissionMaterial } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
-import { AdditiveBlending } from 'three'
 
 type PrismGlassProps = { mobile: boolean; reducedMotion: boolean }
 
-export function PrismGlass({ mobile, reducedMotion }: PrismGlassProps) {
-  const dpr = useThree((s) => s.viewport.dpr)
-  if (reducedMotion) {
-    return <meshPhysicalMaterial transmission={1} thickness={0.6} roughness={0.05} ior={1.5} />
-  }
-  if (mobile) {
-    // Additif : seuls les reflets (env, clearcoat, iridescence) s'ajoutent au fond, pas de voile gris
-    return (
+function SolidGlass() {
+  return (
+    <>
       <meshPhysicalMaterial
-        color="#0e1217"
-        // Rugosité : lisse les reflets de l'Environment (cubemap 256) sans flouter de réfraction
-        roughness={0.2}
+        color="#1b2029"
+        transparent
+        opacity={0.6}
+        roughness={0.18}
         clearcoat={1}
-        clearcoatRoughness={0.04}
+        clearcoatRoughness={0.05}
         iridescence={0.6}
         iridescenceIOR={1.3}
-        envMapIntensity={5}
-        transparent
-        blending={AdditiveBlending}
+        envMapIntensity={3}
         depthWrite={false}
       />
-    )
-  }
+      <Edges threshold={20} color="#a0a0a8" transparent opacity={0.7} />
+    </>
+  )
+}
+
+export function PrismGlass({ mobile, reducedMotion }: PrismGlassProps) {
+  const dpr = useThree((s) => s.viewport.dpr)
+  if (mobile || reducedMotion) return <SolidGlass />
   return (
     <MeshTransmissionMaterial
       samples={6}

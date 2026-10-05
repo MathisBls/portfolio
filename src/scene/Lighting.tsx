@@ -5,7 +5,7 @@ import { Environment, Lightformer } from '@react-three/drei'
 export function Lighting() {
   return (
     <>
-      <Environment resolution={256} frames={1} environmentIntensity={0.6}>
+      <Environment resolution={512} frames={1} environmentIntensity={0.6}>
         <Lightformer form="rect" intensity={4} position={[0, 5, -2]} scale={[10, 2, 1]} />
         <Lightformer
           form="rect"

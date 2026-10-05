@@ -1,12 +1,8 @@
-/** three >= r163 ne gère que WebGL 2. Sans WebGL 2, le <Canvas> n'est pas monté : le DOM seul fait le site. */
+/**
+ * three >= r163 ne gère que WebGL 2. Sans WebGL 2, le <Canvas> n'est pas monté : le DOM seul fait le
+ * site. Test sans créer de contexte (un contexte de test coûtait ~150 ms, review Phase 1) ; si la
+ * création échoue quand même (GPU blacklisté), le Canvas n'affiche rien et le poster SVG reste.
+ */
 export function hasWebGL2(): boolean {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2')
-    if (!gl) return false
-    // Libère tout de suite le contexte de test (le nombre de contextes actifs est limité)
-    gl.getExtension('WEBGL_lose_context')?.loseContext()
-    return true
-  } catch {
-    return false
-  }
+  return typeof window !== 'undefined' && 'WebGL2RenderingContext' in window
 }
