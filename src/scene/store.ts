@@ -11,8 +11,11 @@ import type { SlotMetrics } from '../lib/projects'
 
 export type SectionId = 'hero' | 'projects' | 'services' | 'about' | 'contact'
 
-/** Ids de progress : une clé par section, 'project:<slug>' par card. */
-export type ProgressId = SectionId | `project:${string}`
+/**
+ * Ids de progress : une clé par section, 'project:<slug>' par card, et 'page' (scroll global 0 -> 1,
+ * hors timeline caméra) pour les effets en parallaxe comme les formes d'ambiance.
+ */
+export type ProgressId = SectionId | 'page' | `project:${string}`
 
 const SECTIONS: readonly SectionId[] = ['hero', 'projects', 'services', 'about', 'contact']
 
@@ -37,6 +40,18 @@ export function setProgress(id: ProgressId, value: number) {
 
 export function getProgress(id: ProgressId): number {
   return progress[id] ?? 0
+}
+
+/** Longueur de scroll de la page en px (écrite par le DOM au refresh) : 'page' × longueur = px scrollés. */
+let pageLength = 0
+
+export function setPageLength(px: number) {
+  pageLength = px
+}
+
+/** Px scrollés depuis le haut de la page, sans lire window.scrollY dans useFrame. */
+export function getPageScroll(): number {
+  return (progress.page ?? 0) * pageLength
 }
 
 /** Timeline caméra : somme des progress de section (hero = [0, 1], projects = [1, 2], etc.). */

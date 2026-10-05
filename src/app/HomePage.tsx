@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { site } from '../content/site'
 import { ScrollTrigger } from '../lib/gsap'
 import { startLenis } from '../lib/lenis'
 import { observeReveals } from '../lib/reveal'
 import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
 import { SceneMount } from '../scene/SceneMount'
+import { setPageLength, setProgress } from '../scene/store'
 import { About } from '../sections/About'
 import { Contact } from '../sections/Contact'
 import { Hero } from '../sections/Hero'
@@ -29,6 +30,26 @@ export function HomePage() {
     () => (reducedMotion || prefersReducedMotion() ? undefined : startLenis()),
     [reducedMotion],
   )
+
+  // Scroll global (progress 'page' + longueur en px) pour les effets 3D en parallaxe (formes d'ambiance).
+  // Aucun en reduced-motion : les formes d'ambiance n'y sont pas montées.
+  useLayoutEffect(() => {
+    if (reducedMotion || prefersReducedMotion()) return
+    const trigger = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (st) => {
+        setProgress('page', st.progress)
+      },
+      onRefresh: (st) => {
+        setPageLength(st.end - st.start)
+        setProgress('page', st.progress)
+      },
+    })
+    return () => {
+      trigger.kill()
+    }
+  }, [reducedMotion])
 
   return (
     <>
