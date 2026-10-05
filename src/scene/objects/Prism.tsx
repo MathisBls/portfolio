@@ -2,23 +2,34 @@
 // flottement), 0.1-0.3 (faisceau, beamT), 0.3-0.5 (Spec0..6 un par un, rayT), 0.6-0.8 (quart de tour
 // sur Z, tilt → 0, turnT), 0.8-1.0 (dispersion, spreadT) et « Passage de relais à Projects ».
 // Mesures du GLB : docs/models.md (prism.glb). Groupes : cadrage > flottement > quart de tour > tilt.
+// Après le hero (fenêtres dans lib/journey.ts) : docs/storyboards/projects.md §2, projects 0.1 « Le
+// groupe du prisme monte (y 0 → +3.4) » et 0.2–0.9 « son rayon se réoriente vers l'objet » (prismFocus) ;
+// docs/storyboards/services-contact.md §2, 2.3 « Les rayons se rétractent » et 3.0–3.5 « Le prisme
+// redescend au centre, rotation z → 0 [...] lumière blanche seule. Flottement lent. » (timeline +1).
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group, Mesh } from 'three'
+import { site } from '../../content/site'
 import { gsap, ScrollTrigger } from '../../lib/gsap'
 import { SPREAD, rayT, spreadT, turnT } from '../../lib/hero'
+import { JOURNEY, liftT, retractT, untwistT } from '../../lib/journey'
 import { easeInOut, lerp } from '../../lib/math'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
 import { PrismGlass } from '../materials/PrismGlass'
-import { cloneEmissive, setEmissiveIntensity } from '../materials/emissive'
+import { setEmissive } from '../materials/emissive'
 import { getProgress, setSceneFlag } from '../store'
 import { useModel } from '../useModel'
 import { Beam } from './Beam'
-import { segment } from './segment'
+import {
+  aimRay,
+  beginAim,
+  buildRays,
+  createRayFocus,
+  cullGlass,
+  updateRayFocus,
+} from './prismFocus'
 
 type PrismProps = { mobile: boolean; reducedMotion: boolean }
-
-const SPEC = ['Spec0', 'Spec1', 'Spec2', 'Spec3', 'Spec4', 'Spec5', 'Spec6'] as const
 
 /** Cadrage : à la clé caméra 0, le prisme (1.47 de haut) occupe ~40 % de la hauteur d'écran. */
 const SCALE = 1.15
@@ -44,20 +55,13 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
   const float = useRef<Group>(null)
   const turn = useRef<Group>(null)
   const tilt = useRef<Group>(null)
+  const glass = useRef<Mesh>(null)
+  const focus = useRef(createRayFocus())
   const pivots = useRef<(Group | null)[]>([])
   const rayMeshes = useRef<(Mesh | null)[]>([])
   const intro = useRef({ k: reducedMotion ? 1 : 0 })
 
-  const rays = useMemo(
-    () =>
-      SPEC.map((name) => ({
-        name,
-        geometry: nodes[name].geometry,
-        ...segment(nodes[name]),
-        ...cloneEmissive(materials[name], bloom),
-      })),
-    [nodes, materials, bloom],
-  )
+  const rays = useMemo(() => buildRays(nodes, materials, bloom), [nodes, materials, bloom])
 
   useEffect(
     () => () => {
@@ -97,40 +101,56 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
     }
   }, [reducedMotion, invalidate])
 
-  // Flottement : seule boucle continue, desktop, tant que le hero est à l'écran
+  // Flottement : seule boucle continue du prisme, desktop, quand le hero ou le contact est à l'écran
   const heroTitle = useAnchor('hero-title')
   const heroSection = useMemo(() => heroTitle?.closest('section') ?? null, [heroTitle])
+  const contactSection = useMemo(() => document.getElementById(site.sections.contact.id), [])
   const heroInView = useInView(heroSection)
-  useContinuousInvalidate(floating && heroInView)
+  const contactInView = useInView(contactSection, false)
+  useContinuousInvalidate(floating && (heroInView || contactInView))
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const f = frame.current
     const fl = float.current
     const tu = turn.current
     const ti = tilt.current
-    if (!f || !fl || !tu || !ti) return
+    const gl = glass.current
+    if (!f || !fl || !tu || !ti || !gl) return
     const p = getProgress('hero')
+    const contact = getProgress('contact')
+    const retract = retractT(getProgress('services'))
 
     const k = easeInOut(turnT(p))
     f.scale.setScalar(lerp(fitScale, SCALE, k) * lerp(0.82, 1, intro.current.k))
+    f.position.y = JOURNEY.riseY * liftT(getProgress('projects'), contact)
     fl.position.y = floating ? Math.sin(state.clock.elapsedTime * 0.9) * 0.05 : 0
 
-    tu.rotation.z = TURN * k
+    tu.rotation.z = TURN * k * (1 - untwistT(contact))
     ti.rotation.set(TILT.x * (1 - k), TILT.y * (1 - k), 0)
 
-    // Rayons : croissance depuis l'origine, puis dispersion (longueur et ouverture de l'éventail)
+    // Hors cadre (projets, services, à propos) : plus de transmission ; plus rien une fois rétracté
+    f.visible = cullGlass(gl, state.camera) || retract < 1
+
+    // Rayons : croissance, dispersion, visée de l'objet actif (projets), rétractation (services)
+    updateRayFocus(focus.current, state, delta)
+    beginAim(ti)
     const s = easeInOut(spreadT(p))
-    const length = lerp(1, SPREAD.length, s)
+    const length = lerp(1, SPREAD.length, s) * (1 - retract)
     const opening = lerp(1, SPREAD.angle, s)
     rays.forEach((ray, i) => {
       const pivot = pivots.current[i]
       const mesh = rayMeshes.current[i]
       if (!pivot || !mesh) return
       const g = rayT(p, i)
-      pivot.visible = g > 0
-      pivot.scale.y = Math.max(easeOut(g), 1e-4) * length
-      pivot.rotation.z = (ray.theta + Math.PI / 2) * opening - Math.PI / 2
-      setEmissiveIntensity(mesh, ray.peak * g)
+      const rest = (ray.theta + Math.PI / 2) * opening - Math.PI / 2
+      const pose = aimRay(focus.current, i, ray, rest, length)
+      const a = focus.current.aim[i] ?? 0
+      const lit = lerp(ray.peak, ray.accentPeak, a)
+      const dimmed = lerp(lit, ray.sdr * JOURNEY.dim, focus.current.dim[i] ?? 0)
+      pivot.visible = g > 0 && pose.length > 1e-3
+      pivot.scale.y = Math.max(easeOut(g) * pose.length, 1e-4)
+      pivot.rotation.z = pose.rotation
+      setEmissive(mesh, ray.base, ray.accent, a, dimmed * g)
     })
   })
 
@@ -139,7 +159,7 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
       <group ref={float}>
         <group ref={turn}>
           <group ref={tilt} rotation={[TILT.x, TILT.y, 0]}>
-            <mesh geometry={nodes.Prism.geometry} rotation={nodes.Prism.rotation}>
+            <mesh ref={glass} geometry={nodes.Prism.geometry} rotation={nodes.Prism.rotation}>
               <PrismGlass mobile={mobile} reducedMotion={reducedMotion} />
             </mesh>
             <Beam

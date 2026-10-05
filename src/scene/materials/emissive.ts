@@ -1,5 +1,7 @@
 // Storyboard hero (docs/storyboards/hero.md) §7 : bloom à seuil 1, seuls les rayons, le faisceau et les
 // bords de dissolution dépassent 1. Matériaux émissifs du GLB clonés (BeamWhite, Spec0..6).
+// Storyboard projets (docs/storyboards/projects.md §2, 0.2–0.9) : la couleur du rayon actif tend vers
+// l'accent du projet (setEmissive), son intensité suit le pic de la couleur affichée.
 import { type Color, type Mesh, MeshStandardMaterial } from 'three'
 import { clamp } from '../../lib/math'
 
@@ -10,17 +12,22 @@ const INTENSITY: readonly [number, number] = [1.8, 8]
 const luminance = (c: Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
 
 /**
- * Clone un matériau émissif, non tone-mappé. Avec bloom : intensité HDR (fixe, ou calculée pour
- * dépasser le seuil quelle que soit la couleur : le rouge et le violet ont une faible luminance).
- * Sans bloom : canal le plus fort à 1, teinte exacte. `peak` = intensité une fois allumé.
+ * Intensité émissive d'une couleur une fois allumée. Avec bloom : HDR (fixe, ou calculée pour dépasser
+ * le seuil quelle que soit la couleur : le rouge et le violet ont une faible luminance). Sans bloom :
+ * canal le plus fort à 1, teinte exacte.
  */
+export function emissivePeak(color: Color, bloom: boolean, fixed?: number) {
+  const { r, g, b } = color
+  return bloom
+    ? (fixed ?? clamp(TARGET_LUMINANCE / luminance(color), ...INTENSITY))
+    : 1 / Math.max(r, g, b, 1e-3)
+}
+
+/** Clone un matériau émissif, non tone-mappé. `peak` = intensité une fois allumé (emissivePeak). */
 export function cloneEmissive(source: MeshStandardMaterial, bloom: boolean, fixed?: number) {
   const material = source.clone()
   material.toneMapped = false
-  const { r, g, b } = material.emissive
-  const peak = bloom
-    ? (fixed ?? clamp(TARGET_LUMINANCE / luminance(material.emissive), ...INTENSITY))
-    : 1 / Math.max(r, g, b, 1e-3)
+  const peak = emissivePeak(material.emissive, bloom, fixed)
   material.emissiveIntensity = peak
   return { material, peak }
 }
@@ -29,4 +36,12 @@ export function cloneEmissive(source: MeshStandardMaterial, bloom: boolean, fixe
 export function setEmissiveIntensity(mesh: Mesh, value: number) {
   const { material } = mesh
   if (material instanceof MeshStandardMaterial) material.emissiveIntensity = value
+}
+
+/** Couleur émissive entre `from` et `to` (t de 0 à 1) et intensité, via la ref du mesh. */
+export function setEmissive(mesh: Mesh, from: Color, to: Color, t: number, intensity: number) {
+  const { material } = mesh
+  if (!(material instanceof MeshStandardMaterial)) return
+  material.emissive.lerpColors(from, to, t)
+  material.emissiveIntensity = intensity
 }

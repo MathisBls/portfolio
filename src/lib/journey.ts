@@ -1,0 +1,41 @@
+// Fenêtres des progress de section après le hero, source unique pour le prisme (Prism.tsx) :
+// - docs/storyboards/projects.md §2 : projects 0.1 « Le groupe du prisme monte (y 0 → +3.4,
+//   projects 0 → 0.15) » ; 0.2–0.9 « son rayon se réoriente vers l'objet [...] Les autres rayons tombent
+//   à 15 % ».
+// - docs/storyboards/services-contact.md §2 : 2.3 « Les rayons se rétractent vers le prisme (longueur → 0,
+//   services 0 → 0.4) » ; 3.0 « Le prisme redescend au centre (y +3.4 → 0), rotation z −π/2 → 0
+//   (contact 0 → 0.5) » ; 3.5 « aucun rayon coloré : lumière blanche seule ».
+// - docs/storyboards/about-legal.md §2 : rayons rétractés, prisme hors cadre pendant About.
+import { easeInOut, range } from './math'
+
+export const JOURNEY = {
+  /** projects : le groupe du prisme monte de riseY, le prisme sort par le haut. */
+  rise: [0, 0.15],
+  riseY: 3.4,
+  /** services : les rayons se rétractent (longueur → 0). */
+  retract: [0, 0.4],
+  /** contact : le prisme redescend au centre et défait son quart de tour. */
+  descend: [0, 0.5],
+  /** card (project:<slug>) : son rayon vise l'objet une fois entré, le lâche avant sa sortie. */
+  focusIn: [0.1, 0.3],
+  focusOut: [0.7, 0.9],
+  /** Intensité des rayons non visés pendant qu'un rayon vise son objet. */
+  dim: 0.15,
+} as const
+
+type Window = readonly [number, number]
+const inWindow = (p: number, [a, b]: Window) => easeInOut(range(p, a, b))
+
+/** Hauteur du prisme (0 au centre, 1 hors cadre en haut) : monte avec projects, redescend avec contact. */
+export const liftT = (projects: number, contact: number) =>
+  inWindow(projects, JOURNEY.rise) * (1 - inWindow(contact, JOURNEY.descend))
+
+/** Quart de tour défait pendant la descente de Contact (0 : état du hero, 1 : rotation z nulle). */
+export const untwistT = (contact: number) => inWindow(contact, JOURNEY.descend)
+
+/** Rétraction des rayons (0 : éventail du hero, 1 : longueur nulle), définitive après Services. */
+export const retractT = (services: number) => inWindow(services, JOURNEY.retract)
+
+/** Présence d'un objet projet pour la visée de son rayon (0 hors fenêtre, 1 au cœur de la card). */
+export const focusPresence = (p: number) =>
+  inWindow(p, JOURNEY.focusIn) * (1 - inWindow(p, JOURNEY.focusOut))

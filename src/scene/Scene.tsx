@@ -2,13 +2,18 @@
 // sur le JS initial. frameloop="demand" : on ne rend que quand ScrollTrigger ou une animation invalide.
 // Storyboard hero (docs/storyboards/hero.md) §3 (Scene.tsx : monte Prism, HeroTitle3D, Effects ;
 // antialias selon composer) et §5 Budget (desktop / mobile / reduced-motion).
+// Storyboard projets (docs/storyboards/projects.md §3) : monte ProjectObjects (objets 3D des cards,
+// desktop hors reduced-motion, quand la section approche). AmbientShapes : formes d'ambiance (demande
+// de Mathis, sans storyboard), derrière les objets (z −9 à −2).
 import { Canvas, useThree } from '@react-three/fiber'
 import { Suspense, useEffect } from 'react'
 import { CameraRig } from './CameraRig'
 import { Effects } from './Effects'
 import { Lighting } from './Lighting'
+import { AmbientShapes } from './objects/AmbientShapes'
 import { HeroTitle3D } from './objects/HeroTitle3D'
 import { Prism } from './objects/Prism'
+import { ProjectObjects } from './objects/ProjectObjects'
 import { setInvalidate } from './store'
 
 export type SceneProps = { mobile: boolean; reducedMotion: boolean }
@@ -59,9 +64,11 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
       <Suspense fallback={null}>
         <Lighting />
         <Prism mobile={mobile} reducedMotion={reducedMotion} />
+        <AmbientShapes mobile={mobile} reducedMotion={reducedMotion} />
         {composer && <HeroTitle3D reducedMotion={reducedMotion} />}
         {composer && <Effects />}
       </Suspense>
+      <ProjectObjects mobile={mobile} reducedMotion={reducedMotion} />
     </Canvas>
   )
 }
