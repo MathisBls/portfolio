@@ -7,6 +7,7 @@
 // - hovered : état zustand (rare, peut être lu par l'UI), lu dans useFrame via useScene.getState().
 import { create } from 'zustand'
 import type { Project } from '../content/projects'
+import type { SlotMetrics } from '../lib/projects'
 
 export type SectionId = 'hero' | 'projects' | 'services' | 'about' | 'contact'
 
@@ -71,8 +72,24 @@ export function onAnchorsChange(fn: () => void): () => void {
   }
 }
 
+/**
+ * Mesures des emplacements visuels des cards projets (docs/storyboards/projects.md), écrites par le
+ * DOM au refresh de ScrollTrigger. Avec le progress 'project:<slug>', la scène en déduit la position
+ * exacte à l'écran (slotCenterY) sans lire le DOM dans useFrame.
+ */
+const anchorMetrics = new Map<AnchorId, SlotMetrics>()
+
+export function setAnchorMetrics(id: AnchorId, metrics: SlotMetrics) {
+  anchorMetrics.set(id, metrics)
+  invalidate()
+}
+
+export function getAnchorMetrics(id: AnchorId): SlotMetrics | undefined {
+  return anchorMetrics.get(id)
+}
+
 /** Drapeaux de la scène sur <html>, lus par le CSS du DOM. */
-export type SceneFlag = 'has-scene' | 'has-3d-title'
+export type SceneFlag = 'has-scene' | 'has-3d-title' | 'has-project-objects'
 
 export function setSceneFlag(flag: SceneFlag, on: boolean) {
   document.documentElement.classList.toggle(flag, on)
@@ -80,13 +97,20 @@ export function setSceneFlag(flag: SceneFlag, on: boolean) {
 
 type SceneState = {
   hovered: Project['slug'] | null
+  /** true quand la section Projets est à moins d'un écran : la scène précharge et monte les objets. */
+  projectsNear: boolean
   setHovered: (slug: Project['slug'] | null) => void
+  setProjectsNear: (near: boolean) => void
 }
 
 export const useScene = create<SceneState>((set) => ({
   hovered: null,
+  projectsNear: false,
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
+  },
+  setProjectsNear: (near) => {
+    set({ projectsNear: near })
   },
 }))
