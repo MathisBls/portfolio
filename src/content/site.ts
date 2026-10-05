@@ -1,4 +1,4 @@
-// Textes d'interface (navigation, titres de section, méta). Source unique : aucun texte en dur ailleurs.
+// Textes d'interface (navigation, titres de section, méta). Source unique : aucun texte en dur ailleurs.
 
 export type SectionKey = 'hero' | 'projects' | 'services' | 'about' | 'contact'
 
@@ -51,7 +51,7 @@ export const site = {
   projects: {
     intro:
       'Quatre produits que je construis, un site livré à un client. Chaque fois, de l’idée à la mise en ligne.',
-    // Label mono de la card : `${index} / ${year}`, index sur 2 chiffres (01, 02…)
+    // Label mono de la card : `${index} / ${year}`, index sur 2 chiffres (01, 02…)
     stackLabel: 'Stack',
     links: { site: 'Voir le site', store: 'App Store', github: 'Code source' },
     newTab: '(nouvel onglet)',
@@ -66,7 +66,7 @@ export const site = {
     // Rédigé depuis identity et projects.ts, aucun fait ajouté. À valider par Mathis.
     lines: [
       'Développeur full stack basé à Choisy-le-Roi, en Île-de-France.',
-      'Je construis mes propres produits : une app de navigation publiée sur l’App Store, un gestionnaire de mods open source, une ROM Android, une chaîne de création de jeux par agents IA.',
+      'Je construis mes propres produits : une app de navigation publiée sur l’App Store, un gestionnaire de mods open source, une ROM Android, une chaîne de création de jeux par agents IA.',
       'Et des sites pour des commerces, comme celui de Meme Rina, pizzeria à Chatou.',
       'Du design au déploiement, vous parlez à la personne qui écrit le code.',
     ],
@@ -106,7 +106,7 @@ export const site = {
       text: [
         'Le formulaire de contact collecte votre nom, votre email et votre message. Ces données servent uniquement à vous répondre et ne sont ni vendues ni cédées.',
         'Elles sont stockées par l’hébergeur (Netlify Forms).',
-        'Durée de conservation : TODO: à valider (proposition : 12 mois après le dernier échange).',
+        'Durée de conservation : TODO: à valider (proposition : 12 mois après le dernier échange).',
         'Vous pouvez demander l’accès, la rectification ou la suppression de vos données en écrivant à l’adresse email ci-dessus. Vous pouvez aussi saisir la CNIL (cnil.fr).',
       ],
     },
@@ -117,7 +117,7 @@ export const site = {
     ip: {
       title: 'Propriété intellectuelle et crédits',
       text: [
-        'Textes, visuels et modèles 3D : © Mathis Boulais.',
+        'Textes, visuels et modèles 3D : © Mathis Boulais.',
         'Polices Instrument Serif, Inter et JetBrains Mono, sous licence SIL Open Font License 1.1.',
       ],
     },

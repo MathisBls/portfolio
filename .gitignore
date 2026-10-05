@@ -20,3 +20,6 @@ public/draco
 
 # Posters : seuls les WebP sont versionnés (PNG = intermédiaires de scripts/blender/posters.py)
 public/posters/*.png
+
+# Worktrees des agents Claude Code
+.claude/worktrees

@@ -28,7 +28,7 @@ export const projects: Project[] = [
     name: 'Wegir',
     tagline: 'Navigation GPS en convoi',
     description:
-      'Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l’App Store.',
+      'Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l’App Store.',
     stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
     links: { site: 'https://wegir.com', store: 'https://apps.apple.com/fr/app/wegir/id6789985288' },
     model: 'wegir',
@@ -52,7 +52,7 @@ export const projects: Project[] = [
     name: 'Game Factory',
     tagline: 'Des jeux produits par des agents',
     description:
-      'Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.',
+      'Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.',
     stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
     links: { github: 'https://github.com/Prismo-Studio/game-factory' },
     model: 'gamefactory',

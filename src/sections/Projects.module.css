@@ -1,0 +1,62 @@
+/* Section Projets : mobile first, une colonne. Responsive en media queries seulement (prerender sans window).
+   Le fond reste transparent : le canvas 3D (position: fixed, derrière) se voit entre les cards. */
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: var(--space-6) var(--gutter);
+}
+
+/* Halo --bg : le texte reste lisible quand un rayon de la scène passe derrière */
+.head {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: 64rem;
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.title {
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.intro {
+  max-width: 34rem;
+  margin-top: var(--space-2);
+  color: var(--fg-2);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .intro {
+    font-size: var(--text-lg);
+  }
+}
+
+/* Scène cinématique : un projet à la fois à l'écran, de grands blancs entre les cards */
+@media (min-width: 1024px) {
+  .list {
+    gap: clamp(8rem, 22svh, 14rem);
+    margin-top: var(--space-6);
+  }
+}
