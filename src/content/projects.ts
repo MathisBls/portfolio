@@ -42,7 +42,7 @@ export const projects: Project[] = [
     description:
       'ROM Android basée sur LineageOS avec un système de profils multiples par appareil. Overlays RRO, launcher et SystemUI personnalisés.',
     stack: ['Android', 'LineageOS', 'AOSP'],
-    links: { github: 'https://github.com/prismo-studio/quorin' },
+    links: { github: 'https://github.com/Prismo-Studio/QuorinOS' },
     model: 'quorin',
     accent: '#8a5cff',
     year: '2026',
