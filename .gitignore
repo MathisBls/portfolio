@@ -17,3 +17,6 @@ public/draco
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# Posters : seuls les WebP sont versionnés (PNG = intermédiaires de scripts/blender/posters.py)
+public/posters/*.png
