@@ -1,0 +1,74 @@
+export type Project = {
+  slug: string
+  name: string
+  tagline: string
+  description: string
+  stack: string[]
+  links: { site?: string; github?: string; store?: string }
+  model: 'prism' | 'zephyr' | 'wegir' | 'quorin' | 'gamefactory' | 'pizza'
+  accent: string
+  year: string
+}
+
+export const projects: Project[] = [
+  {
+    slug: 'zephyr',
+    name: 'Zephyr',
+    tagline: 'Gestionnaire de mods open source',
+    description:
+      "Application desktop pour installer et gérer des mods depuis Thunderstore, NexusMods, CurseForge et GitHub. Profils partageables, éditeur de config intégré, module randomizer.",
+    stack: ['Tauri 2', 'Svelte 5', 'Rust'],
+    links: { github: 'https://github.com/prismo-studio/zephyr' },
+    model: 'zephyr',
+    accent: '#12b5bd',
+    year: '2026',
+  },
+  {
+    slug: 'wegir',
+    name: 'Wegir',
+    tagline: 'Navigation GPS en convoi',
+    description:
+      "Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l'App Store.",
+    stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
+    links: { site: 'https://wegir.com', store: 'TODO: lien App Store' },
+    model: 'wegir',
+    accent: '#ffb020',
+    year: '2026',
+  },
+  {
+    slug: 'quorin',
+    name: 'QuorinOS',
+    tagline: 'Un téléphone, plusieurs visages',
+    description:
+      "ROM Android basée sur LineageOS avec un système de profils multiples par appareil. Overlays RRO, launcher et SystemUI personnalisés.",
+    stack: ['Android', 'LineageOS', 'AOSP'],
+    links: { github: 'https://github.com/prismo-studio/quorin' },
+    model: 'quorin',
+    accent: '#8a5cff',
+    year: '2026',
+  },
+  {
+    slug: 'game-factory',
+    name: 'Game Factory',
+    tagline: 'Des jeux produits par des agents',
+    description:
+      "Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.",
+    stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
+    links: {},
+    model: 'gamefactory',
+    accent: '#ff4d4d',
+    year: '2026',
+  },
+  {
+    slug: 'meme-rina',
+    name: 'TODO: nom exact de la pizzeria',
+    tagline: 'Site vitrine pour une pizzeria',
+    description:
+      'TODO: 2 phrases (ce que le client voulait, ce que le site apporte : menu, horaires, commande, fiche Google).',
+    stack: ['TODO: Astro ou React', 'Netlify'],
+    links: { site: 'TODO: url' },
+    model: 'pizza',
+    accent: '#ff6a3d',
+    year: '2026',
+  },
+]

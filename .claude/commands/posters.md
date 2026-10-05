@@ -1,0 +1,1 @@
+Génère les posters PNG/WebP de fallback mobile pour les 6 modèles via le MCP Blender (skill `blender-assets`) dans `public/posters/`, fond transparent, 800×800, caméra 3/4 cohérente entre tous les modèles, puis branche-les dans les cards (`ui-dev`).

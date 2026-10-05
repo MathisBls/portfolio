@@ -1,0 +1,1 @@
+Agent `prospection` : $ARGUMENTS (exemples : "sourcing Choisy-le-Roi restaurants", "audit https://exemple.fr", "message pour <lead>", "relances de la semaine"). Ne rien envoyer, préparer et déposer dans `prospection/`.
