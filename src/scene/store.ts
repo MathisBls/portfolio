@@ -1,5 +1,8 @@
-// Pont DOM <-> 3D. Les ScrollTrigger (côté DOM) écrivent le progress ; la scène le lit dans useFrame
-// via useScene.getState() (jamais via le hook : pas de re-render par frame).
+// Pont DOM <-> 3D.
+// - progress : objet mutable hors de l'état réactif. Les ScrollTrigger (côté DOM) l'écrivent via
+//   setProgress à chaque tick de scrub, la scène le lit dans useFrame via getProgress. Aucun abonné
+//   React n'est notifié : seul invalidate() est appelé (frameloop="demand").
+// - hovered : état zustand (rare, peut être lu par l'UI), lu dans useFrame via useScene.getState().
 import { create } from 'zustand'
 import type { Project } from '../content/projects'
 
@@ -7,31 +10,38 @@ import type { Project } from '../content/projects'
 export type ProgressId =
   'page' | 'hero' | 'projects' | 'services' | 'about' | 'contact' | `project:${string}`
 
-type SceneState = {
-  progress: Partial<Record<ProgressId, number>>
-  hovered: Project['slug'] | null
-  /** Branché par <InvalidateBridge> une fois le Canvas monté (frameloop="demand"). */
-  invalidate: () => void
-  setProgress: (id: ProgressId, value: number) => void
-  setHovered: (slug: Project['slug'] | null) => void
-  setInvalidate: (fn: () => void) => void
+const progress: Partial<Record<ProgressId, number>> = {}
+
+/** Branché par <InvalidateBridge> une fois le Canvas monté. No-op tant que la scène n'existe pas. */
+let invalidate: () => void = () => undefined
+
+export function setInvalidate(fn: () => void) {
+  invalidate = fn
 }
 
-export const useScene = create<SceneState>((set, get) => ({
-  progress: {},
+export function requestFrame() {
+  invalidate()
+}
+
+export function setProgress(id: ProgressId, value: number) {
+  if (progress[id] === value) return
+  progress[id] = value
+  invalidate()
+}
+
+export function getProgress(id: ProgressId): number {
+  return progress[id] ?? 0
+}
+
+type SceneState = {
+  hovered: Project['slug'] | null
+  setHovered: (slug: Project['slug'] | null) => void
+}
+
+export const useScene = create<SceneState>((set) => ({
   hovered: null,
-  invalidate: () => undefined,
-  setProgress: (id, value) => {
-    set((s) => ({ progress: { ...s.progress, [id]: value } }))
-    get().invalidate()
-  },
   setHovered: (slug) => {
     set({ hovered: slug })
-    get().invalidate()
-  },
-  setInvalidate: (fn) => {
-    set({ invalidate: fn })
+    invalidate()
   },
 }))
-
-export const getProgress = (id: ProgressId): number => useScene.getState().progress[id] ?? 0

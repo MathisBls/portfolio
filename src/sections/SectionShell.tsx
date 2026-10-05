@@ -9,7 +9,9 @@ export function SectionShell({ section, children }: Props) {
   const { id, label, title } = site.sections[section]
   return (
     <section id={id} aria-labelledby={`${id}-titre`} className={styles.section}>
-      <p className={styles.label}>{label}</p>
+      <p className={styles.label} aria-hidden="true">
+        {label}
+      </p>
       <h2 id={`${id}-titre`} className={styles.title}>
         {title}
       </h2>

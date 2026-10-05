@@ -27,6 +27,6 @@ export const site = {
   } satisfies Record<SectionKey, SectionText>,
   footer: {
     legal: 'Mentions légales',
-    home: "Retour à l'accueil",
+    home: 'Retour à l’accueil',
   },
 }

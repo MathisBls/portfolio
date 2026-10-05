@@ -15,7 +15,7 @@ export function LegalPage() {
           <a href="/">{site.footer.home}</a>
         </p>
       </main>
-      <Footer />
+      <Footer onLegalPage />
     </>
   )
 }

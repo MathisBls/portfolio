@@ -109,8 +109,14 @@ p {
   transform: none;
 }
 
-/* Apparitions au scroll (src/lib/reveal.ts). Gardées derrière .js : sans JS tout est visible. */
-.js [data-reveal] {
+/* Cible du skip link : reçoit le focus programmatique, sans contour autour de toute la page */
+main:focus {
+  outline: none;
+}
+
+/* Apparitions au scroll (src/lib/reveal.ts). L'état caché n'existe que sous .has-reveal, posé par le
+   JS une fois chargé : sans JS, ou si le JS échoue, tout est visible. */
+.has-reveal [data-reveal] {
   opacity: 0;
   translate: 0 24px;
   transition:
@@ -119,13 +125,13 @@ p {
   transition-delay: calc(var(--reveal-i, 0) * 60ms);
 }
 
-.js [data-reveal].is-in {
+.has-reveal [data-reveal].is-in {
   opacity: 1;
   translate: 0 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .js [data-reveal] {
+  .has-reveal [data-reveal] {
     opacity: 1;
     translate: none;
     transition: none;

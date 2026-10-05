@@ -31,12 +31,16 @@ Choix non tranchés par `CLAUDE.md` ou les skills. Une ligne de raison par choix
 
 - **Environment en Lightformers locaux** plutôt que `preset="city"` : les presets drei téléchargent un HDR depuis un CDN externe à l'exécution. Ici zéro requête réseau, rendu une fois (`frames={1}`).
 - **Canvas** : `position: fixed`, `pointer-events: none`, `aria-hidden`. Aucune interaction ne passe par le raycast : le survol des cards est piloté par le DOM via `useScene.setHovered`.
-- **Store** (`src/scene/store.ts`) : ids de progress `page | hero | projects | services | about | contact | project:<slug>`. `setProgress` appelle `invalidate()` (frameloop `demand`). Lecture dans `useFrame` via `getProgress(id)`, jamais via le hook.
+- **Pas de `pointer-events: none` sur les sections DOM** (motif du skill non repris) : il rendait le texte non sélectionnable (copier l'email, le téléphone, le SIREN) et ne sert à rien puisque le Canvas n'est pas interactif. Si la scène doit un jour suivre la souris : `eventSource` sur `#root`.
+- **Store** (`src/scene/store.ts`) : le progress (`page | hero | projects | services | about | contact | project:<slug>`) vit dans un objet mutable hors de zustand. `setProgress(id, v)` l'écrit et appelle `invalidate()` (frameloop `demand`), sans notifier aucun abonné React. Lecture dans `useFrame` via `getProgress(id)`. Seul `hovered` est un état zustand. `requestFrame()` demande une frame depuis le DOM.
+- **`useModel(name)`** (`src/scene/useModel.ts`) : seul point d'entrée des GLB, avec le chemin Draco local `/draco/` (sans lui, drei va chercher le décodeur sur un CDN). `preloadModel(name)` uniquement depuis le chunk de la scène.
+- **`useIsMobile` est réservé à la scène** : il vaut `false` au prerender. Toute différence de mise en page DOM entre mobile et desktop passe par les media queries CSS (sinon décalage de mise en page à l'hydratation).
+- **Test WebGL 2** fait dans le callback idle, contexte de test libéré aussitôt (`WEBGL_lose_context`).
 - **Caméra** : `CameraRig` échantillonne `CAMERA_PATH` (`src/scene/cameraPath.ts`) sur le progress `page` avec `sampleKeyframes` (pur, testé, sans allocation par frame).
 
 ### DOM et motion
 
-- **Apparitions au scroll en CSS + IntersectionObserver** (`[data-reveal]`, `src/lib/reveal.ts`), pas `whileInView` de motion : avec le prerender, motion écrirait l'état caché en style inline dans le HTML (contenu invisible sans JS, et décalage d'hydratation pour les utilisateurs en reduced-motion). Les états cachés n'existent que sous `html.js` (classe posée par un script inline avant le premier rendu). `prefers-reduced-motion` désactive tout en CSS.
+- **Apparitions au scroll en CSS + IntersectionObserver** (`[data-reveal]`, `src/lib/reveal.ts`), pas `whileInView` de motion : avec le prerender, motion écrirait l'état caché en style inline dans le HTML (contenu invisible sans JS, et décalage d'hydratation pour les utilisateurs en reduced-motion). Les états cachés n'existent que sous `html.has-reveal`, classe posée par `observeReveals()` : si le JS échoue, rien n'est caché. Ne s'utilise que sous la ligne de flottaison. `prefers-reduced-motion` désactive tout en CSS.
 - **motion** reste l'outil des interactions UI : nav qui se masque, menu mobile, survol des cards, états du formulaire.
 - **Le contenu du hero n'utilise jamais `data-reveal`** : c'est l'élément LCP, il doit être visible dès le HTML.
 
@@ -49,13 +53,17 @@ Choix non tranchés par `CLAUDE.md` ou les skills. Une ligne de raison par choix
 
 ### Assets
 
-- **Décodeur Draco** copié depuis `three` en `postinstall` (`scripts/copy-draco.mjs`) vers `public/draco/` (ignoré par git) : il suit toujours la version de three installée.
+- **Décodeur Draco** copié depuis `three` en `postinstall` (`scripts/copy-draco.mjs`) vers `public/draco/` (ignoré par git) : il suit toujours la version de three installée. Relancé en `prebuild` pour les installs en `--ignore-scripts`.
 - **Types GLB** dans `src/scene/objects/types.ts` (gltfjsx `--types`, sans `--transform` pour ne pas réécrire les modèles). Mesures utiles aux objets : `docs/models.md`.
 
 ### Contenu
 
 - **`src/content/site.ts`** ajouté pour les textes d'interface (méta, titres de section, labels, liens).
 - **`TODO:` dans le contenu** : affiché comme texte, jamais transformé en lien ni en numéro cliquable (`isTodo` / `isFilled` dans `src/lib/content.ts`).
+
+### Scroll
+
+- `ScrollTrigger.config({ ignoreMobileResize: true })` et `ScrollTrigger.refresh()` après `document.fonts.ready` (puis après chargement des GLB). Lenis démarre et s'arrête selon `useReducedMotion()` (réactif).
 
 ### Mesure
 

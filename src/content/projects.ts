@@ -28,7 +28,7 @@ export const projects: Project[] = [
     name: 'Wegir',
     tagline: 'Navigation GPS en convoi',
     description:
-      "Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l'App Store.",
+      'Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l’App Store.',
     stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
     links: { site: 'https://wegir.com', store: 'https://apps.apple.com/fr/app/wegir/id6789985288' },
     model: 'wegir',

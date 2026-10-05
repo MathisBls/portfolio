@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { site } from '../content/site'
+import { ScrollTrigger } from '../lib/gsap'
 import { startLenis } from '../lib/lenis'
 import { observeReveals } from '../lib/reveal'
-import { prefersReducedMotion } from '../lib/useReducedMotion'
+import { useReducedMotion } from '../lib/useReducedMotion'
 import { SceneMount } from '../scene/SceneMount'
 import { About } from '../sections/About'
 import { Contact } from '../sections/Contact'
@@ -12,14 +13,18 @@ import { Services } from '../sections/Services'
 import { Footer } from '../ui/Footer'
 
 export function HomePage() {
+  const reducedMotion = useReducedMotion()
+
   useEffect(() => {
     const stopReveals = observeReveals()
-    const stopLenis = prefersReducedMotion() ? undefined : startLenis()
-    return () => {
-      stopReveals()
-      stopLenis?.()
-    }
+    // Les fonts changent la hauteur des titres : recalculer les positions des triggers une fois chargées
+    void document.fonts.ready.then(() => {
+      ScrollTrigger.refresh()
+    })
+    return stopReveals
   }, [])
+
+  useEffect(() => (reducedMotion ? undefined : startLenis()), [reducedMotion])
 
   return (
     <>

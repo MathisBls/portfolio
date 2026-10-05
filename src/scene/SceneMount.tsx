@@ -13,12 +13,13 @@ export function SceneMount() {
   const mobile = useIsMobile()
   const reducedMotion = useReducedMotion()
 
-  useEffect(() => {
-    if (!hasWebGL2()) return
-    return whenIdle(() => {
-      setReady(true)
-    })
-  }, [])
+  useEffect(
+    () =>
+      whenIdle(() => {
+        if (hasWebGL2()) setReady(true)
+      }),
+    [],
+  )
 
   if (!ready) return null
   return (
