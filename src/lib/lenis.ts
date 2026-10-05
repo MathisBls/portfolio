@@ -11,6 +11,7 @@ function raf(time: number) {
 
 function stopLenis() {
   gsap.ticker.remove(raf)
+  gsap.ticker.lagSmoothing(500, 33) // valeurs par défaut de GSAP
   lenis?.destroy()
   lenis = null
 }

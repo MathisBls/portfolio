@@ -30,3 +30,23 @@
   font-display: swap;
   src: url('/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
 }
+
+/* Polices de repli ajustées aux métriques (capsize : xWidthAvg, ascent, descent) : pas de saut de
+   mise en page quand la vraie police arrive (h1 en --text-2xl). */
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT');
+  size-adjust: 83.94%;
+  ascent-override: 117.94%;
+  descent-override: 36.93%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('ArialMT');
+  size-adjust: 107.12%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}

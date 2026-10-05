@@ -3,7 +3,7 @@ import { site } from '../content/site'
 import { ScrollTrigger } from '../lib/gsap'
 import { startLenis } from '../lib/lenis'
 import { observeReveals } from '../lib/reveal'
-import { useReducedMotion } from '../lib/useReducedMotion'
+import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
 import { SceneMount } from '../scene/SceneMount'
 import { About } from '../sections/About'
 import { Contact } from '../sections/Contact'
@@ -24,7 +24,10 @@ export function HomePage() {
     return stopReveals
   }, [])
 
-  useEffect(() => (reducedMotion ? undefined : startLenis()), [reducedMotion])
+  useEffect(
+    () => (reducedMotion || prefersReducedMotion() ? undefined : startLenis()),
+    [reducedMotion],
+  )
 
   return (
     <>

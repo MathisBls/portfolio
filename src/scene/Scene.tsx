@@ -8,7 +8,12 @@ import { setInvalidate } from './store'
 
 export type SceneProps = { mobile: boolean; reducedMotion: boolean }
 
-const canvasStyle = { position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' } as const
+const canvasStyle = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 'var(--z-scene)',
+  pointerEvents: 'none',
+} as const
 
 /** Fond du canvas = --bg (tokens.css), lu une fois au montage pour ne pas dupliquer la couleur. */
 const background = () =>
