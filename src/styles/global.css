@@ -110,7 +110,8 @@ p {
 }
 
 /* Cible du skip link : reçoit le focus programmatique, sans contour autour de toute la page */
-main:focus {
+main:focus,
+section[tabindex='-1']:focus {
   outline: none;
 }
 

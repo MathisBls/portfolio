@@ -1,0 +1,208 @@
+/* Hero : 100svh, épinglé 200 % par GSAP (Hero.tsx). Mobile first, tout le responsive en media queries
+   (jamais useIsMobile côté DOM : le prerender n'a pas de window). */
+.hero {
+  /* Titre : ~30vw sur mobile (2 lignes empilées), ~14vw sur desktop, borné par la hauteur d'écran
+     pour que le pitch et les boutons gardent leur place (iPhone SE : 93 px) */
+  --hero-size: min(clamp(4.5rem, 30vw, 9rem), 14svh);
+
+  position: relative;
+  z-index: var(--z-content);
+  display: grid;
+  /* Titre au centre de l'écran quand la place le permet ; le bas grandit sinon (petits écrans) */
+  grid-template-rows: 1fr auto 1fr;
+  height: 100svh;
+  padding: 4.5rem var(--gutter) 3.5rem;
+  /* Le poster déborde volontairement (rayons qui sortent de l'écran) */
+  overflow-x: clip;
+}
+
+/* Poster SVG : le visuel sans WebGL. Visible par défaut, s'efface quand la scène est prête. */
+.poster {
+  /* Même cellule que le titre : le prisme est centré sur le bloc titre, sur mobile comme sur desktop */
+  grid-area: 2 / 1;
+  position: relative;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.poster svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 190vw;
+  max-width: none;
+  height: auto;
+  translate: -50% -50%;
+}
+
+html:global(.has-scene) .poster {
+  opacity: 0;
+}
+
+.center {
+  grid-area: 2 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.title {
+  font-size: var(--hero-size);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.word {
+  display: block;
+}
+
+/* La 3D affiche le titre réfracté derrière le prisme : les mots DOM deviennent transparents sans
+   changer la mise en page (la scène les mesure). !important : GSAP écrit opacity en inline. */
+html:global(.has-3d-title) .word {
+  opacity: 0 !important;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.role {
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-2);
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.bottom {
+  grid-area: 3 / 1;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  /* Respiration sous le badge quand la hauteur est juste (le bas grandit alors vers le haut) */
+  margin-top: 1rem;
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+}
+
+.pitch {
+  max-width: 32rem;
+  color: var(--fg-2);
+  /* Halo --bg : le texte reste lisible quand un rayon de la scène passe derrière (état final en reduced-motion) */
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.hint {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 1rem;
+  left: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+@media (min-width: 640px) {
+  .poster svg {
+    width: 120vw;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    --hero-size: min(clamp(8rem, 14vw, 15rem), 24svh);
+
+    padding-block: 5.5rem;
+  }
+
+  .bottom {
+    margin-top: 0;
+  }
+
+  .poster svg {
+    width: min(80vw, 80rem);
+  }
+
+  .bottom {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .pitch {
+    font-size: var(--text-lg);
+  }
+
+  .actions {
+    flex: none;
+  }
+
+  .hint {
+    bottom: 1.75rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero {
+    padding-block: 6rem;
+  }
+
+  .poster svg {
+    width: min(80vw, 90rem);
+  }
+}
+
+/* Sans mouvement : pas de pin, donc plus rien à indiquer */
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    display: none;
+  }
+
+  .poster,
+  html:global(.has-3d-title) .word {
+    transition: none;
+  }
+}

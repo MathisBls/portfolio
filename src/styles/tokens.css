@@ -8,7 +8,24 @@
   /* --fg-3 : contraste 3.4:1 sur --bg, réservé au décoratif et au texte >= 24px */
   --fg-3: #65656e;
   --accent: #12b5bd; /* teal, hérité de Zephyr */
-  --spectrum: linear-gradient(90deg, #ff3b3b, #ff9f1a, #ffe14d, #4cff6a, #2aa7ff, #6a4cff, #b44cff);
+  /* Les 7 rayons du spectre (Spec0..6), un par couleur : poster SVG du hero, puces, traits */
+  --ray-0: #ff3b3b;
+  --ray-1: #ff9f1a;
+  --ray-2: #ffe14d;
+  --ray-3: #4cff6a;
+  --ray-4: #2aa7ff;
+  --ray-5: #6a4cff;
+  --ray-6: #b44cff;
+  --spectrum: linear-gradient(
+    90deg,
+    var(--ray-0),
+    var(--ray-1),
+    var(--ray-2),
+    var(--ray-3),
+    var(--ray-4),
+    var(--ray-5),
+    var(--ray-6)
+  );
   --radius: 14px;
   --radius-lg: 24px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);

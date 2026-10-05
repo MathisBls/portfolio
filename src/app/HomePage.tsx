@@ -11,6 +11,7 @@ import { Hero } from '../sections/Hero'
 import { Projects } from '../sections/Projects'
 import { Services } from '../sections/Services'
 import { Footer } from '../ui/Footer'
+import { Nav } from '../ui/Nav'
 
 export function HomePage() {
   const reducedMotion = useReducedMotion()
@@ -35,6 +36,7 @@ export function HomePage() {
         {site.skipLink}
       </a>
       <SceneMount />
+      <Nav />
       <main id="contenu" tabIndex={-1}>
         <Hero />
         <Projects />
