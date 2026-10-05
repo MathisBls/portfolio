@@ -54,7 +54,7 @@ export const projects: Project[] = [
     description:
       'Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.',
     stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
-    links: {},
+    links: { github: 'https://github.com/Prismo-Studio/game-factory' },
     model: 'gamefactory',
     accent: '#ff4d4d',
     year: '2026',
