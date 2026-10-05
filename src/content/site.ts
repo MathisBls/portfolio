@@ -18,6 +18,25 @@ export const site = {
     },
   },
   skipLink: 'Aller au contenu',
+  nav: {
+    label: 'Navigation principale',
+    home: 'Mathis Boulais, retour en haut de page',
+    links: [
+      { href: '#projets', label: 'Projets' },
+      { href: '#services', label: 'Services' },
+      { href: '#a-propos', label: 'À propos' },
+    ],
+    cta: { href: '#contact', label: 'Discuter d’un projet' },
+    menuOpen: 'Ouvrir le menu',
+    menuClose: 'Fermer le menu',
+  },
+  hero: {
+    // Le h1 et le rôle viennent de identity (services.ts). Un mot du h1 = un <span data-word>.
+    availability: 'Disponible pour des missions',
+    ctaPrimary: { href: '#contact', label: 'Discuter d’un projet' },
+    ctaSecondary: { href: '#projets', label: 'Voir les projets' },
+    scrollHint: 'Faites défiler',
+  },
   sections: {
     hero: { id: 'accueil', label: '00 / Accueil', title: 'Accueil' },
     projects: { id: 'projets', label: '01 / Projets', title: 'Projets' },
