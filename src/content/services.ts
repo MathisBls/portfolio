@@ -49,6 +49,14 @@ export const identity = {
   phone: '07 82 07 17 88',
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
+  status: 'Entrepreneur individuel (micro-entreprise)',
+  address: 'TODO: adresse professionnelle (obligatoire dans les mentions légales)',
+  // Adresse relevée dans le pied de page des emails officiels de Netlify (oct. 2026), à revérifier
+  host: {
+    name: 'Netlify, Inc.',
+    address: '512 2nd Street, Fl 2, San Francisco, CA 94107, États-Unis',
+    url: 'https://www.netlify.com',
+  },
   pitch:
     'Je conçois et développe des sites et des applications pour des indépendants, des commerces et des projets qui démarrent. Du design au déploiement, un seul interlocuteur.',
 }
