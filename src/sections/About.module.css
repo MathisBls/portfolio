@@ -1,0 +1,150 @@
+/* À propos : pas de pin, la 3D est calme. Mobile first, tout le responsive en media queries (le
+   prerender n'a pas de window). Apparitions : [data-reveal] (styles/global.css). */
+.about {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: var(--space-5) var(--gutter);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.title {
+  margin-top: var(--space-3);
+  font-size: var(--text-xl);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.lines {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Les lignes en grand, une par paragraphe : la première et la dernière en pleine lumière */
+.line {
+  max-width: 40ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 1.1rem + 2.4vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--fg-2);
+  text-wrap: balance;
+  /* Halo --bg (comme le pitch du hero) : le texte reste lisible quand un rayon de la scène passe derrière */
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.line:first-child {
+  font-size: clamp(2.25rem, 1.2rem + 5vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+
+.line:last-child {
+  color: var(--fg);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.stackTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: var(--fg-2);
+}
+
+/* Même badge que dans le hero (Hero.module.css) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  justify-self: start;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-2);
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+@media (min-width: 640px) {
+  .about {
+    padding-block: var(--space-6);
+  }
+
+  .body {
+    margin-top: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Texte décalé de deux colonnes sur douze : le titre reste ancré à gauche */
+  .body {
+    padding-left: calc(100% / 12 * 2);
+  }
+
+  .line {
+    max-width: 24em;
+  }
+
+  .line:first-child {
+    max-width: 14em;
+  }
+}

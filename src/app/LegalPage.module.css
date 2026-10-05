@@ -1,11 +1,132 @@
+/* Mentions légales : une colonne de 48rem, rythme vertical généreux. Mobile first. */
 .main {
   max-width: 48rem;
   min-height: 80svh;
   margin-inline: auto;
-  padding: var(--space-6) var(--gutter);
+  padding: var(--space-5) var(--gutter);
 }
 
-.main h1 {
-  font-size: var(--text-xl);
+.title {
+  font-size: clamp(2.5rem, 1.8rem + 4vw, 4.5rem);
+}
+
+.intro {
+  margin-top: var(--space-3);
+  max-width: 36rem;
+  font-size: var(--text-lg);
+  color: var(--fg-2);
+}
+
+.section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.heading {
   margin-bottom: var(--space-4);
+  font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+}
+
+.text {
+  max-width: 40rem;
+  line-height: 1.7;
+  color: var(--fg-2);
+}
+
+.text + .text {
+  margin-top: var(--space-3);
+}
+
+.list {
+  display: grid;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.row:first-child {
+  padding-top: 0;
+}
+
+.row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.term {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.detail {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--fg);
+}
+
+.link {
+  text-decoration: underline;
+  text-decoration-color: var(--fg-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition:
+    color 0.4s var(--ease),
+    text-decoration-color 0.4s var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* Valeur "TODO:" : jamais un lien, toujours visible */
+.todo {
+  padding: 0.05em 0.4em;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.back {
+  margin-top: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .main {
+    padding-block: var(--space-6);
+  }
+
+  .section {
+    margin-top: var(--space-6);
+  }
+
+  .row {
+    grid-template-columns: 11rem 1fr;
+    gap: var(--space-4);
+  }
+
+  .term {
+    padding-top: 0.25rem;
+  }
+
+  .back {
+    margin-top: var(--space-6);
+  }
 }
