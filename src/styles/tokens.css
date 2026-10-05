@@ -1,0 +1,38 @@
+/* Direction artistique : skill design-tokens. Pas de mode clair. */
+:root {
+  --bg: #0a0a0c;
+  --bg-2: #121216;
+  --line: rgba(237, 237, 240, 0.08);
+  --fg: #ededf0;
+  --fg-2: #a0a0a8;
+  /* --fg-3 : contraste 3.4:1 sur --bg, réservé au décoratif et au texte >= 24px */
+  --fg-3: #65656e;
+  --accent: #12b5bd; /* teal, hérité de Zephyr */
+  --spectrum: linear-gradient(90deg, #ff3b3b, #ff9f1a, #ffe14d, #4cff6a, #2aa7ff, #6a4cff, #b44cff);
+  --radius: 14px;
+  --radius-lg: 24px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 0.6s;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 2rem;
+  --space-5: 4rem;
+  --space-6: 8rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(2rem, 4vw, 3.5rem);
+  --text-2xl: clamp(3rem, 8vw, 8rem);
+
+  /* Ajouts Phase 0 (docs/decisions.md) */
+  --font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --font-text: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --max-w: 1440px;
+  --z-scene: 0;
+  --z-content: 1;
+  --z-nav: 10;
+}

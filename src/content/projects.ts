@@ -16,7 +16,7 @@ export const projects: Project[] = [
     name: 'Zephyr',
     tagline: 'Gestionnaire de mods open source',
     description:
-      "Application desktop pour installer et gérer des mods depuis Thunderstore, NexusMods, CurseForge et GitHub. Profils partageables, éditeur de config intégré, module randomizer.",
+      'Application desktop pour installer et gérer des mods depuis Thunderstore, NexusMods, CurseForge et GitHub. Profils partageables, éditeur de config intégré, module randomizer.',
     stack: ['Tauri 2', 'Svelte 5', 'Rust'],
     links: { github: 'https://github.com/prismo-studio/zephyr' },
     model: 'zephyr',
@@ -30,7 +30,7 @@ export const projects: Project[] = [
     description:
       "Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l'App Store.",
     stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
-    links: { site: 'https://wegir.com', store: 'TODO: lien App Store' },
+    links: { site: 'https://wegir.com', store: 'https://apps.apple.com/fr/app/wegir/id6789985288' },
     model: 'wegir',
     accent: '#ffb020',
     year: '2026',
@@ -40,7 +40,7 @@ export const projects: Project[] = [
     name: 'QuorinOS',
     tagline: 'Un téléphone, plusieurs visages',
     description:
-      "ROM Android basée sur LineageOS avec un système de profils multiples par appareil. Overlays RRO, launcher et SystemUI personnalisés.",
+      'ROM Android basée sur LineageOS avec un système de profils multiples par appareil. Overlays RRO, launcher et SystemUI personnalisés.',
     stack: ['Android', 'LineageOS', 'AOSP'],
     links: { github: 'https://github.com/prismo-studio/quorin' },
     model: 'quorin',
@@ -52,7 +52,7 @@ export const projects: Project[] = [
     name: 'Game Factory',
     tagline: 'Des jeux produits par des agents',
     description:
-      "Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.",
+      'Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.',
     stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
     links: {},
     model: 'gamefactory',
@@ -61,12 +61,12 @@ export const projects: Project[] = [
   },
   {
     slug: 'meme-rina',
-    name: 'TODO: nom exact de la pizzeria',
+    name: 'Meme Rina',
     tagline: 'Site vitrine pour une pizzeria',
     description:
       'TODO: 2 phrases (ce que le client voulait, ce que le site apporte : menu, horaires, commande, fiche Google).',
     stack: ['TODO: Astro ou React', 'Netlify'],
-    links: { site: 'TODO: url' },
+    links: { site: 'https://www.memerina.fr/' },
     model: 'pizza',
     accent: '#ff6a3d',
     year: '2026',

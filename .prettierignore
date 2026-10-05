@@ -1,0 +1,9 @@
+dist
+dist-server
+public
+blender
+node_modules
+package-lock.json
+.claude
+CLAUDE.md
+PROMPT.md

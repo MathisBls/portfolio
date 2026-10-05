@@ -1,0 +1,32 @@
+/* Squelette commun des sections (Phase 0). Chaque section affine son propre module ensuite. */
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100svh;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: var(--space-6) var(--gutter);
+  pointer-events: none;
+}
+
+.section a,
+.section button,
+.section input,
+.section textarea,
+.section select,
+.section label {
+  pointer-events: auto;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.title {
+  margin-top: var(--space-3);
+  font-size: var(--text-xl);
+}

@@ -1,0 +1,6 @@
+.canvas {
+  position: fixed !important;
+  inset: 0;
+  z-index: var(--z-scene);
+  pointer-events: none;
+}

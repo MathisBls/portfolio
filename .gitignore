@@ -1,6 +1,19 @@
 node_modules
 dist
+dist-server
+coverage
+*.local
+*.log
 .env
 .env.*
 prospection/leads/*.csv
 *.blend1
+
+# Copié depuis three en postinstall (scripts/copy-draco.mjs)
+public/draco
+
+# Éditeurs / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
