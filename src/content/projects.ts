@@ -63,9 +63,10 @@ export const projects: Project[] = [
     slug: 'meme-rina',
     name: 'Meme Rina',
     tagline: 'Site vitrine pour une pizzeria',
+    // Description rédigée d'après le site en ligne (oct. 2026), à valider par Mathis
     description:
-      'TODO: 2 phrases (ce que le client voulait, ce que le site apporte : menu, horaires, commande, fiche Google).',
-    stack: ['TODO: Astro ou React', 'Netlify'],
+      'Site vitrine d’une pizzeria de quartier à Chatou. Carte complète, réservation de table, commande en livraison et avis Google, accessibles dès la page d’accueil.',
+    stack: ['Next.js', 'React', 'Netlify'],
     links: { site: 'https://www.memerina.fr/' },
     model: 'pizza',
     accent: '#ff6a3d',
