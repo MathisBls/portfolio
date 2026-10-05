@@ -28,7 +28,7 @@
 }
 
 .title {
-  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  font-size: var(--text-section);
   line-height: 0.95;
   letter-spacing: -0.03em;
 }

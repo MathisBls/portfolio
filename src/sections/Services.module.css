@@ -1,0 +1,231 @@
+/* Services : mobile first. 1 colonne, 2 colonnes dans la carte dès 640 px, 3 cartes côte à côte dès 1024 px
+   (lignes alignées en subgrid). Responsive en CSS seulement (le prerender n'a pas de window).
+   Les [data-reveal] sont sur les <li> : leur transition (global.css) ne doit pas être écrasée, le survol
+   vit donc sur l'<article> interne. */
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: var(--space-5) var(--gutter);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+/* Halo --bg : le texte reste lisible quand un rayon de la scène passe derrière */
+.title,
+.intro {
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.title {
+  margin-top: var(--space-3);
+  max-width: 12em;
+  font-size: var(--text-section);
+}
+
+.intro {
+  margin-top: var(--space-3);
+  max-width: 34rem;
+  color: var(--fg-2);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg-2);
+  transition:
+    transform 0.6s var(--ease),
+    border-color 0.6s var(--ease),
+    box-shadow 0.6s var(--ease);
+}
+
+.index,
+.blockLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.index {
+  color: var(--accent);
+}
+
+.name {
+  margin-top: 0.75rem;
+  font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  line-height: 1;
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.priceLead {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.priceValue {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.for,
+.includes {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.forText {
+  margin-top: 0.5rem;
+}
+
+.includesList {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0;
+  list-style: none;
+  color: var(--fg-2);
+}
+
+.includesList li {
+  position: relative;
+  padding-left: 1.25rem;
+  line-height: 1.5;
+}
+
+/* Trait court teal en guise de puce */
+.includesList li::before {
+  content: '';
+  position: absolute;
+  top: 0.75em;
+  left: 0;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--accent);
+}
+
+.cta {
+  display: flex;
+  margin-top: var(--space-5);
+}
+
+/* Survol : léger lift + 1 px de lueur accent. Jamais sur écran tactile, jamais en reduced-motion. */
+@media (hover: hover) {
+  .card:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+      0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.5rem var(--space-4);
+    align-items: start;
+    padding: 2rem;
+  }
+
+  .head,
+  .price,
+  .for {
+    grid-column: 1;
+  }
+
+  .includes {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-block: var(--space-6);
+  }
+
+  .list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    row-gap: 0;
+  }
+}
+
+/* Lignes alignées d'une carte à l'autre (titre, prix, pour qui, inclus). Sans subgrid : cartes de même
+   hauteur en colonnes, c'est suffisant. */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 1024px) {
+    .item {
+      display: grid;
+      grid-row: span 4;
+      grid-template-rows: subgrid;
+    }
+
+    .card {
+      display: grid;
+      grid-row: 1 / -1;
+      grid-template-rows: subgrid;
+      row-gap: 1.5rem;
+    }
+  }
+}
+
+@media (min-width: 1440px) {
+  .card {
+    padding: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

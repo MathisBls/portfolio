@@ -21,7 +21,7 @@
 
 .title {
   margin-top: var(--space-3);
-  font-size: var(--text-xl);
+  font-size: var(--text-section);
   text-shadow:
     0 0 0.5rem var(--bg),
     0 0 1rem var(--bg);

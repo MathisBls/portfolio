@@ -42,6 +42,8 @@
   --text-lg: 1.25rem;
   --text-xl: clamp(2rem, 4vw, 3.5rem);
   --text-2xl: clamp(3rem, 8vw, 8rem);
+  /* Titres de section (h2), commun à toutes les sections */
+  --text-section: clamp(2.75rem, 7vw, 5.5rem);
 
   /* Ajouts Phase 0 (docs/decisions.md) */
   --font-display: 'Instrument Serif', 'Instrument Serif Fallback', serif;

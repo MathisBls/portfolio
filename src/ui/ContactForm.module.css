@@ -1,0 +1,158 @@
+/* Formulaire de contact. Bordures --fg-2 au repos (7,5:1 sur --bg), --accent au focus, libellés toujours
+   visibles (jamais un placeholder seul). Erreurs : --ray-0 (5,2:1 sur --bg-2) + message texte + aria-invalid,
+   la couleur ne porte jamais seule l'information. */
+.root {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg-2);
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.control {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--fg-2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  /* 16 px : iOS ne zoome pas la page au focus */
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--fg);
+  transition:
+    border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
+}
+
+textarea.control {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--ray-0);
+}
+
+/* Un seul anneau teal (bordure 1 px + 1 px de box-shadow, 2 px au total, 7,4:1 sur --bg-2). Le contour
+   global de global.css s'y ajouterait en double : il devient transparent (outline: none ne le rendrait
+   pas en mode contraste élevé, un contour transparent si). Le contour global arrondit aussi à 4 px :
+   un champ garde ses angles. */
+.control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.control:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  border-radius: var(--radius);
+}
+
+/* Remplissage automatique du navigateur : garde le thème sombre */
+.control:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px var(--bg) inset;
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--ray-0);
+}
+
+.error:empty {
+  display: none;
+}
+
+.submit {
+  justify-self: start;
+  margin-top: 0.5rem;
+}
+
+/* aria-disabled et non disabled : le bouton garde le focus pendant l'envoi */
+.submit[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+  pointer-events: none;
+}
+
+.status:empty {
+  display: none;
+}
+
+.statusText {
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.statusError {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--ray-0);
+  color: var(--fg);
+}
+
+.privacy {
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.4s var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent);
+  }
+}
+
+.success {
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent);
+}
+
+.success:focus {
+  outline: none;
+}
+
+.successText {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) {
+  .root {
+    padding: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .link {
+    transition: none;
+  }
+}

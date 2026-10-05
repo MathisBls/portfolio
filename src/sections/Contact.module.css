@@ -1,0 +1,129 @@
+/* Contact : mobile first. Deux colonnes dès 1024 px (coordonnées à gauche, sous le prisme ; formulaire
+   à droite, sur son panneau opaque). Responsive en CSS seulement (le prerender n'a pas de window). */
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: var(--space-5) var(--gutter);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+/* Halo --bg : le texte reste lisible quand la lumière de la scène passe derrière */
+.title,
+.intro,
+.direct {
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.title {
+  margin-top: var(--space-3);
+  max-width: 12em;
+  font-size: var(--text-section);
+}
+
+.intro {
+  margin-top: var(--space-3);
+  max-width: 34rem;
+  color: var(--fg-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.directLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.list {
+  margin-top: var(--space-3);
+}
+
+.row {
+  display: grid;
+  gap: 0.25rem;
+  padding-block: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.term {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.value {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.4s var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent);
+  }
+}
+
+.siren {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--fg-2);
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-block: var(--space-6);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-5);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    gap: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

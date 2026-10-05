@@ -75,7 +75,7 @@ export const site = {
   },
   contact: {
     intro: 'Décrivez votre projet en quelques lignes. Je vous recontacte pour en parler.',
-    direct: 'Ou directement',
+    direct: 'Coordonnées',
     emailLabel: 'Email',
     phoneLabel: 'Téléphone',
     locationLabel: 'Basé à',
