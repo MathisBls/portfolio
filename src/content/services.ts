@@ -50,7 +50,7 @@ export const identity = {
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
   status: 'Entrepreneur individuel (micro-entreprise)',
-  // ADRESSE FICTIVE (provisoire, demandée par Mathis) : à remplacer par une vraie adresse pro
+  // ADRESSE FICTIVE (provisoire, demandée par Mathis) : à remplacer par une vraie adresse pro
   // (domiciliation) avant la mise en production. Obligatoire dans les mentions légales (LCEN art. 6).
   address: '12 rue de l’Exemple, 94600 Choisy-le-Roi',
   // Adresse relevée dans le pied de page des emails officiels de Netlify (oct. 2026), à revérifier

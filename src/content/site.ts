@@ -1,4 +1,4 @@
-// Textes d'interface (navigation, titres de section, méta). Source unique : aucun texte en dur ailleurs.
+// Textes d'interface (navigation, titres de section, méta). Source unique : aucun texte en dur ailleurs.
 
 export type SectionKey = 'hero' | 'projects' | 'services' | 'about' | 'contact'
 
@@ -51,7 +51,7 @@ export const site = {
   projects: {
     intro:
       'Quatre produits que je construis, un site livré à un client. Chaque fois, de l’idée à la mise en ligne.',
-    // Label mono de la card : `${index} / ${year}`, index sur 2 chiffres (01, 02…)
+    // Label mono de la card : `${index} / ${year}`, index sur 2 chiffres (01, 02…)
     stackLabel: 'Stack',
     links: { site: 'Voir le site', store: 'App Store', github: 'Code source' },
     newTab: '(nouvel onglet)',
