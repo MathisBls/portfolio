@@ -40,18 +40,18 @@ export const projects: Project[] = [
     year: '2026',
   },
   {
-    slug: 'fitness-kass',
-    // Ajouté le 2026-10-06 depuis les captures de Mathis. Nom déduit du domaine vu dans l'app
-    // (fitnesskass.app) : à confirmer. Description d'après les écrans, aucun fait ajouté.
-    name: 'Fitness Kass',
+    slug: 'fitness',
+    // Ajouté le 2026-10-06 depuis les captures de Mathis. L'app n'a pas encore de nom ni de lien
+    // (en développement) : nom descriptif, pas de lien. Description d'après les écrans.
+    name: 'Fitness coaching app',
     tagline: 'Coaching, training and nutrition in one app',
     description:
       'Mobile fitness app: training programs from free to personal coaching, nutrition tracking with macros, and progress charts with body measurements and photos. Premium subscription through the App Store and Google Play.',
     stack: ['React Native', 'Expo'],
-    links: { store: 'TODO: lien App Store / Google Play' },
+    links: {},
     model: 'fitness',
     accent: '#13c6d3',
-    year: 'TODO: année',
+    year: 'In development',
   },
   {
     slug: 'game-factory',

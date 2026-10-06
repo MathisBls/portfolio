@@ -140,8 +140,8 @@ export function ProjectChapter({ project, index }: Props) {
         <div className={styles.text}>
           <p className={styles.label} data-reveal style={stagger(0)}>
             <span aria-hidden="true">{number} / </span>
-            {/* Une année « TODO: » n'est pas une date : texte simple, sans <time> */}
-            {isFilled(year) ? <time dateTime={year}>{year}</time> : year}
+            {/* Seule une vraie année est une date (<time>) ; « In development » ou un TODO : texte simple */}
+            {/^d{4}$/.test(year) ? <time dateTime={year}>{year}</time> : year}
           </p>
 
           <RevealTitle as="h3" id={titleId} className={styles.name}>

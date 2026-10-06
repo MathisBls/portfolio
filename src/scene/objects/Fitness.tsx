@@ -1,4 +1,4 @@
-// Projet Fitness Kass (docs/storyboards/projects.md §2, ajouté le 2026-10-06 avec les captures de
+// Projet app de coaching fitness, sans nom pour l'instant (docs/storyboards/projects.md §2, ajouté le 2026-10-06 avec les captures de
 // Mathis) : téléphone qui fait défiler les 5 vrais écrans de l'app en fondu, deux écrans flottants
 // (Programmes, Progression) qui s'ouvrent en éventail au survol, anneau de progression qui tourne
 // (écran Nutrition), haltère qui roule. Modèle : scripts/blender/model_fitness.py.
