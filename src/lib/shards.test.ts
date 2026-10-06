@@ -14,6 +14,8 @@ import {
   scrollBoost,
   visibleHalfHeight,
   wrap,
+  PROJECTS_PRESENCE,
+  fieldPresence,
 } from './shards'
 
 describe('buildShardGeometry', () => {
@@ -252,5 +254,13 @@ describe('couronne, allure, scroll', () => {
     expect(scrollBoost(0)).toBe(0)
     expect(scrollBoost(-1250)).toBeCloseTo(0.75)
     expect(scrollBoost(1e6)).toBe(1.5)
+  })
+})
+
+describe('fieldPresence', () => {
+  it('atténue les éclats pendant les projets seulement', () => {
+    expect(fieldPresence(0.5)).toBe(1)
+    expect(fieldPresence(1.5)).toBeCloseTo(PROJECTS_PRESENCE)
+    expect(fieldPresence(2.5)).toBe(1)
   })
 })

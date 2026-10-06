@@ -24,6 +24,7 @@ import {
   crownT,
   fieldFadeAt,
   fieldPace,
+  fieldPresence,
   prismRevealAt,
   scrollBoost,
   visibleHalfHeight,
@@ -106,7 +107,7 @@ export function updateShardField(
     const intro = !rt.introDone && layout.intro.length > 0
     setPrismReveal(rt.introDone ? 1 : prismRevealAt(elapsed))
     mesh.count = layout.field.length + (intro ? layout.intro.length : 0)
-    const fade = rt.introDone ? 1 : fieldFadeAt(elapsed)
+    const fade = (rt.introDone ? 1 : fieldFadeAt(elapsed)) * fieldPresence(getTimeline())
     placeField(mesh, layout, shapes, alpha, rt, camera, viewport.height, aspect, drift, fade)
     if (intro) placeIntro(mesh, layout, shapes, alpha, elapsed, prismY())
   }

@@ -154,3 +154,14 @@ export const SCROLL = {
 /** Accélération (0..SCROLL.boost) pour une vitesse de scroll lissée en px/s. */
 export const scrollBoost = (speed: number) =>
   SCROLL.boost * clamp(Math.abs(speed) / SCROLL.speedRef)
+
+/**
+ * Présence du champ (multiplie l'alpha des éclats) : atténué pendant les chapitres projets
+ * (timeline [1, 2]) pour que les grands modèles 3D et le texte se lisent (retour du 2026-10-06).
+ */
+export const PROJECTS_PRESENCE = 0.3
+
+export function fieldPresence(timeline: number): number {
+  const dip = Math.min(range(timeline, 1.02, 1.12), 1 - range(timeline, 1.9, 2))
+  return 1 - (1 - PROJECTS_PRESENCE) * dip
+}
