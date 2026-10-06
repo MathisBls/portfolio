@@ -75,3 +75,13 @@ Choix non tranchés par `CLAUDE.md` ou les skills. Une ligne de raison par choix
 ### Mesure
 
 - **`npm run size`** : JS initial gzip = scripts module + modulepreload des pages de `dist/` (hors imports dynamiques), échec si > 350 Ko.
+
+## 2026-10-06 — Histoire, anglais, corrections de review
+
+- **Site en anglais**, domaine `mathisboulais.com` (décision de Mathis, cible internationale). Mentions légales en anglais (« Legal notice ») sur `/legal/` ; une version française reste à envisager si des clients français sont visés (loi Toubon). Prix structurés (`price` + `priceFrom`) au lieu d'un texte à découper par regex.
+- **Storyboard v2** (`docs/storyboards/story-v2.md`) : la lumière = l'idée du client, le prisme = Mathis, le spectre = ce qui en sort. Une phrase à l'écran par étape (captions du hero, titres de section). Le Contact (« Your idea is next. ») explique le retour du prisme ; l'envoi du formulaire déclenche la rafale (`ideaSentAt` dans le store).
+- **Captions du hero** : fenêtres dans `lib/hero.ts` (`CAPTIONS`, `captionOpacity`, testées) ; opacité 0 par défaut (sans JS : dans le DOM, hors écran visuellement), retirées de l'affichage en reduced-motion.
+- **Perf (review hero)** : scène montée à la première interaction sur mobile ; test WebGL 2 sans contexte ; précompilation async des shaders (`Warmup`, frameloop "never" puis "demand") ; drapeaux DOM (`has-scene`, `has-3d-title`) appliqués seulement après la première image (`setSceneLive`).
+- **Verre sans transmission** en mobile et reduced-motion (règle 1), lisible : mélange normal + arêtes (`Edges`).
+- **Reduced-motion au hero** : prisme seul tant que le hero est visible, état final à la sortie (plus de rayons derrière le texte).
+- **Rayons pendant les projets** : un seul rayon allumé (projet actif), fondu de 0.4 s, arrêt à l'entrée de la boîte monde de l'objet, allumé seulement quand son chemin à l'écran ne passe pas sous une card ; départ sur la face de sortie du prisme.

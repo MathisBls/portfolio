@@ -30,7 +30,7 @@ src/
   sections/   Hero, Projects, Services, About, Contact
   ui/         Nav, Button, cards, formulaire
   lib/        gsap, lenis, media queries, reveals, logique pure testée
-  content/    textes FR (source unique) : projects.ts, services.ts, site.ts
+  content/    textes EN (source unique) : projects.ts, services.ts, site.ts
   styles/     tokens.css, fonts.css, global.css
 docs/
   decisions.md   choix techniques et dépendances justifiées
