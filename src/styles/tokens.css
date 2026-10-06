@@ -55,4 +55,5 @@
   --z-scene: 0;
   --z-content: 1;
   --z-nav: 10;
+  --z-cursor: 200; /* au-dessus de la nav et du skip link (100) */
 }

@@ -115,9 +115,23 @@ section[tabindex='-1']:focus {
   outline: none;
 }
 
+/* Inclinaison au survol (lib/useTilt.ts) : angles en degrés écrits par le hook sur l'élément. Enregistrées
+   sans héritage : le changement ne recalcule le style que de l'élément, pas de ses descendants. */
+@property --tilt-x {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --tilt-y {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 /* Apparitions au scroll (src/lib/reveal.ts). L'état caché n'existe que sous .has-reveal, posé par le
    JS une fois chargé : sans JS, ou si le JS échoue, tout est visible. */
-.has-reveal [data-reveal] {
+.has-reveal [data-reveal]:not([data-reveal='words']) {
   opacity: 0;
   translate: 0 24px;
   transition:
@@ -126,13 +140,16 @@ section[tabindex='-1']:focus {
   transition-delay: calc(var(--reveal-i, 0) * 60ms);
 }
 
-.has-reveal [data-reveal].is-in {
+.has-reveal [data-reveal]:not([data-reveal='words']).is-in {
   opacity: 1;
   translate: 0 0;
 }
 
+/* data-reveal="words" : le déclencheur (.is-in) est le même, mais l'élément ne bouge pas lui-même, ses
+   mots montent un par un (ui/RevealTitle.module.css). */
+
 @media (prefers-reduced-motion: reduce) {
-  .has-reveal [data-reveal] {
+  .has-reveal [data-reveal]:not([data-reveal='words']) {
     opacity: 1;
     translate: none;
     transition: none;

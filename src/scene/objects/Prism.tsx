@@ -6,13 +6,15 @@
 // groupe du prisme monte (y 0 → +3.4) » et 0.2–0.9 « son rayon se réoriente vers l'objet » (prismFocus) ;
 // docs/storyboards/services-contact.md §2, 2.3 « Les rayons se rétractent » et 3.0–3.5 « Le prisme
 // redescend au centre, rotation z → 0 [...] lumière blanche seule. Flottement lent. » (timeline +1).
+// Retours de Mathis et de la review : pendant les projets, seul le rayon actif (fanOutT) ; le spectre
+// naît sur la face de sortie du prisme (buildRays, exit).
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group, Mesh } from 'three'
 import { site } from '../../content/site'
 import { gsap, ScrollTrigger } from '../../lib/gsap'
 import { SPREAD, rayT, spreadT, turnT } from '../../lib/hero'
-import { JOURNEY, liftT, retractT, untwistT } from '../../lib/journey'
+import { JOURNEY, fanOutT, liftT, retractT, untwistT } from '../../lib/journey'
 import { easeInOut, lerp } from '../../lib/math'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
 import { PrismGlass } from '../materials/PrismGlass'
@@ -61,7 +63,10 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
   const rayMeshes = useRef<(Mesh | null)[]>([])
   const intro = useRef({ k: reducedMotion ? 1 : 0 })
 
-  const rays = useMemo(() => buildRays(nodes, materials, bloom), [nodes, materials, bloom])
+  const { exit, rays } = useMemo(
+    () => buildRays(nodes, materials, bloom),
+    [nodes, materials, bloom],
+  )
 
   useEffect(
     () => () => {
@@ -131,11 +136,13 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
     // Hors cadre (projets, services, à propos) : plus de transmission ; plus rien une fois rétracté
     f.visible = cullGlass(gl, state.camera) || retract < 1
 
-    // Rayons : croissance, dispersion, visée de l'objet actif (projets), rétractation (services)
+    // Rayons : croissance, dispersion (hero) ; seul le rayon actif, jusqu'à son objet (projets) ;
+    // rétractation (services). La couleur tend vers l'accent dès que l'éventail laisse place au rayon actif.
     updateRayFocus(focus.current, state, delta)
     beginAim(ti)
+    const mode = fanOutT(getProgress('projects'))
     const s = easeInOut(spreadT(p))
-    const length = lerp(1, SPREAD.length, s) * (1 - retract)
+    const spread = lerp(1, SPREAD.length, s)
     const opening = lerp(1, SPREAD.angle, s)
     rays.forEach((ray, i) => {
       const pivot = pivots.current[i]
@@ -143,14 +150,13 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
       if (!pivot || !mesh) return
       const g = rayT(p, i)
       const rest = (ray.theta + Math.PI / 2) * opening - Math.PI / 2
-      const pose = aimRay(focus.current, i, ray, rest, length)
-      const a = focus.current.aim[i] ?? 0
-      const lit = lerp(ray.peak, ray.accentPeak, a)
-      const dimmed = lerp(lit, ray.sdr * JOURNEY.dim, focus.current.dim[i] ?? 0)
-      pivot.visible = g > 0 && pose.length > 1e-3
-      pivot.scale.y = Math.max(easeOut(g) * pose.length, 1e-4)
+      const pose = aimRay(focus.current, i, ray, rest, spread + ray.extra, mode, pivot.rotation.z)
+      const length = easeOut(g) * pose.length * (1 - retract)
+      const intensity = lerp(ray.peak, ray.accentPeak, mode) * pose.show * g
+      pivot.visible = length > 1e-3 && intensity > 1e-3
+      pivot.scale.y = Math.max(length, 1e-4)
       pivot.rotation.z = pose.rotation
-      setEmissive(mesh, ray.base, ray.accent, a, dimmed * g)
+      setEmissive(mesh, ray.tint, mode, intensity, pose.show)
     })
   })
 
@@ -162,12 +168,7 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
             <mesh ref={glass} geometry={nodes.Prism.geometry} rotation={nodes.Prism.rotation}>
               <PrismGlass mobile={mobile} reducedMotion={reducedMotion} />
             </mesh>
-            <Beam
-              beamIn={nodes.BeamIn}
-              exit={nodes.Spec3}
-              source={materials.BeamWhite}
-              bloom={bloom}
-            />
+            <Beam beamIn={nodes.BeamIn} exit={exit} source={materials.BeamWhite} bloom={bloom} />
             {rays.map((ray, i) => (
               <group
                 key={ray.name}

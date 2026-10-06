@@ -3,14 +3,18 @@
 // poster WebP par défaut) et le corps (fond --bg-2). L'emplacement n'a ni data-reveal ni transform :
 // la scène l'ancre en px, le moindre décalage se verrait sur l'objet 3D.
 // Lien principal étiré sur le titre (site, sinon store, sinon GitHub), liens secondaires au-dessus.
-import { type CSSProperties, useEffect, useLayoutEffect, useRef } from 'react'
+import { type CSSProperties, useLayoutEffect, useRef } from 'react'
 import type { Project } from '../content/projects'
 import { site } from '../content/site'
 import { displayUrl, isFilled } from '../lib/content'
 import { ScrollTrigger, gsap } from '../lib/gsap'
+import { stagger } from '../lib/stagger'
 import { useReducedMotion } from '../lib/useReducedMotion'
-import { registerAnchor, setAnchorMetrics, setProgress, useScene } from '../scene/store'
+import { useTilt } from '../lib/useTilt'
+import { registerAnchor, setAnchorMetrics, setProgress } from '../scene/store'
+import { ArrowIcon } from './ArrowIcon'
 import styles from './ProjectCard.module.css'
+import { useSceneHover } from './useSceneHover'
 
 type LinkKey = keyof Project['links']
 /** Ordre de priorité : le premier lien renseigné est le lien principal. */
@@ -22,27 +26,8 @@ type Props = {
   index: number
 }
 
-function ArrowIcon() {
-  return (
-    <svg
-      className={styles.arrow}
-      viewBox="0 0 16 16"
-      width="14"
-      height="14"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M4 12 12 4M5.5 4H12v6.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+/** Inclinaison maximale du corps de la card au survol, en degrés. */
+const TILT_MAX = 4
 
 export function ProjectCard({ project, index }: Props) {
   const { slug, name, tagline, description, stack, links, model, accent, year } = project
@@ -50,8 +35,10 @@ export function ProjectCard({ project, index }: Props) {
   const reducedMotion = useReducedMotion()
   const cardRef = useRef<HTMLElement>(null)
   const slotRef = useRef<HTMLDivElement>(null)
+  const revealRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
 
-  // Une valeur "TODO:" n'est jamais un lien
+  // Liens renseignés, dans l'ordre de priorité : une valeur "TODO:" n'est jamais un lien
   const available = LINK_ORDER.flatMap((key) => {
     const url = links[key]
     return isFilled(url) ? [{ key, url }] : []
@@ -101,33 +88,10 @@ export function ProjectCard({ project, index }: Props) {
     }
   }, [slug, reducedMotion])
 
-  // Survol et focus : la scène réagit (objet 3D). Écouteurs natifs sur l'article (comme la Nav) : un
-  // <article> n'est pas interactif pour jsx-a11y. focusout remonte à chaque changement de lien dans la
-  // card : on ne quitte que si le focus sort. Remis à null au démontage si la card était active.
-  useEffect(() => {
-    const card = cardRef.current
-    if (!card) return
-    const enter = () => {
-      useScene.getState().setHovered(slug)
-    }
-    const leave = () => {
-      useScene.getState().setHovered(null)
-    }
-    const focusOut = (event: FocusEvent) => {
-      if (!(event.relatedTarget instanceof Node && card.contains(event.relatedTarget))) leave()
-    }
-    card.addEventListener('mouseenter', enter)
-    card.addEventListener('mouseleave', leave)
-    card.addEventListener('focusin', enter)
-    card.addEventListener('focusout', focusOut)
-    return () => {
-      card.removeEventListener('mouseenter', enter)
-      card.removeEventListener('mouseleave', leave)
-      card.removeEventListener('focusin', enter)
-      card.removeEventListener('focusout', focusOut)
-      if (useScene.getState().hovered === slug) leave()
-    }
-  }, [slug])
+  // Corps seulement (jamais l'emplacement 4:3 où l'objet 3D est ancré) ; le pointeur est écouté sur le
+  // wrapper, qui ne bouge pas, pour que le bord incliné ne fasse pas sortir puis rentrer le pointeur.
+  useTilt(bodyRef, { max: TILT_MAX, host: revealRef })
+  useSceneHover(cardRef, slug)
 
   const external = { target: '_blank', rel: 'noopener' } as const
   const number = String(index + 1).padStart(2, '0')
@@ -151,8 +115,8 @@ export function ProjectCard({ project, index }: Props) {
         />
       </div>
 
-      <div data-reveal className={styles.reveal}>
-        <div className={styles.body}>
+      <div ref={revealRef} data-reveal className={styles.reveal}>
+        <div ref={bodyRef} className={styles.body}>
           <p className={styles.label}>
             <span aria-hidden="true">{number} / </span>
             <time dateTime={year}>{year}</time>
@@ -173,8 +137,8 @@ export function ProjectCard({ project, index }: Props) {
           <p className={styles.description}>{description}</p>
 
           <ul className={styles.stack} aria-label={stackLabel}>
-            {stack.map((item) => (
-              <li key={item} className={styles.chip}>
+            {stack.map((item, i) => (
+              <li key={item} className={styles.chip} data-reveal style={stagger(i + 1)}>
                 {item}
               </li>
             ))}
@@ -187,7 +151,7 @@ export function ProjectCard({ project, index }: Props) {
                 {linkLabels[primary.key]}
                 <span className={styles.ctaTarget}>
                   <span className={styles.ctaUrl}>{displayUrl(primary.url)}</span>
-                  <ArrowIcon />
+                  <ArrowIcon className={styles.arrow} />
                 </span>
               </span>
               {secondary.length > 0 && (
@@ -197,7 +161,7 @@ export function ProjectCard({ project, index }: Props) {
                       <a href={url} className={styles.link} {...external}>
                         {linkLabels[key]}
                         <span className="sr-only"> {newTab}</span>
-                        <ArrowIcon />
+                        <ArrowIcon className={styles.arrow} />
                       </a>
                     </li>
                   ))}

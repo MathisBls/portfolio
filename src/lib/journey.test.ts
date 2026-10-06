@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { focusPresence, liftT, retractT, untwistT } from './journey'
+import { fanOutT, focusPresence, liftT, retractT, untwistT } from './journey'
 
 describe('liftT', () => {
   it('reste au centre pendant le hero', () => {
@@ -16,6 +16,15 @@ describe('liftT', () => {
     expect(liftT(1, 0.25)).toBeCloseTo(0.5)
     expect(liftT(1, 0.5)).toBe(0)
     expect(liftT(1, 1)).toBe(0)
+  })
+})
+
+describe('fanOutT', () => {
+  it("garde l'éventail du hero, puis ne laisse que le rayon actif dès projects 0.08", () => {
+    expect(fanOutT(0)).toBe(0)
+    expect(fanOutT(0.04)).toBeCloseTo(0.5)
+    expect(fanOutT(0.08)).toBe(1)
+    expect(fanOutT(1)).toBe(1)
   })
 })
 

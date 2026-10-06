@@ -5,57 +5,30 @@
 // derrière les objets des projets (z ∈ [−9, −2]). Rotation lente continue, parallaxe au scroll
 // (getPageScroll, les proches plus vite) et bouclage vertical : une descente sans fin.
 // Invisibles pendant le hero, fondu sur 'hero' 0.85 -> 1. Rien en reduced-motion.
-// Placement pur et testé : ambientLayout.ts (src/lib/ambient.test.ts).
+// Placement pur et testé : ambientLayout.ts (src/lib/ambient.test.ts). Matériaux : ambientMaterials.ts.
+// Passe « motion » : dérive en sens inverse du pointeur (pointer.ts), plus forte pour les formes proches.
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  type BufferGeometry,
-  Color,
-  CylinderGeometry,
-  EdgesGeometry,
-  type Group,
-  IcosahedronGeometry,
-  LineBasicMaterial,
-  type LineSegments,
-  type Material,
-  type Mesh,
-  MeshPhysicalMaterial,
-  OctahedronGeometry,
-  TetrahedronGeometry,
-} from 'three'
+import type { Group, LineSegments, Mesh } from 'three'
 import { gsap } from '../../lib/gsap'
 import { range } from '../../lib/math'
 import { useContinuousInvalidate } from '../hooks'
 import { getPageScroll, getProgress } from '../store'
+import { usePointerDamp } from '../usePointerDamp'
 import {
-  AMBIENT,
-  SPECTRUM,
-  type ShapeKind,
-  columnY,
-  layoutAmbientShapes,
-  visibleHalfHeight,
-} from './ambientLayout'
+  EDGE_OPACITY,
+  FILL_OPACITY,
+  TINT,
+  createGeometries,
+  createMaterials,
+  setOpacity,
+} from './ambientMaterials'
+import { AMBIENT, columnY, layoutAmbientShapes, visibleHalfHeight } from './ambientLayout'
 
 type AmbientShapesProps = { mobile: boolean; reducedMotion: boolean }
 
-/** Opacités par palier de profondeur (lointain -> proche). Pas de transmission : le prisme l'a déjà. */
-const FILL_OPACITY = [0.04, 0.06, 0.08] as const
-const EDGE_OPACITY = [0.25, 0.35, 0.45] as const
-/** Arêtes teintées : opacité, luminance visée avant fondu (bloom à seuil 1 : à peine au-dessus une fois
- *  mélangé au fond, halo léger, très en dessous des rayons) et intensité max (rouge, violet). */
-const TINT = { opacity: 0.7, luminance: 1.5, maxIntensity: 7 } as const
-
-const luminance = (c: Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
-
-/** Opacité par frame via la ref de l'objet (les matériaux mémoïsés ne sont pas mutés directement). */
-function setOpacity(object: Mesh | LineSegments | null | undefined, value: number) {
-  const material = object?.material
-  if (material && !Array.isArray(material)) material.opacity = value
-}
-
-/** --fg (tokens.css), lu une fois : la couleur des arêtes suit le DOM. */
-const foreground = () =>
-  getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#ededf0'
+/** Dérive maximale (unités monde) au pointeur, pour la forme la plus proche (× parallaxe). */
+const POINTER_DRIFT = { x: 0.6, y: 0.4 }
 
 /**
  * true quand le progress 'hero' a passé `threshold`. Vérifié sur le ticker GSAP (qui écrit ce progress
@@ -73,57 +46,6 @@ function useHeroPast(threshold: number): boolean {
     }
   }, [threshold])
   return past
-}
-
-/** Géométries unitaires (rayon englobant ~1), partagées par toutes les formes du même type. */
-function createGeometries() {
-  const fill: Record<ShapeKind, BufferGeometry> = {
-    prism: new CylinderGeometry(0.7, 0.7, 1.4, 3),
-    tetra: new TetrahedronGeometry(1),
-    octa: new OctahedronGeometry(1),
-    ico: new IcosahedronGeometry(1, 0),
-  }
-  const edges: Record<ShapeKind, BufferGeometry> = {
-    prism: new EdgesGeometry(fill.prism),
-    tetra: new EdgesGeometry(fill.tetra),
-    octa: new EdgesGeometry(fill.octa),
-    ico: new EdgesGeometry(fill.ico),
-  }
-  return { fill, edges, all: [...Object.values(fill), ...Object.values(edges)] }
-}
-
-function createMaterials(bloom: boolean) {
-  const fg = new Color(foreground())
-  const glass = (opacity: number) =>
-    new MeshPhysicalMaterial({
-      color: fg,
-      roughness: 0.15,
-      metalness: 0,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-    })
-  const line = (opacity: number) =>
-    new LineBasicMaterial({ color: fg, transparent: true, opacity, depthWrite: false })
-
-  const fills = [glass(FILL_OPACITY[0]), glass(FILL_OPACITY[1]), glass(FILL_OPACITY[2])] as const
-  const edges = [line(EDGE_OPACITY[0]), line(EDGE_OPACITY[1]), line(EDGE_OPACITY[2])] as const
-
-  // Arêtes teintées : non tone-mappées. Avec bloom, intensité HDR calée sur la luminance (le violet
-  // est plus sombre que le bleu) ; sans bloom, teinte exacte (canal le plus fort à 1).
-  const tints = SPECTRUM.map((hex) => {
-    const color = new Color(hex)
-    const intensity = bloom
-      ? Math.min(TINT.maxIntensity, Math.max(1, TINT.luminance / luminance(color)))
-      : 1 / Math.max(color.r, color.g, color.b, 1e-3)
-    const material = line(TINT.opacity)
-    material.color.copy(color).multiplyScalar(intensity)
-    material.toneMapped = false
-    return material
-  })
-
-  const all: Material[] = [...fills, ...edges, ...tints]
-  return { fills, edges, tints, all }
 }
 
 function Shapes({ mobile }: { mobile: boolean }) {
@@ -156,16 +78,18 @@ function Shapes({ mobile }: { mobile: boolean }) {
   const groups = useRef<(Group | null)[]>([])
   const fills = useRef<(Mesh | null)[]>([])
   const lines = useRef<(LineSegments | null)[]>([])
+  const drift = usePointerDamp(2)
 
   // Rendu continu dès que les formes apparaissent (le hook coupe quand l'onglet est masqué)
   useContinuousInvalidate(useHeroPast(AMBIENT.fadeIn[0]))
 
-  useFrame(({ camera, size, clock }) => {
+  useFrame(({ camera, size, clock }, delta) => {
     const r = root.current
     if (!r) return
     const fade = range(getProgress('hero'), AMBIENT.fadeIn[0], AMBIENT.fadeIn[1])
     r.visible = fade > 0
     if (fade <= 0) return
+    const d = drift.follow(delta)
 
     const t = clock.elapsedTime
     const aspect = size.width / Math.max(1, size.height)
@@ -184,9 +108,15 @@ function Shapes({ mobile }: { mobile: boolean }) {
       // px scrollés -> unités monde à cette profondeur, freinés par la parallaxe : la forme remonte
       const rise = ((scroll * 2 * halfH) / Math.max(1, size.height)) * s.parallax
       const phase = s.driftFreq * t + s.driftPhase
+      // Pointeur : sens inverse, freiné par la profondeur (les lointaines bougent moins)
+      const px = -d.x * POINTER_DRIFT.x * s.parallax
+      const py = -d.y * POINTER_DRIFT.y * s.parallax
       g.position.set(
-        camera.position.x + s.side * s.xFrac * halfH * aspect + s.driftAmp * Math.sin(phase),
-        camera.position.y + columnY(s.yFrac, rise, column) + s.driftAmp * Math.cos(0.8 * phase),
+        camera.position.x + s.side * s.xFrac * halfH * aspect + s.driftAmp * Math.sin(phase) + px,
+        camera.position.y +
+          columnY(s.yFrac, rise, column) +
+          s.driftAmp * Math.cos(0.8 * phase) +
+          py,
         s.z,
       )
       g.rotation.set(s.rotX + s.spinX * t, s.rotY + s.spinY * t, s.rotZ)

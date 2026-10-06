@@ -1,0 +1,36 @@
+/* Chaque mot : un masque (overflow: clip) et un contenu qui monte de 110 % à 0, stagger 60 ms.
+   Le masque déborde de la ligne (marges négatives = padding de .inner) : sans cela les jambages, les
+   accents et la chasse des italiques seraient rognés par le line-height serré (.95) des titres.
+   Le contenu occupe toute la hauteur du masque : à 110 %, il est entièrement dehors, rien ne dépasse.
+   vertical-align: top : un inline-block avec overflow non visible s'aligne sinon par son bord bas. */
+.word {
+  display: inline-block;
+  margin-block: -0.15em;
+  margin-inline: -0.06em;
+  overflow: clip;
+  vertical-align: top;
+}
+
+.inner {
+  display: inline-block;
+  padding-block: 0.15em;
+  padding-inline: 0.06em;
+}
+
+/* État caché : seulement sous html.has-reveal (posé par lib/reveal.ts). Sans JS, texte visible. */
+:global(.has-reveal) .inner {
+  transform: translateY(110%);
+  transition: transform var(--dur) var(--ease);
+  transition-delay: calc(var(--word-i, 0) * 60ms);
+}
+
+:global(.has-reveal) .root:global(.is-in) .inner {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.has-reveal) .inner {
+    transform: none;
+    transition: none;
+  }
+}

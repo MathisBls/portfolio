@@ -13,8 +13,8 @@ import { CONTACT_FORM_NAME, encodeForm, validateContact } from '../lib/form'
 import type { ContactErrors, ContactFields } from '../lib/form'
 import { ScrollTrigger } from '../lib/gsap'
 import { useReducedMotion } from '../lib/useReducedMotion'
-import buttonStyles from './Button.module.css'
 import styles from './ContactForm.module.css'
+import { SubmitButton } from './SubmitButton'
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const FIELD_ORDER = ['name', 'email', 'message'] as const satisfies readonly (keyof ContactFields)[]
@@ -233,14 +233,7 @@ export function ContactForm() {
                 onEdit={clearError}
               />
 
-              <button
-                type="submit"
-                className={`${buttonStyles.button} ${styles.submit}`}
-                data-variant="primary"
-                aria-disabled={status === 'sending'}
-              >
-                {form.submit}
-              </button>
+              <SubmitButton busy={status === 'sending'}>{form.submit}</SubmitButton>
 
               <div className={styles.status} aria-live="polite">
                 <AnimatePresence mode="wait" initial={false}>

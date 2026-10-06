@@ -2,7 +2,8 @@
 // p 0.2 « à mi-course », p 0.3 « Faisceau sur la face gauche », puis à l'état final « lumière blanche
 // par le haut ». Le faisceau est prolongé vers la gauche (REACH) pour entrer hors champ, et une lumière
 // interne relie son extrémité à l'origine du spectre : vue à travers le verre (réfractée sur desktop),
-// elle rattache les rayons au prisme quand le titre derrière lui a disparu.
+// elle rattache les rayons au prisme quand le titre derrière lui a disparu. Elle s'arrête sur la face de
+// sortie (exit, calculé par exitPoint), là où naît le spectre : jamais dans le vide.
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Mesh, MeshStandardMaterial } from 'three'
@@ -10,9 +11,9 @@ import { HERO, beamT } from '../../lib/hero'
 import { range } from '../../lib/math'
 import { cloneEmissive, setEmissiveIntensity } from '../materials/emissive'
 import { getProgress } from '../store'
-import { segment } from './segment'
+import { type Point, segment } from './segment'
 
-type BeamProps = { beamIn: Mesh; exit: Mesh; source: MeshStandardMaterial; bloom: boolean }
+type BeamProps = { beamIn: Mesh; exit: Point; source: MeshStandardMaterial; bloom: boolean }
 
 /** Longueur du faisceau en multiples de BeamIn (2.6) : l'entrée sort du cadre à gauche. */
 const REACH = 2
@@ -27,16 +28,15 @@ export function Beam({ beamIn, exit, source, bloom }: BeamProps) {
 
   const data = useMemo(() => {
     const s = segment(beamIn)
-    const out = segment(exit)
-    // Lumière interne : de l'extrémité droite du faisceau à l'origine du rayon central
-    const ix = out.x0 - s.x1
-    const iy = out.y0 - s.y1
+    // Lumière interne : de l'extrémité droite du faisceau à l'origine du spectre, sur la face de sortie
+    const ix = exit.x - s.x1
+    const iy = exit.y - s.y1
     return {
       s,
       beam: cloneEmissive(source, bloom, INTENSITY),
       inner: cloneEmissive(source, bloom, INTENSITY),
       innerPose: {
-        position: [(s.x1 + out.x0) / 2, (s.y1 + out.y0) / 2, 0] as [number, number, number],
+        position: [(s.x1 + exit.x) / 2, (s.y1 + exit.y) / 2, 0] as [number, number, number],
         theta: Math.atan2(iy, ix) - Math.PI / 2,
         length: Math.hypot(ix, iy) / (2 * s.half),
       },

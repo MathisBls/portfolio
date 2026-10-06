@@ -48,23 +48,35 @@ html:global(.has-project-objects) .poster {
     box-shadow 0.5s var(--ease);
 }
 
+/* Le transform du corps compose trois choses : la perspective, l'inclinaison au survol (--tilt-x/y, écrits
+   par lib/useTilt.ts, 0 au repos) et le lift (--lift). Le CSS lisse tout avec la transition ci-dessus.
+   Absent en reduced-motion : ni lift ni inclinaison, la lueur reste. */
+@media (prefers-reduced-motion: no-preference) {
+  .body {
+    transform: perspective(1000px) rotateX(calc(var(--tilt-x) * 1deg))
+      rotateY(calc(var(--tilt-y) * 1deg)) translateY(var(--lift, 0px));
+  }
+}
+
 /* Survol (pointeur fin) et focus clavier : lueur 1 px de l'accent du projet, léger lift du corps seulement.
    Jamais de lift sur l'emplacement : l'objet 3D y est ancré. */
 .card:has(:focus-visible) .body {
+  --lift: -0.25rem;
+
   border-color: var(--card-accent);
   box-shadow:
     0 0 0 1px var(--card-accent),
     0 0 2rem -0.25rem color-mix(in srgb, var(--card-accent) 45%, transparent);
-  transform: translateY(-0.25rem);
 }
 
 @media (hover: hover) {
   .card:hover .body {
+    --lift: -0.25rem;
+
     border-color: var(--card-accent);
     box-shadow:
       0 0 0 1px var(--card-accent),
       0 0 2rem -0.25rem color-mix(in srgb, var(--card-accent) 45%, transparent);
-    transform: translateY(-0.25rem);
   }
 }
 
@@ -267,15 +279,6 @@ html:global(.has-project-objects) .poster {
   .arrow,
   .link {
     transition: none;
-  }
-
-  /* La lueur reste, pas de déplacement */
-  .card:has(:focus-visible) .body {
-    transform: none;
-  }
-
-  .card:hover .body {
-    transform: none;
   }
 
   .card:hover .cta .arrow,

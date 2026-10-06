@@ -56,6 +56,8 @@ export const site = {
     links: { site: 'Voir le site', store: 'App Store', github: 'Code source' },
     newTab: '(nouvel onglet)',
   },
+  // Bandeau entre Projets et Services : ces mots s'ajoutent aux titres des services (ui/Marquee.tsx)
+  marquee: ['Design', 'Développement', 'Mise en ligne'],
   services: {
     intro: 'Trois façons de travailler ensemble. Un devis clair, un seul interlocuteur.',
     forLabel: 'Pour qui',

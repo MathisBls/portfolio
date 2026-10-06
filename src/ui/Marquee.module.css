@@ -1,0 +1,51 @@
+/* Bandeau : display en grand, plein et contour en alternance, point teal entre les mots.
+   Le transform de .track est écrit par gsap (xPercent) ; rien ne tourne en boucle. */
+.marquee {
+  position: relative;
+  z-index: var(--z-content);
+  padding-block: var(--space-4);
+  overflow: clip;
+  user-select: none;
+  pointer-events: none;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+}
+
+.group {
+  display: flex;
+  flex: none;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex: none;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--fg);
+}
+
+/* Contour : trait fin, pas de remplissage */
+.item[data-outline] {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--fg);
+}
+
+/* Point teal après chaque mot, dernier de la copie compris (jonction continue) */
+.item::after {
+  content: '';
+  flex: none;
+  width: 0.14em;
+  height: 0.14em;
+  margin-inline: 0.45em;
+  border-radius: 50%;
+  background: var(--accent);
+}

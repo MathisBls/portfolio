@@ -38,10 +38,23 @@ export function setEmissiveIntensity(mesh: Mesh, value: number) {
   if (material instanceof MeshStandardMaterial) material.emissiveIntensity = value
 }
 
-/** Couleur émissive entre `from` et `to` (t de 0 à 1) et intensité, via la ref du mesh. */
-export function setEmissive(mesh: Mesh, from: Color, to: Color, t: number, intensity: number) {
+/** Teinte d'un rayon : couleur de départ (émissive et diffuse du GLB) et couleur d'arrivée. */
+export type RayTint = { emissive: Color; diffuse: Color; to: Color }
+
+/**
+ * Émissif entre `tint.emissive` et `tint.to` (t de 0 à 1) avec son intensité, et diffus teinté de même,
+ * multiplié par `diffuseScale` : le diffus éclairé par l'Environment resterait vif sinon. Via la ref.
+ */
+export function setEmissive(
+  mesh: Mesh,
+  tint: RayTint,
+  t: number,
+  intensity: number,
+  diffuseScale = 1,
+) {
   const { material } = mesh
   if (!(material instanceof MeshStandardMaterial)) return
-  material.emissive.lerpColors(from, to, t)
+  material.emissive.lerpColors(tint.emissive, tint.to, t)
   material.emissiveIntensity = intensity
+  material.color.lerpColors(tint.diffuse, tint.to, t).multiplyScalar(diffuseScale)
 }

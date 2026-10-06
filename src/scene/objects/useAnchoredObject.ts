@@ -4,13 +4,17 @@
 // Échelle : largeur de l'emplacement × 0.8 / largeur du modèle » ; « Animations continues (seulement
 // quand la card est à l'écran, useContinuousInvalidate) ». §5 : `visible = false` hors écran.
 // §7 : la position monde est exposée (registre, measureTarget) pour que le rayon actif vise l'objet.
+// Passe « motion » (sans storyboard) : au survol, l'objet suit le pointeur dans son emplacement
+// (±HOVER_LOOK rad, amorti, desktop à pointeur fin seulement : pointer.ts).
 import { type RootState, useFrame } from '@react-three/fiber'
 import { type RefObject, useEffect, useRef } from 'react'
 import { type Camera, type Group, Vector3 } from 'three'
 import { type Vec3, clamp, easeInOut, lerp, range } from '../../lib/math'
 import { slotCenterY } from '../../lib/projects'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
+import { pointerInRect } from '../pointer'
 import { getAnchorMetrics, getProgress, useScene } from '../store'
+import { usePointerDamp } from '../usePointerDamp'
 
 /** Part de l'emplacement occupée par l'objet. */
 const FILL = 0.8
@@ -21,6 +25,8 @@ const EXIT_SCALE = 0.85
 /** Survol lissé (1/s) et pas de temps maximal (retour d'onglet, première frame après une pause). */
 const HOVER_RATE = 8
 const MAX_DT = 1 / 20
+/** Survol : rotation maximale (rad) vers le pointeur, sur x et y. */
+const HOVER_LOOK = 0.15
 
 const easeOut = (t: number) => 1 - (1 - t) ** 3
 
@@ -129,6 +135,7 @@ export function useAnchoredObject({
   const phase = useRef(0)
   const visibleRef = useRef(false)
   const offset: Vec3 = [-center[0], -center[1], -center[2]]
+  const look = usePointerDamp(5)
 
   // Boucle continue tant que l'emplacement coupe le viewport (IntersectionObserver, pas de setState
   // dans useFrame). Sans ancre : rien (on ne fait pas tourner 5 boucles à l'aveugle).
@@ -170,13 +177,19 @@ export function useAnchoredObject({
     const scale = fit * enter * lerp(1, EXIT_SCALE, exit)
     group.position.copy(target.position)
     group.scale.setScalar(Math.max(scale, 1e-4))
-    group.rotation.y = ENTER_ROTATION * (1 - enter)
     target.radius = (Math.min(width, height ?? width) * scale) / 2
 
     const dt = Math.min(delta, MAX_DT)
     const hovered = useScene.getState().hovered === slug ? 1 : 0
     hover.current = lerp(hover.current, hovered, clamp(1 - Math.exp(-HOVER_RATE * dt)))
     phase.current += dt * lerp(1, hoverSpeed, hover.current)
+
+    // Pointeur relatif au centre de l'emplacement (±1 sur ses bords), pondéré par le survol lissé
+    const m = getAnchorMetrics(id)
+    const h = m ? hover.current : 0
+    const local = m ? pointerInRect(m.left, slotCenterY(p, m), m.width, m.height, state.size) : null
+    const d = look.to((local?.x ?? 0) * h, (local?.y ?? 0) * h, delta)
+    group.rotation.set(-HOVER_LOOK * d.y, ENTER_ROTATION * (1 - enter) + HOVER_LOOK * d.x, 0)
   })
 
   return { ref, offset, progress, hover, phase, visibleRef }

@@ -28,6 +28,11 @@ export function startLenis(): () => void {
   return stopLenis
 }
 
+/** Instance courante (null si coupé, en reduced-motion) : pour l'arrêter le temps d'un menu ouvert. */
+export function getLenis(): Lenis | null {
+  return lenis
+}
+
 /** Scroll doux vers une ancre ; natif si Lenis est coupé (reduced-motion). */
 export function scrollToTarget(target: HTMLElement) {
   if (lenis) {

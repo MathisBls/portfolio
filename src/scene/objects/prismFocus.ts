@@ -1,7 +1,9 @@
 // Storyboard projets (docs/storyboards/projects.md §2, projects 0.2–0.9) : « Pour la card active
 // (activeIndex) : [...] son rayon se réoriente vers l'objet, s'allonge jusqu'à lui et prend la couleur de
-// l'accent. Les autres rayons tombent à 15 %. » §4 : « assignRays(projects.map(p => p.accent)) donne
-// l'indice du rayon par projet ». §6 risque 2 : le prisme hors cadre est masqué (inFrustum).
+// l'accent. » Retour de Mathis : pendant les projets, seul le rayon actif est affiché, du prisme jusqu'au
+// bord de son objet ; les autres sont rétractés et éteints, fondu de ~0.4 s quand la card active change.
+// §4 : « assignRays(projects.map(p => p.accent)) donne l'indice du rayon par projet ». §6 risque 2 : le
+// prisme hors cadre est masqué (cullGlass). Review du hero : le spectre naît sur la face de sortie.
 // Logique du prisme après le hero, sortie de Prism.tsx (aucune allocation par frame).
 import type { RootState } from '@react-three/fiber'
 import { type Camera, Color, Frustum, Matrix4, type Mesh, type Object3D, Vector3 } from 'three'
@@ -12,72 +14,72 @@ import { RAY_COLORS, activeIndex, assignRays } from '../../lib/projects'
 import { cloneEmissive, emissivePeak } from '../materials/emissive'
 import { getProgress } from '../store'
 import type { PrismGLTF } from './types'
-import { segment } from './segment'
+import { exitPoint, segment } from './segment'
 import { type AnchoredTarget, measureTarget } from './useAnchoredObject'
 
 const RAY_OF_PROJECT = assignRays(projects.map((p) => p.accent))
-/** Projet de chaque rayon (−1 : rayon sans projet, jamais visé). */
+/** Projet de chaque rayon (−1 : rayon sans projet, jamais affiché pendant les projets). */
 const PROJECT_OF_RAY = RAY_COLORS.map((_, r) => RAY_OF_PROJECT.indexOf(r))
 const IDS = projects.map((p) => `project:${p.slug}` as const)
 
 const SPEC = ['Spec0', 'Spec1', 'Spec2', 'Spec3', 'Spec4', 'Spec5', 'Spec6'] as const
 
 /**
- * Rayons Spec0..6 du GLB : géométrie, segment, matériau émissif cloné (hero), accent du projet associé
- * avec son pic d'intensité (le rayon sans projet garde sa couleur), et `sdr` : intensité qui affiche la
- * couleur pleine sans HDR, base de l'atténuation à 15 % (15 % d'un pic HDR resterait saturé).
+ * Rayons Spec0..6 du GLB. Ils partent tous du point de sortie (`exit`) : la droite du rayon central coupe
+ * la face droite du prisme (les départs du GLB sont 0.34 plus loin, dans le vide). `extra` allonge chaque
+ * rayon d'autant, en multiples de sa longueur, pour que son extrémité ne bouge pas. Matériau émissif
+ * cloné, teinte (couleur du GLB vers l'accent du projet associé) et pic d'intensité de l'accent.
  */
 export function buildRays(
   nodes: PrismGLTF['nodes'],
   materials: PrismGLTF['materials'],
   bloom: boolean,
 ) {
-  return SPEC.map((name, i) => {
+  const exit = exitPoint(nodes.Prism, segment(nodes.Spec3))
+  const rays = SPEC.map((name, i) => {
+    const seg = segment(nodes[name])
     const emissive = cloneEmissive(materials[name], bloom)
     const base = emissive.material.emissive.clone()
+    const diffuse = emissive.material.color.clone()
     const project = projects[PROJECT_OF_RAY[i] ?? -1]
     const accent = project ? new Color(project.accent) : base
-    const accentPeak = emissivePeak(accent, bloom)
-    const sdr = emissivePeak(base, false)
     return {
       name,
       geometry: nodes[name].geometry,
-      ...segment(nodes[name]),
+      ...seg,
+      x0: exit.x,
+      y0: exit.y,
+      extra: Math.hypot(seg.x0 - exit.x, seg.y0 - exit.y) / (2 * seg.half),
       ...emissive,
-      base,
-      accent,
-      accentPeak,
-      sdr,
+      tint: { emissive: base, diffuse, to: accent },
+      accentPeak: emissivePeak(accent, bloom),
     }
   })
+  return { exit, rays }
 }
 
-/** Changement de projet actif lissé (1/s) : pas de saut d'un rayon à l'autre. */
-const SELECT_RATE = 6
-const MAX_DT = 1 / 20
-/** Le rayon s'arrête avant le centre de l'objet, à cette part de sa demi-taille (sur son bord). */
-const REACH_GAP = 0.85
+/** Fondu d'un rayon à l'autre quand la card active change : ~0.4 s (95 %). */
+const SELECT_RATE = 7.5
+const MAX_DT = 1 / 10
 
 export type RayFocus = {
-  /** Par projet : sélection lissée, cible mesurée pour la frame. */
+  /** Par projet : sélection lissée (1 : projet actif), cible mesurée pour la frame. */
   selection: number[]
   targets: (Readonly<AnchoredTarget> | undefined)[]
-  /** Par rayon : visée (0 repos, 1 sur l'objet) et atténuation (0 plein, 1 → JOURNEY.dim). */
-  aim: number[]
-  dim: number[]
+  /** Par rayon, pendant les projets : 0 rétracté et éteint, 1 jusqu'au bord de son objet. */
+  show: number[]
 }
 
 export const createRayFocus = (): RayFocus => ({
   selection: projects.map(() => 0),
   targets: projects.map(() => undefined),
-  aim: RAY_COLORS.map(() => 0),
-  dim: RAY_COLORS.map(() => 0),
+  show: RAY_COLORS.map(() => 0),
 })
 
 const progresses = projects.map(() => 0)
 const weights = projects.map(() => 0)
 
-/** Visée de chaque rayon pour la frame : progress des cards (scroll), objet actif lissé. */
+/** Présence de chaque rayon : projet actif (lissé), entrée et sortie de sa card (scroll). */
 export function updateRayFocus(focus: RayFocus, state: RootState, delta: number) {
   for (let j = 0; j < IDS.length; j++) {
     const id = IDS[j]
@@ -85,21 +87,16 @@ export function updateRayFocus(focus: RayFocus, state: RootState, delta: number)
   }
   const active = activeIndex(progresses)
   const k = clamp(1 - Math.exp(-SELECT_RATE * Math.min(delta, MAX_DT)))
-  let strongest = 0
   for (let j = 0; j < projects.length; j++) {
     const project = projects[j]
     const target = project ? measureTarget(project.slug, state) : undefined
     const selection = lerp(focus.selection[j] ?? 0, j === active ? 1 : 0, k)
     focus.selection[j] = selection
     focus.targets[j] = target
-    const w = target?.visible ? selection * focusPresence(progresses[j] ?? 0) : 0
-    weights[j] = w
-    strongest = Math.max(strongest, w)
+    weights[j] = target?.visible ? selection * focusPresence(progresses[j] ?? 0) : 0
   }
   for (let r = 0; r < PROJECT_OF_RAY.length; r++) {
-    const a = weights[PROJECT_OF_RAY[r] ?? -1] ?? 0
-    focus.aim[r] = a
-    focus.dim[r] = clamp(strongest - a)
+    focus.show[r] = weights[PROJECT_OF_RAY[r] ?? -1] ?? 0
   }
 }
 
@@ -114,31 +111,46 @@ export function beginAim(parent: Object3D) {
   parentScale = parent.matrixWorld.getMaxScaleOnAxis()
 }
 
-const pose = { rotation: 0, length: 0 }
+const pose = { rotation: 0, length: 0, show: 1 }
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 
 /**
- * Pose du rayon r (rotation Z du pivot, longueur en multiples du rayon du GLB) : du repos vers son
- * objet selon focus.aim[r]. Renvoie un objet partagé, à lire tout de suite.
+ * Pose du rayon r (rotation Z du pivot, longueur en multiples du rayon du GLB, présence). `mode` 0
+ * (hero) : éventail au repos (`rest`, `length`). `mode` 1 (projets) : vers son objet, du prisme
+ * jusqu'au bord de l'objet à proportion de show[r] ; sans cible, il garde son orientation (`current`)
+ * en se rétractant. Bord : demi-taille de l'objet (petit côté, à l'échelle) divisée par la composante
+ * dominante de la direction, donc jamais à l'intérieur de sa boîte. Objet partagé, à lire tout de suite.
  */
 export function aimRay(
   focus: RayFocus,
   r: number,
   ray: { x0: number; y0: number; half: number },
-  rotation: number,
+  rest: number,
   length: number,
+  mode: number,
+  current: number,
 ) {
-  pose.rotation = rotation
+  pose.rotation = rest
   pose.length = length
-  const a = focus.aim[r] ?? 0
+  pose.show = 1
+  if (mode <= 0) return pose
+  const show = focus.show[r] ?? 0
   const target = focus.targets[PROJECT_OF_RAY[r] ?? -1]
-  if (a <= 0 || !target) return pose
-  local.copy(target.position).applyMatrix4(inverse)
-  const dx = local.x - ray.x0
-  const dy = local.y - ray.y0
-  const reach = Math.max(Math.hypot(dx, dy) - (target.radius / parentScale) * REACH_GAP, 0)
-  pose.rotation += wrapAngle(Math.atan2(dy, dx) - Math.PI / 2 - rotation) * a
-  pose.length = lerp(length, reach / (2 * ray.half), a)
+  let aimed = current
+  let reach = 0
+  if (target?.visible) {
+    local.copy(target.position).applyMatrix4(inverse)
+    const dx = local.x - ray.x0
+    const dy = local.y - ray.y0
+    const distance = Math.hypot(dx, dy)
+    const edge =
+      ((target.radius / parentScale) * distance) / Math.max(Math.abs(dx), Math.abs(dy), 1e-6)
+    aimed = Math.atan2(dy, dx) - Math.PI / 2
+    reach = Math.max(distance - edge, 0)
+  }
+  pose.rotation = rest + wrapAngle(aimed - rest) * mode
+  pose.length = lerp(length, (reach / (2 * ray.half)) * show, mode)
+  pose.show = lerp(1, show, mode)
   return pose
 }
 
