@@ -33,7 +33,7 @@ export const projects: Project[] = [
     tagline: 'GPS navigation for convoys',
     description:
       'Mobile and web app to drive as a group without getting lost: shared route, live positions, push-to-talk, alerts. Live on the App Store.',
-    stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
+    stack: ['React Native', 'Expo', 'Vite', 'NestJS', 'Prisma', 'MapLibre', 'RevenueCat'],
     links: { site: 'https://wegir.com', store: 'https://apps.apple.com/app/wegir/id6789985288' },
     model: 'wegir',
     accent: '#ffb020',
@@ -47,7 +47,7 @@ export const projects: Project[] = [
     tagline: 'Coaching, training and nutrition in one app',
     description:
       'Mobile fitness app: training programs from free to personal coaching, nutrition tracking with macros, and progress charts with body measurements and photos. Premium subscription through the App Store and Google Play.',
-    stack: ['TODO: stack (React Native, Expo ?)'],
+    stack: ['React Native', 'Expo'],
     links: { store: 'TODO: lien App Store / Google Play' },
     model: 'fitness',
     accent: '#13c6d3',
