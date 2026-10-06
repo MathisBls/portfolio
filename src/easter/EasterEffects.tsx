@@ -5,6 +5,8 @@
 // la teinte des rouges) ; vignette qui se resserre pendant le zoom sur le prisme et avec la vitesse, plus
 // marquée dans le cockpit ; grain léger.
 // Pas d'aberration chromatique (réservée au hero). Le composer est préchauffé avec la scène (warmup.ts).
+// Second niveau (docs/storyboards/easter-majestic.md) : le bloom monte en rampe avec les faisceaux du
+// chœur, le spectre et le B sculpté ; vignette un peu plus serrée dans le plasma de l'entrée.
 import { Bloom, EffectComposer, Noise, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
 import {
@@ -14,6 +16,7 @@ import {
   type VignetteEffect,
 } from 'postprocessing'
 import { useEffect, useRef } from 'react'
+import { M } from './majestic/state'
 import { E, SHOT } from './state'
 import { registerComposer } from './warmup'
 
@@ -32,6 +35,13 @@ export function EasterEffects() {
   useFrame(() => {
     const road = E.shot === SHOT.road
     const space = E.shot === SHOT.space
+    if (E.shot === SHOT.majestic) {
+      if (bloom.current) {
+        bloom.current.intensity = 1 + 0.3 * M.beams + 0.45 * M.spectrum + 0.2 * M.sculpt
+      }
+      if (vignette.current) vignette.current.darkness = 0.5 + 0.2 * M.entry
+      return
+    }
     if (bloom.current) {
       bloom.current.intensity =
         1 +

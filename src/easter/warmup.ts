@@ -14,6 +14,10 @@
 // 4. Postprocessing : un rendu du composer sans sortie à l'écran, qui alloue ses cibles (bloom) avant la
 //    séquence plutôt qu'à sa première image.
 // Les lumières ne sont jamais touchées (leur nombre fait partie de la clé des programmes).
+// Second niveau (docs/storyboards/easter-majestic.md, « Préchargement ») : warmUpSubtree fait la même
+// chose pour le seul monde du Sanctuaire, monté au déclenchement pendant que le reste de la séquence est
+// déjà compilé : programmes de ses matériaux avec les lumières et le brouillard de la scène, textures,
+// géométries (rendu de la scène où seuls ce monde et les lumières restent visibles).
 import type { EffectComposer } from 'postprocessing'
 import {
   type Camera,
@@ -120,4 +124,98 @@ export async function warmUpScene(
     if (last) last.renderToScreen = toScreen
     gl.setRenderTarget(previous)
   }
+}
+
+/** Lumière (son nombre fait partie de la clé des programmes : jamais masquée). */
+const isLight = (object: Object3D) => 'isLight' in object && object.isLight === true
+
+function holdsLight(object: Object3D): boolean {
+  let found = false
+  object.traverse((child) => {
+    if (isLight(child)) found = true
+  })
+  return found
+}
+
+/**
+ * Préchauffage d'un sous-arbre déjà monté dans `scene` (le monde du second niveau) : programmes dans la
+ * variante du rendu réel, textures, géométries. La compilation est asynchrone (KHR_parallel_shader_compile)
+ * : le rendu continue pendant ce temps, le sous-arbre restant masqué. Seuls les envois de textures et de
+ * géométries bloquent, en une seule tâche : le reste de la scène est masqué le temps d'un rendu (sauf les
+ * lumières et ce qui en porte), puis tout est rétabli. `extra` : préparations propres à un module,
+ * lancées après la compilation. Renvoie la durée de la partie bloquante (ms).
+ */
+export async function warmUpSubtree(
+  gl: WebGLRenderer,
+  scene: Scene,
+  camera: Camera,
+  root: Object3D,
+  offscreen: boolean,
+  extra?: () => Promise<void>,
+): Promise<number> {
+  const target = new WebGLRenderTarget(64, 64, { type: HalfFloatType })
+  await texturesSettled(4000)
+  // 1. Programmes : seulement ceux du sous-arbre, avec les lumières et le brouillard de la scène
+  let previous = gl.getRenderTarget()
+  gl.setRenderTarget(offscreen ? target : null)
+  const compiled = gl.compileAsync(root, camera, scene)
+  gl.setRenderTarget(previous)
+  await compiled
+  if (extra) await extra()
+
+  // Partie bloquante, en une seule tâche
+  const start = performance.now()
+  previous = gl.getRenderTarget()
+  // 3. Textures du sous-arbre
+  const textures = new Set<Texture>()
+  root.traverse((object) => {
+    materialsOf(object).forEach((material) => {
+      texturesOf(material, textures)
+    })
+  })
+  textures.forEach((texture) => {
+    gl.initTexture(texture)
+  })
+
+  // 2. Géométries : le sous-arbre tout visible et sans culling, le reste masqué (lumières gardées)
+  const ancestors = new Set<Object3D>()
+  for (let node: Object3D | null = root; node; node = node.parent) ancestors.add(node)
+  const saved: [Object3D, boolean, boolean][] = []
+  const hide = (object: Object3D) => {
+    object.children.forEach((child) => {
+      if (child === root || isLight(child) || 'isCamera' in child) return
+      if (ancestors.has(child)) {
+        hide(child)
+        return
+      }
+      if (holdsLight(child)) return
+      saved.push([child, child.visible, child.frustumCulled])
+      child.visible = false
+    })
+  }
+  hide(scene)
+  root.traverse((object) => {
+    if (isLight(object)) return
+    saved.push([object, object.visible, object.frustumCulled])
+    object.visible = true
+    object.frustumCulled = false
+  })
+  const override = new MeshBasicMaterial()
+  const overridden = scene.overrideMaterial
+  if (!offscreen) scene.overrideMaterial = override
+  gl.setRenderTarget(target)
+  gl.render(scene, camera)
+  gl.setRenderTarget(previous)
+  scene.overrideMaterial = overridden
+  // Ordre inverse : un objet enregistré deux fois retrouve sa toute première valeur
+  for (let i = saved.length - 1; i >= 0; i--) {
+    const entry = saved[i]
+    if (!entry) continue
+    const [object, visible, culled] = entry
+    object.visible = visible
+    object.frustumCulled = culled
+  }
+  override.dispose()
+  target.dispose()
+  return performance.now() - start
 }

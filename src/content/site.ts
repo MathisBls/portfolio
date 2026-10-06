@@ -130,7 +130,7 @@ export const site = {
         'Text, visuals and 3D models: © Mathis Boulais.',
         'Fonts Instrument Serif, Inter and JetBrains Mono, under the SIL Open Font License 1.1.',
         'Planet textures: Solar System Scope (solarsystemscope.com), based on NASA data, CC BY 4.0. Milky Way panorama: ESO/S. Brunier, CC BY 4.0.',
-        'Wood, velvet, leather and marble textures: Poly Haven (CC0).',
+        'Wood, velvet, leather, marble, rock and sand textures: Poly Haven (CC0).',
       ],
     },
     labels: {
@@ -152,7 +152,7 @@ export const site = {
   easter: {
     label: 'Secret level',
     description:
-      'A glass prism shatters, a card arena lights up and three cards are turned over. Then a road at light speed, past my projects. The ship drops out of warp into deep space and Houston calls on the radio, in French with subtitles: a signal is coming, and its name is BoulardTV. The gates of a space theme park open. You fly through it in a ship, past giant screens, planets and a roller coaster, up to a giant B. Decorative only. Press Escape to leave at any time.',
+      'A glass prism shatters, a card arena lights up and three cards are turned over. Then a road at light speed, past my projects. The ship drops out of warp into deep space and Houston calls on the radio, in French with subtitles: a signal is coming, and its name is BoulardTV. The gates of a space theme park open. You fly through it in a ship, past giant screens, planets and a roller coaster, up to a giant B. When it ends, a password opens a secret level: type it, or tap the screen five times. The ship dives onto a planet at dusk, the ground shakes, a huge mountain carved with a B rises, and twelve stone giants sing around it while a glass prism on the summit throws a rainbow across the sky. Decorative only. Press Escape to leave at any time.',
     loading: 'Loading…',
     noWebGL: 'This one needs WebGL 2. Press Escape to go back.',
     sound: 'Sound',
@@ -198,6 +198,18 @@ export const site = {
       identity: 'IDENTITY',
       locked: 'LOCKED',
       name: 'BOULARDTV',
+      // Second niveau (docs/storyboards/easter-majestic.md) : invite du final, accès, Sanctuaire
+      password: 'AWAITING PASSWORD',
+      granted: 'ACCESS GRANTED',
+      altitude: 'ALTITUDE',
+      signalLevel: 'SIGNAL',
+      source: 'SOURCE',
+      sanctuary: 'SANCTUARY',
+    },
+    // Second niveau « Le Sanctuaire » : annonce (aria-live) au déclenchement, message de fin
+    majestic: {
+      unlocked: 'Secret level unlocked',
+      thanks: 'Thanks for playing',
     },
   },
 }

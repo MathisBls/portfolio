@@ -4,7 +4,11 @@
 // - Musique du parc : lue en streaming par un élément <audio> branché sur le bus (createMediaElementSource) :
 //   décodée entière, elle pèserait ~75 Mo de RAM (211 s en stéréo), trop pour un mobile. L'élément est créé
 //   et débloqué pendant le geste par audio.ts (openAudio, iOS), qui le libère aussi à la sortie.
+// - Musique du Sanctuaire (second niveau, docs/storyboards/easter-majestic.md) : même principe, son propre
+//   élément (audio.ts, unlockMajestic dans le geste du mot de passe) et son propre gain sur le bus. Hors de
+//   CLIPS (séquence du parc) : durée et repères dans majestic/music.ts.
 // Contrat : D1 (timeline) ne lit que CLIPS, SUBTITLES, SPEAKER_MARKS et PARK_MARKS, et appelle playClip.
+// Le second niveau appelle playClip('majestic', offset), stopClip et stopClips.
 //
 // Fichiers (public/audio/easter/, réencodés depuis les sources de Mathis avec ffmpeg) :
 // - houston.mp3 : Houston_apresroute.mp3, silences de début et de fin rognés (−0.04 s au début). Le nom
@@ -13,6 +17,7 @@
 // - houston-name.mp3 : « BoulardTV. » seul, joué après le silence de suspense.
 // - speaker.mp3 : la speakeuse. Voix en mono 96 kb/s, −16 LUFS, crête ≤ −1.5 dBFS.
 // - park.mp3 : musicparc.mp3 sans le clic de la première image (−0.10 s), stéréo VBR ~147 kb/s, −18 LUFS.
+// - majestic.mp3 : montage de MajesticBTV.mp3, décrit dans majestic/music.ts.
 // Repères mesurés sur les fichiers réencodés (enveloppe RMS par fenêtres de 10 ms, bandes et hauteur
 // pour la consonne de « BOULARDTV »). Les durées sont celles du décodage (ffmpeg, délai LAME retiré).
 import {
@@ -21,10 +26,17 @@ import {
   attachClips,
   getAudioContext,
   getClipBus,
+  getMajesticElement,
   getMusicElement,
+  unlockMajestic,
 } from './audio'
 
+/** Clips de la séquence du parc (CLIPS, calés par times.ts). */
 export type ClipId = 'houston' | 'houstonName' | 'speaker' | 'park'
+/** Musiques lues en streaming (élément <audio>) : le parc et le Sanctuaire. */
+export type MusicId = 'park' | 'majestic'
+/** Tout ce que playClip sait jouer : les clips du parc et la musique du Sanctuaire. */
+export type PlayableId = ClipId | MusicId
 
 export type Clip = { src: string; duration: number }
 
@@ -92,13 +104,24 @@ const playing = new Map<ClipId, Playing>()
 /** Contexte des voix en cours : une nouvelle partie (nouveau contexte) repart de zéro. */
 let playingContext: AudioContext | null = null
 
-/** Musique du parc : élément <audio> lié au contexte de la partie (createMediaElementSource : une fois). */
-type Music = { context: AudioContext; element: HTMLAudioElement; gain: GainNode }
-let music: Music | null = null
-/** Incrémenté à chaque lecture ou arrêt : la pause différée d'un fondu ne coupe pas une relance. */
-let musicToken = 0
-/** Musique mise en pause parce que l'onglet est caché : reprise au retour. */
-let musicHidden = false
+/**
+ * Musique : élément <audio> lié au contexte de la partie (createMediaElementSource : une fois par élément).
+ * `token` : incrémenté à chaque lecture ou arrêt, la pause différée d'un fondu ne coupe pas une relance.
+ * `hidden` : mise en pause parce que l'onglet est caché, reprise au retour.
+ */
+type Music = {
+  context: AudioContext
+  element: HTMLAudioElement
+  gain: GainNode
+  token: number
+  hidden: boolean
+}
+const MUSIC_IDS: readonly MusicId[] = ['park', 'majestic']
+const musics: Partial<Record<MusicId, Music>> = {}
+
+function isMusic(id: PlayableId): id is MusicId {
+  return id === 'park' || id === 'majestic'
+}
 
 async function loadClip(context: AudioContext, id: ClipId): Promise<void> {
   if (buffers[id]) return
@@ -113,28 +136,38 @@ async function loadClip(context: AudioContext, id: ClipId): Promise<void> {
   }
 }
 
-/** Branche l'élément de la musique (créé pendant le geste par audio.ts) sur le bus des clips. */
-function connectMusic(context: AudioContext): void {
+/**
+ * Branche l'élément d'une musique (créé pendant le geste par audio.ts) sur le bus des clips, avec son
+ * propre gain. Déjà branché sur ce contexte : rendu tel quel. Pas d'élément ou de contexte : null.
+ */
+function connectMusic(id: MusicId): Music | null {
+  const context = getAudioContext()
+  const element = id === 'park' ? getMusicElement() : getMajesticElement()
+  if (!context || !element) return null
+  const current = musics[id]
+  if (current?.context === context && current.element === element) return current
   const bus = getClipBus()
-  const element = getMusicElement()
-  if (!bus || !element) return
+  if (!bus) return null
   try {
     const gain = context.createGain()
     context.createMediaElementSource(element).connect(gain).connect(bus)
-    music = { context, element, gain }
+    const next: Music = { context, element, gain, token: 0, hidden: false }
+    musics[id] = next
+    return next
   } catch (error) {
-    if (import.meta.env.DEV) console.warn('[easter] musique non branchée', error)
+    if (import.meta.env.DEV) console.warn(`[easter] musique ${id} non branchée`, error)
+    return null
   }
 }
 
-/** Fondu de la musique (s) puis pause ; `dispose` : sortie (audio.ts libère ensuite l'élément). */
-function fadeOutMusic(fade: number, dispose: boolean): void {
-  const current = music
+/** Fondu d'une musique (s) puis pause ; `dispose` : sortie (audio.ts libère ensuite l'élément). */
+function fadeOutMusic(id: MusicId, fade: number, dispose: boolean): void {
+  const current = musics[id]
   if (!current) return
-  musicToken += 1
-  const token = musicToken
-  musicHidden = false
-  if (dispose) music = null
+  current.token += 1
+  const token = current.token
+  current.hidden = false
+  if (dispose) musics[id] = undefined
   const { context, element, gain } = current
   try {
     const now = context.currentTime
@@ -145,7 +178,9 @@ function fadeOutMusic(fade: number, dispose: boolean): void {
     // Contexte déjà fermé
   }
   window.setTimeout(() => {
-    if (!dispose && token !== musicToken) return
+    if (!dispose && token !== current.token) return
+    // Onglet caché pendant le fondu : pas de reprise au retour
+    current.hidden = false
     element.pause()
   }, fade * 1000)
 }
@@ -185,18 +220,24 @@ function stopVoices(fade: number): void {
 const player: ClipPlayer = {
   close: (fade) => {
     stopVoices(fade)
-    fadeOutMusic(fade, true)
+    for (const id of MUSIC_IDS) fadeOutMusic(id, fade, true)
     playingContext = null
   },
   pause: () => {
-    if (!music || music.element.paused) return
-    music.element.pause()
-    musicHidden = true
+    for (const id of MUSIC_IDS) {
+      const current = musics[id]
+      if (!current || current.element.paused) continue
+      current.element.pause()
+      current.hidden = true
+    }
   },
   resume: () => {
-    if (!music || !musicHidden) return
-    musicHidden = false
-    void music.element.play().catch(() => undefined)
+    for (const id of MUSIC_IDS) {
+      const current = musics[id]
+      if (!current?.hidden) continue
+      current.hidden = false
+      void current.element.play().catch(() => undefined)
+    }
   },
 }
 
@@ -213,21 +254,23 @@ export function loadClips(): Promise<void> {
   const promise = (async () => {
     await Promise.all(VOICES.map((id) => loadClip(context, id)))
     // Sortie pendant le chargement : contexte fermé, plus de musique à brancher
-    if (getAudioContext() === context && music?.context !== context) connectMusic(context)
+    if (getAudioContext() === context) connectMusic('park')
   })()
   loading = { context, promise }
   return promise
 }
 
-function playMusic(offset: number): void {
-  const current = music
-  if (current?.context !== getAudioContext()) {
-    if (import.meta.env.DEV) console.info('[easter] musique pas encore prête, ignorée')
+function playMusic(id: MusicId, offset: number): void {
+  // Sanctuaire sans geste préalable (saut de debug) : élément créé ici, iOS peut alors refuser la lecture
+  if (id === 'majestic' && !getMajesticElement()) unlockMajestic()
+  const current = connectMusic(id)
+  if (!current) {
+    if (import.meta.env.DEV) console.info(`[easter] musique ${id} pas encore prête, ignorée`)
     return
   }
   const { context, element, gain } = current
-  musicToken += 1
-  musicHidden = false
+  current.token += 1
+  current.hidden = false
   gain.gain.cancelScheduledValues(context.currentTime)
   gain.gain.setValueAtTime(1, context.currentTime)
   element.muted = false
@@ -240,9 +283,9 @@ function playMusic(offset: number): void {
  * saut de debug. Voix pas encore décodée ou musique pas encore créée : rien (log en DEV). Le son coupé
  * passe par le bus (audio.ts) : le clip joue en silence et reste synchro si l'utilisateur rallume le son.
  */
-export function playClip(id: ClipId, offset = 0): void {
-  if (id === 'park') {
-    playMusic(offset)
+export function playClip(id: PlayableId, offset = 0): void {
+  if (isMusic(id)) {
+    playMusic(id, offset)
     return
   }
   const context = getAudioContext()
@@ -273,10 +316,26 @@ export function playClip(id: ClipId, offset = 0): void {
   source.start(0, Math.max(0, offset))
 }
 
-/** Arrête tous les clips en fondu (`fade` en s) : voix arrêtées, musique en pause à la fin du fondu. */
+/** Arrête tous les clips en fondu (`fade` en s) : voix arrêtées, musiques en pause à la fin du fondu. */
 export function stopClips(fade = 0.4): void {
   const context = getAudioContext()
   if (playingContext === context) stopVoices(fade)
   else playing.clear()
-  if (music?.context === context) fadeOutMusic(fade, false)
+  for (const id of MUSIC_IDS) if (musics[id]?.context === context) fadeOutMusic(id, fade, false)
+}
+
+/**
+ * Arrête un seul clip en fondu (`fade` en s), les autres continuent : par exemple la musique du parc qui
+ * s'éteint pendant ACCESS GRANTED sans toucher à celle du Sanctuaire.
+ */
+export function stopClip(id: PlayableId, fade = 0.4): void {
+  const context = getAudioContext()
+  if (isMusic(id)) {
+    if (musics[id]?.context === context) fadeOutMusic(id, fade, false)
+    return
+  }
+  const entry = playing.get(id)
+  if (!context || playingContext !== context || !entry) return
+  stopEntry(context, entry, fade)
+  playing.delete(id)
 }

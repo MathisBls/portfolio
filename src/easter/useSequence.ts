@@ -5,16 +5,21 @@
 // timeline en pause (le contexte audio est suspendu par audio.ts ; sinon le ticker GSAP, sans lissage
 // du décalage quand Lenis tourne, sauterait à la fin au retour). Intensité du son relue chaque frame.
 // En DEV : `?easter-at=<s>` démarre à ce temps (debug.ts) et window.__easter (seek, pause, play).
+// Second niveau (docs/storyboards/easter-majestic.md) : le final n'accepte le mot de passe que si la
+// séquence a été jouée sans saut de debug (easterPlayed) ; pendant le second niveau (stage 'majestic'),
+// le retour automatique en fin de musique du parc est coupé. `?majestic=1` / `?majestic-at` : la
+// séquence est posée sans son sur son final, puis le second niveau part (majestic/useMajestic.ts).
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { useScene } from '../scene/store'
 import { attachEngine, getAudioContext, getEngine } from './audio'
 import { debugStartAt } from './debug'
+import { debugArmed, debugMajesticAt } from './majestic/debug'
 import { endEaster } from './session'
 import { E, resetEaster } from './state'
 import { type SequenceEngine, createTension } from './tension'
 import { R, T, clipStart, cueAt, lineCues, subtitleCues } from './times'
-import { buildTimeline } from './timeline'
+import { buildTimeline, sequenceEnd } from './timeline'
 import { CLIPS, type ClipId, loadClips, playClip, stopClips } from './voice'
 
 type Debug = {
@@ -70,6 +75,8 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
     sentIntensity = -1
     let live = true
     const isLive = () => live
+    // Saut de debug (?easter-at, __easter.seek) : la séquence ne compte plus comme jouée jusqu'au bout
+    let jumped = false
     const ctx = getAudioContext()
     const engine = ctx ? createTension(ctx) : null
     attachEngine(engine)
@@ -89,14 +96,32 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
         scene.setEasterSubtitle(index)
       },
       finale: () => {
+        if (useScene.getState().easterStage === 'majestic') return
+        scene.setEasterPlayed(!jumped || debugArmed())
         scene.setEasterStage('finale')
       },
     })
-    // Retour à la page quand la musique du parc se termine (le final reste affiché tant qu'elle joue)
-    tl.call(endEaster, [], clipStart('park', reducedMotion) + CLIPS.park.duration + MUSIC_TAIL)
+    // Retour à la page quand la musique du parc se termine (le final reste affiché tant qu'elle joue),
+    // sauf pendant le second niveau, qui a sa propre fin
+    tl.call(
+      () => {
+        if (useScene.getState().easterStage !== 'majestic') endEaster()
+      },
+      [],
+      clipStart('park', reducedMotion) + CLIPS.park.duration + MUSIC_TAIL,
+    )
     engine?.start()
     const at = debugStartAt()
-    if (at !== null) jumpTo(tl, at, engine, isLive)
+    if (debugMajesticAt() !== null) {
+      // Second niveau direct : séquence posée sur son final, sans son ni appels
+      jumped = true
+      tl.seek(sequenceEnd(reducedMotion))
+      scene.setEasterPlayed(true)
+      scene.setEasterStage('majestic')
+    } else if (at !== null) {
+      jumped = true
+      jumpTo(tl, at, engine, isLive)
+    }
     tl.play()
 
     const onVisibility = () => {
@@ -109,6 +134,7 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
     if (import.meta.env.DEV) {
       host.__easter = {
         seek: (t) => {
+          jumped = true
           tl.pause()
           jumpTo(tl, t, engine, isLive)
         },

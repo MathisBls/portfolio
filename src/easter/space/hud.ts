@@ -5,14 +5,35 @@
 // - Centre : radar, balayage lent (un tour en 4 s), le point de la cible qui se rapproche du centre.
 // - Droite : distance de la cible qui décroît, identité « inconnue » puis le nom, verrouillé.
 // Libellés : site.easter.hud. Aucun clignotement : le point respire à 0.5 Hz, rien ne s'allume d'un coup.
+// Second niveau (docs/storyboards/easter-majestic.md) :
+// - final du parc (mode 'password') : l'écran central affiche AWAITING PASSWORD_ avec un caret lent
+//   (0.9 Hz, sous les 3 Hz), et les cases du mot de passe qui se remplissent pendant la saisie ;
+// - beat 0 ('granted') : ACCESS GRANTED tapé lettre à lettre ;
+// - Sanctuaire ('majestic') : altitude et vitesse à gauche, signal au centre (la cible au centre du
+//   radar, jauge), source BOULARDTV à droite.
 import { site } from '../../content/site'
+import { PASSWORD } from '../majestic/password'
 
 const HUD = site.easter.hud
 const CYAN = '127, 233, 255'
 const PINK = '255, 95, 168'
 const FONT = '"JetBrains Mono", ui-monospace, monospace'
 
+/** Contenu du HUD : vol (beats 4 à 8), attente du mot de passe, accès accordé, Sanctuaire. */
+export type HudMode = 'flight' | 'password' | 'granted' | 'majestic'
+
+/** Fréquence du caret de AWAITING PASSWORD_ (Hz). */
+export const CARET_HZ = 0.9
+
 export type HudData = {
+  mode: HudMode
+  /** Part du mot de passe saisie (cases remplies), 0 -> 1. */
+  password: number
+  /** Part de ACCESS GRANTED tapée, 0 -> 1. */
+  granted: number
+  /** Sanctuaire : altitude (m) et force du signal (0 -> 1). */
+  altitude: number
+  signal: number
   /** Secondes (balayage, respiration du point). */
   time: number
   /** Allumage des écrans 0 -> 1 (sortie du warp). */
@@ -34,6 +55,11 @@ export type HudData = {
 
 export function createHudData(): HudData {
   return {
+    mode: 'flight',
+    password: 0,
+    granted: 0,
+    altitude: 0,
+    signal: 0,
     time: 0,
     power: 0,
     distance: 0,
@@ -78,8 +104,109 @@ function label(
   ctx.fillText(text, x, y)
 }
 
-/** Écran central : radar. */
+/** Caret allumé : demi-période de 1 / (2 × CARET_HZ) s ; fixe en reduced-motion. */
+export function caretOn(time: number, still: boolean): boolean {
+  return still || Math.floor(time * CARET_HZ * 2) % 2 === 0
+}
+
+/** Cases du mot de passe : pleines jusqu'à `filled` (0 -> 1). */
+function slots(ctx: CanvasRenderingContext2D, w: number, y: number, size: number, filled: number) {
+  const count = PASSWORD.length
+  const gap = size * 0.45
+  const total = count * size + (count - 1) * gap
+  const x0 = (w - total) / 2
+  const full = Math.round(filled * count)
+  ctx.lineWidth = Math.max(1, size * 0.12)
+  for (let i = 0; i < count; i++) {
+    const x = x0 + i * (size + gap)
+    if (i < full) {
+      ctx.fillStyle = rgba(PINK, 0.95)
+      ctx.fillRect(x, y - size / 2, size, size)
+    } else {
+      ctx.strokeStyle = rgba(CYAN, 0.55)
+      ctx.strokeRect(x, y - size / 2, size, size)
+    }
+  }
+}
+
+/** Écran central, final du parc et beat 0 : invite du mot de passe, puis accès accordé. */
+function drawPrompt(ctx: CanvasRenderingContext2D, w: number, h: number, d: HudData) {
+  const p = d.power
+  frame(ctx, w, h, p)
+  if (p <= 0.01) return
+  const longest = Math.max(HUD.password.length, HUD.granted.length)
+  const size = Math.min(h * 0.12, (w * 0.9) / longest / 0.62)
+  if (d.mode === 'granted') {
+    const text = HUD.granted
+    const shown = text.slice(0, Math.round(d.granted * text.length))
+    label(ctx, shown, w / 2, h * 0.3, size, rgba(PINK, p), 'center')
+    slots(ctx, w, h * 0.54, h * 0.08, 1)
+    return
+  }
+  const caret = caretOn(d.time, d.still) ? '_' : ' '
+  label(ctx, `${HUD.password}${caret}`, w / 2, h * 0.3, size, rgba(CYAN, 0.95 * p), 'center')
+  slots(ctx, w, h * 0.54, h * 0.08, d.password)
+}
+
+/** Écran central, Sanctuaire : la source du signal au centre du radar, jauge du signal. */
+function drawSignal(ctx: CanvasRenderingContext2D, w: number, h: number, d: HudData) {
+  const p = d.power
+  frame(ctx, w, h, p)
+  if (p <= 0.01) return
+  const cx = w / 2
+  const cy = h * 0.5
+  const r = Math.min(w, h) * 0.32
+  ctx.lineWidth = Math.max(1, h * 0.006)
+  for (let i = 1; i <= 3; i++) {
+    ctx.strokeStyle = rgba(CYAN, 0.25 * p)
+    ctx.beginPath()
+    ctx.arc(cx, cy, (r * i) / 3, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+  // Ondes lentes qui partent de la source (une toutes les 2 s), sans clignotement
+  const wave = d.still ? 0.5 : (d.time * 0.5) % 1
+  ctx.strokeStyle = rgba(PINK, 0.5 * (1 - wave) * p)
+  ctx.beginPath()
+  ctx.arc(cx, cy, r * wave, 0, Math.PI * 2)
+  ctx.stroke()
+  const dot = h * 0.035
+  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, dot * 4)
+  halo.addColorStop(0, rgba(PINK, 0.6 * p))
+  halo.addColorStop(1, rgba(PINK, 0))
+  ctx.fillStyle = halo
+  ctx.beginPath()
+  ctx.arc(cx, cy, dot * 4, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = rgba(PINK, p)
+  ctx.beginPath()
+  ctx.arc(cx, cy, dot, 0, Math.PI * 2)
+  ctx.fill()
+  const size = h * 0.07
+  label(ctx, HUD.signalLevel, h * 0.08, h * 0.1, size, rgba(CYAN, 0.8 * p))
+  const level = `${String(Math.round(d.signal * 100))} %`
+  label(ctx, level, w - h * 0.08, h * 0.1, size, rgba(PINK, 0.9 * p), 'right')
+  // Jauge du signal en bas
+  const bars = 14
+  const bw = (w * 0.7) / bars
+  const x0 = w * 0.15
+  for (let i = 0; i < bars; i++) {
+    const on = i < Math.round(d.signal * bars)
+    ctx.fillStyle = on ? rgba(PINK, 0.9 * p) : rgba(CYAN, 0.2 * p)
+    const bh = h * (0.03 + 0.05 * (i / bars))
+    ctx.fillRect(x0 + i * bw + bw * 0.15, h * 0.92 - bh, bw * 0.7, bh)
+  }
+}
+
+/** Écran central : radar (vol), invite du mot de passe (final), signal (Sanctuaire). */
 export function drawRadar(ctx: CanvasRenderingContext2D, w: number, h: number, d: HudData) {
+  if (d.mode === 'password' || d.mode === 'granted') {
+    drawPrompt(ctx, w, h, d)
+    return
+  }
+  if (d.mode === 'majestic') {
+    drawSignal(ctx, w, h, d)
+    return
+  }
   const p = d.power
   frame(ctx, w, h, p)
   if (p <= 0.01) return
@@ -140,6 +267,15 @@ export function drawComms(ctx: CanvasRenderingContext2D, w: number, h: number, d
   const size = Math.min(h * 0.085, w * 0.06)
   const x = w * 0.13
   label(ctx, HUD.ship, x, h * 0.17, size * 1.15, rgba(CYAN, 0.95 * p))
+  if (d.mode === 'majestic') {
+    // Sanctuaire : altitude, puis vitesse
+    label(ctx, HUD.altitude, x, h * 0.36, size * 0.8, rgba(CYAN, 0.6 * p))
+    label(ctx, `${formatNumber(d.altitude)} m`, x, h * 0.54, size * 1.3, rgba(CYAN, 0.95 * p))
+    label(ctx, HUD.velocity, x, h * 0.8, size * 0.8, rgba(CYAN, 0.6 * p))
+    const speed = `${formatNumber(d.velocity)} m/s`
+    label(ctx, speed, w - x, h * 0.8, size, rgba(CYAN, 0.95 * p), 'right')
+    return
+  }
   label(ctx, HUD.comms, x, h * 0.32, size * 0.8, rgba(CYAN, 0.6 * p))
   // Barres de la voix : immobiles et basses quand Houston se tait
   const bars = 16
@@ -164,6 +300,14 @@ export function drawTarget(ctx: CanvasRenderingContext2D, w: number, h: number, 
   if (p <= 0.01) return
   const size = Math.min(h * 0.085, w * 0.06)
   const x = w * 0.13
+  if (d.mode === 'majestic') {
+    // Sanctuaire : la source du signal, enfin atteinte
+    label(ctx, HUD.source, x, h * 0.18, size * 0.8, rgba(CYAN, 0.6 * p))
+    label(ctx, HUD.name, x, h * 0.36, size * 1.3, rgba(PINK, p))
+    label(ctx, HUD.identity, x, h * 0.58, size * 0.8, rgba(CYAN, 0.6 * p))
+    label(ctx, HUD.sanctuary, x, h * 0.76, size * 1.15, rgba(PINK, 0.9 * p))
+    return
+  }
   label(ctx, HUD.distance, x, h * 0.18, size * 0.8, rgba(CYAN, 0.6 * p))
   label(ctx, `${formatNumber(d.distance)} km`, x, h * 0.36, size * 1.3, rgba(CYAN, 0.95 * p))
   label(ctx, HUD.identity, x, h * 0.58, size * 0.8, rgba(CYAN, 0.6 * p))

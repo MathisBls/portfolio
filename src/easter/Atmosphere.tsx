@@ -8,10 +8,16 @@
 // génériques laissent la place au ciel réaliste (space/Sky.tsx). Arène : salle close, sans étoiles, fond
 // et brouillard violet très sombre (les colonnes et les rideaux se perdent dans la pénombre).
 // Reduced-motion : étoiles immobiles.
+// Second niveau (docs/storyboards/easter-majestic.md) : brume à l'échelle kilométrique (même FogExp2),
+// couleur et densité données par le ciel de D4 (majesticSky : horizon vers la montagne, poussière),
+// sans étoiles génériques (le ciel est celui de D4), fondu M.fade.
 import { Stars } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { Color, type FogExp2, type Mesh, type Points } from 'three'
+import { majesticSky } from './majestic/env'
+import { MAJESTIC_FOG } from './majestic/layout'
+import { M } from './majestic/state'
 import { FULLSCREEN_QUAD, createFader, updateFader } from './shaders'
 import { E, SHOT } from './state'
 
@@ -26,6 +32,7 @@ const FOG: Record<number, number> = {
   [SHOT.road]: 0.0058,
   [SHOT.space]: 0.00001,
   [SHOT.park]: 0.0006,
+  [SHOT.majestic]: MAJESTIC_FOG.density,
 }
 /** Brouillard de la route effacée (sortie du warp) : tout se perd au-delà de quelques dizaines d'unités. */
 const FOG_DIMMED = 0.045
@@ -50,7 +57,8 @@ export function Atmosphere({ mobile, reducedMotion }: AtmosphereProps) {
     const road = E.shot === SHOT.road
     const space = E.shot === SHOT.space || E.shot === SHOT.park
     const arena = E.shot === SHOT.arena
-    const tone = space ? DEEP : arena ? ROOM : NIGHT
+    const majestic = E.shot === SHOT.majestic
+    const tone = majestic ? majesticSky.fogColor : space ? DEEP : arena ? ROOM : NIGHT
     const red = road ? E.red * (1 - E.roadDim) : 0
     if (background.current) {
       background.current.copy(tone).lerp(BLOOD, red)
@@ -58,11 +66,11 @@ export function Atmosphere({ mobile, reducedMotion }: AtmosphereProps) {
     }
     if (fog.current) {
       fog.current.color.copy(background.current ?? tone)
-      const density = FOG[E.shot] ?? 0.002
+      const density = majestic ? majesticSky.fogDensity : (FOG[E.shot] ?? 0.002)
       fog.current.density = road ? density + (FOG_DIMMED - density) * E.roadDim : density
     }
-    if (stars.current) stars.current.visible = !arena && (!space || E.sky < 0.999)
-    fader.fade = E.fade
+    if (stars.current) stars.current.visible = !arena && !majestic && (!space || E.sky < 0.999)
+    fader.fade = majestic ? Math.max(E.fade, M.fade) : E.fade
     fader.tint = E.fadeTint
     fader.vignette = road
       ? 0.15 * E.speed + 0.45 * red

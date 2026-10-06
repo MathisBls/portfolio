@@ -132,9 +132,13 @@ export function buildCockpit(
   }
 }
 
-/** Réglage par frame : liserés, puis écrans redessinés à leur cadence (les données sont déjà à jour). */
+/**
+ * Réglage par frame : liserés, puis écrans redessinés à leur cadence (les données sont déjà à jour).
+ * Horloge remise à zéro (R3F le fait à chaque changement de frameloop) : la cadence repart de là.
+ */
 export function updateCockpit(rig: CockpitRig, time: number, power: number): void {
   setLit(rig.lit, power)
+  if (rig.next - time > 2 * rig.every) rig.next = time
   if (time < rig.next) return
   rig.next = time + rig.every
   for (const screen of rig.screens) {

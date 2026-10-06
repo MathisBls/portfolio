@@ -153,7 +153,7 @@ type Track = {
 }
 
 /** Pentes de Fritsch-Carlson (interpolation monotone), pente nulle imposée à la fin (arrêt). */
-function monotoneSlopes(xs: readonly number[], ys: readonly number[]): number[] {
+export function monotoneSlopes(xs: readonly number[], ys: readonly number[]): number[] {
   const n = xs.length
   const delta: number[] = []
   for (let i = 0; i < n - 1; i++) {
@@ -189,7 +189,12 @@ function monotoneSlopes(xs: readonly number[], ys: readonly number[]): number[] 
 }
 
 /** Hermite cubique entre les clés (xs croissants), bornée aux extrémités. */
-function hermite(xs: readonly number[], ys: readonly number[], ms: readonly number[], x: number) {
+export function hermite(
+  xs: readonly number[],
+  ys: readonly number[],
+  ms: readonly number[],
+  x: number,
+) {
   const n = xs.length
   const first = xs[0] ?? 0
   const last = xs[n - 1] ?? 0

@@ -2,6 +2,7 @@
 // Les variations restent lentes (bougies : petites oscillations ; aucun clignotement). Espace (beats 4 à
 // 7, docs/storyboards/easter-park.md) : soleil derrière la porte (contre-jour : liserés sur l'anneau et
 // les montants du cockpit), lueur froide du ciel sur le cockpit, puis lumière rose de la porte allumée.
+// Second niveau (docs/storyboards/easter-majestic.md) : les mêmes lumières, réglées par majestic/lights.ts.
 import {
   Color,
   type DirectionalLight,
@@ -11,6 +12,7 @@ import {
 } from 'three'
 import { range } from '../lib/math'
 import { arenaLight } from './arena/ramps'
+import { updateMajesticLights } from './majestic/lights'
 import { E, SHOT } from './state'
 
 export type LightRig = {
@@ -56,6 +58,15 @@ function updateHemi(hemi: HemisphereLight) {
 
 export function updateLights(rig: LightRig, time: number): void {
   const { hemi, key, road, front } = rig
+  if (E.shot === SHOT.majestic) {
+    // Second niveau : soleil couchant et ciel (majestic/lights.ts), le reste éteint
+    if (key) key.intensity = 0
+    rig.ambience.forEach((light) => {
+      light.intensity = 0
+    })
+    updateMajesticLights(hemi, front, road)
+    return
+  }
   const arena = E.shot === SHOT.arena
   if (hemi) updateHemi(hemi)
   if (key) {

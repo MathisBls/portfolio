@@ -2,6 +2,7 @@
 // seulement (import.meta.env.DEV, retiré du build) :
 // - `?easter=1` lance la séquence au chargement, sans taper le code Konami (une fois par page) ;
 // - `?easter-at=<secondes>` la démarre à ce temps (tl.seek dans useSequence.ts), et la lance aussi.
+// - `?majestic=1` et `?majestic-at=<s>` : lancent directement le second niveau (majestic/debug.ts).
 // Bundle initial : aucun import.
 
 let started = false
@@ -23,7 +24,8 @@ export function debugStartAt(): number | null {
 export function consumeDebugStart(): boolean {
   const p = params()
   if (!p || started) return false
-  if (p.get('easter') !== '1' && debugStartAt() === null) return false
+  const majestic = p.get('majestic') === '1' || p.has('majestic-at')
+  if (p.get('easter') !== '1' && debugStartAt() === null && !majestic) return false
   started = true
   return true
 }

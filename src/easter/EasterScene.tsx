@@ -14,8 +14,12 @@
 // postprocessing). Modèles chargés pendant 'loading' : les GLB de l'easter egg, le prisme, les cinq
 // projets de la route (useModel, docs/models.md) avec l'écran de l'app fitness, le ciel de l'espace et
 // les textures PBR de l'arène (arena/textures.ts).
+// Second niveau « Le Sanctuaire » (docs/storyboards/easter-majestic.md) : stage 'majestic' après le mot de
+// passe ; son monde (majestic/MajesticWorld.tsx) est monté à ce moment-là sous son propre Suspense et
+// précompilé pendant le beat 0 (majestic/useMajestic.ts) ; son GLB et ses textures se téléchargent
+// pendant le parc (MajesticPreload). La séquence reste montée derrière (final du parc pendant le beat 0).
 import { useThree } from '@react-three/fiber'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useContinuousInvalidate } from '../scene/hooks'
 import { useScene } from '../scene/store'
 import { useScreenTextures } from '../scene/objects/useScreenCycle'
@@ -32,6 +36,8 @@ import { Park } from './park/Park'
 import { Road } from './Road'
 import { Roadside } from './Roadside'
 import { Shatter } from './Shatter'
+import { MajesticPreload, MajesticWorld } from './majestic/MajesticWorld'
+import { useMajestic } from './majestic/useMajestic'
 import { Cockpit } from './space/Cockpit'
 import { Gate } from './space/Gate'
 import { Sky } from './space/Sky'
@@ -77,9 +83,16 @@ function Compile({ offscreen }: { offscreen: boolean }) {
 
 function World({ mobile, reducedMotion, park }: WorldProps) {
   const stage = useScene((s) => s.easterStage)
-  const running = stage === 'running' || stage === 'finale'
+  const majestic = stage === 'majestic'
+  const running = stage === 'running' || stage === 'finale' || majestic
   const bloom = !mobile && !reducedMotion
+  // Monde du second niveau monté au repère de précompilation (sous ACCESS GRANTED déjà tapé)
+  const [world, setWorld] = useState(false)
+  const mountWorld = useCallback(() => {
+    setWorld(true)
+  }, [])
   useSequence(running, reducedMotion, bloom)
+  useMajestic(majestic, mobile, reducedMotion, bloom, mountWorld)
   useContinuousInvalidate(running)
   const space = useSpaceParts(park.nodes)
   return (
@@ -103,6 +116,10 @@ function World({ mobile, reducedMotion, park }: WorldProps) {
         reducedMotion={reducedMotion}
       />
       <Park mobile={mobile} reducedMotion={reducedMotion} bloom={bloom} />
+      <MajesticPreload mobile={mobile} />
+      {majestic && world && (
+        <MajesticWorld mobile={mobile} reducedMotion={reducedMotion} bloom={bloom} />
+      )}
       {bloom && <EasterEffects />}
       {stage === 'compiling' && <Compile offscreen={bloom} />}
     </>

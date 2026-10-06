@@ -5,9 +5,10 @@
 
 /**
  * Plans : 0 prisme dans le ciel, 1 arène et cartes, 2 route (projets, message), 3 espace (sortie du warp,
- * Houston, la porte), 4 parc (beats 8 et 9, D2 ; le B géant y est, au bout).
+ * Houston, la porte), 4 parc (beats 8 et 9, D2 ; le B géant y est, au bout), 5 le Sanctuaire (second
+ * niveau, docs/storyboards/easter-majestic.md : plaine, montagne, chœur, prisme ; majestic/).
  */
-export const SHOT = { sky: 0, arena: 1, road: 2, space: 3, park: 4 } as const
+export const SHOT = { sky: 0, arena: 1, road: 2, space: 3, park: 4, majestic: 5 } as const
 
 /** Une carte : distribution (vol depuis le deck), retournement, fondu (reduced-motion), halo. */
 export type CardState = { deal: number; flip: number; alpha: number; glow: number }

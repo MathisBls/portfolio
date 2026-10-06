@@ -6,6 +6,8 @@
 // celle que times.ts réserve (correctif 3 : la dernière ligne s'écrit en entier puis tient ≥ 1.5 s). Le texte tapé est aria-hidden : la ligne
 // complète est annoncée une seule fois par la région aria-live de l'overlay (onLine). Un tic discret par
 // lettre (cue 'type', coupé quand le son est muet). Reduced-motion : ligne affichée d'un bloc, caret fixe.
+// Second niveau (docs/storyboards/easter-majestic.md, beat 7) : THANKS FOR PLAYING, tapé de la même façon
+// au centre de l'écran noir (store easterThanks, site.easter.majestic.thanks).
 // Bundle initial : DOM seulement, aucun import de three.
 import { useEffect, useRef } from 'react'
 import { site } from '../content/site'
@@ -15,9 +17,14 @@ import { getEngine } from './audio'
 import styles from './EasterOverlay.module.css'
 import { TYPING, letterGap } from './typing'
 
-type LineProps = { text: string; reduced: boolean; onDone: (text: string) => void }
+type LineProps = {
+  text: string
+  reduced: boolean
+  onDone: (text: string) => void
+  className?: string
+}
 
-function TypedLine({ text, reduced, onDone }: LineProps) {
+function TypedLine({ text, reduced, onDone, className }: LineProps) {
   const typed = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
@@ -57,7 +64,7 @@ function TypedLine({ text, reduced, onDone }: LineProps) {
   }, [text, reduced, onDone])
 
   return (
-    <p className={styles.message} aria-hidden="true">
+    <p className={`${styles.message} ${className ?? ''}`} aria-hidden="true">
       <span ref={typed} />
       <span className={styles.caret} />
     </p>
@@ -68,7 +75,19 @@ type EasterMessageProps = { onLine: (text: string) => void }
 
 export function EasterMessage({ onLine }: EasterMessageProps) {
   const line = useScene((s) => s.easterLine)
+  const thanks = useScene((s) => s.easterThanks)
   const reduced = useReducedMotion()
+  if (thanks) {
+    return (
+      <TypedLine
+        key="thanks"
+        text={site.easter.majestic.thanks}
+        reduced={reduced}
+        onDone={onLine}
+        className={styles.thanks}
+      />
+    )
+  }
   const text = site.easter.lines[line] ?? ''
   if (!text) return null
   return <TypedLine key={line} text={text} reduced={reduced} onDone={onLine} />

@@ -19,11 +19,23 @@
 }
 
 .bar {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
+}
+
+/* Second niveau : couche des 5 tapes rapides pendant le final (sous la barre et ses boutons) */
+.taps {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .label {
@@ -121,6 +133,14 @@
   text-shadow:
     0 0 10px rgba(255, 90, 100, 0.85),
     0 0 28px rgba(255, 40, 60, 0.55);
+}
+
+/* Second niveau : THANKS FOR PLAYING au centre de l'écran noir, en capitales */
+.thanks {
+  top: 46%;
+  font-size: clamp(1.3rem, 3.2vw, 2.6rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 /* Caret : clignotement lent (0.9 Hz), sous la limite de 3 par seconde */

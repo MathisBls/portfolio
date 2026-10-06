@@ -137,9 +137,10 @@ export type EasterMode = 'idle' | 'playing'
 /**
  * Étapes d'une partie : 'loading' (chunk et modèles, la scène normale reste affichée), 'compiling'
  * (scène normale démontée, shaders précompilés), 'running' (séquence), 'finale' (le B reste affiché,
- * sortie mise en avant, retour automatique).
+ * sortie mise en avant, retour automatique ; on peut y taper le mot de passe du second niveau),
+ * 'majestic' (second niveau « Le Sanctuaire », docs/storyboards/easter-majestic.md, src/easter/majestic/).
  */
-export type EasterStage = 'loading' | 'compiling' | 'running' | 'finale'
+export type EasterStage = 'loading' | 'compiling' | 'running' | 'finale' | 'majestic'
 
 type SceneState = {
   hovered: Project['slug'] | null
@@ -156,6 +157,13 @@ type SceneState = {
   easterLine: number
   /** Sous-titre affiché (site.easter.subtitles, repères dans src/easter/voice.ts), −1 : aucun. */
   easterSubtitle: number
+  /**
+   * La séquence a été jouée jusqu'au final sans saut de debug : le mot de passe du second niveau est
+   * alors accepté (docs/storyboards/easter-majestic.md, « Déclencheur »).
+   */
+  easterPlayed: boolean
+  /** Fin du second niveau : THANKS FOR PLAYING affiché (site.easter.majestic.thanks). */
+  easterThanks: boolean
   setHovered: (slug: Project['slug'] | null) => void
   setProjectsNear: (near: boolean) => void
   setIdeaSent: () => void
@@ -165,6 +173,8 @@ type SceneState = {
   setEasterStage: (stage: EasterStage) => void
   setEasterLine: (line: number) => void
   setEasterSubtitle: (index: number) => void
+  setEasterPlayed: (played: boolean) => void
+  setEasterThanks: (shown: boolean) => void
 }
 
 export const useScene = create<SceneState>((set) => ({
@@ -175,6 +185,8 @@ export const useScene = create<SceneState>((set) => ({
   easterStage: 'loading',
   easterLine: -1,
   easterSubtitle: -1,
+  easterPlayed: false,
+  easterThanks: false,
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
@@ -192,11 +204,20 @@ export const useScene = create<SceneState>((set) => ({
       easterStage: 'loading',
       easterLine: -1,
       easterSubtitle: -1,
+      easterPlayed: false,
+      easterThanks: false,
       hovered: null,
     })
   },
   exitEaster: () => {
-    set({ easter: 'idle', easterStage: 'loading', easterLine: -1, easterSubtitle: -1 })
+    set({
+      easter: 'idle',
+      easterStage: 'loading',
+      easterLine: -1,
+      easterSubtitle: -1,
+      easterPlayed: false,
+      easterThanks: false,
+    })
     invalidate()
   },
   setEasterStage: (stage) => {
@@ -207,5 +228,11 @@ export const useScene = create<SceneState>((set) => ({
   },
   setEasterSubtitle: (index) => {
     set({ easterSubtitle: index })
+  },
+  setEasterPlayed: (played) => {
+    set({ easterPlayed: played })
+  },
+  setEasterThanks: (shown) => {
+    set({ easterThanks: shown })
   },
 }))

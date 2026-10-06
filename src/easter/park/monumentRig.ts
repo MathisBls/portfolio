@@ -4,6 +4,8 @@
 // s'arrête devant lui ; balancement lent ; deux anneaux de lumière qui tournent autour ; halo rose et cœur
 // chaud derrière lui, qui montent avec P.halo. Reduced-motion : immobile. Sans React ; par frame :
 // updateMonument.
+// Second niveau (docs/storyboards/easter-majestic.md, beat 0) : `collapse` contracte le B et ses anneaux
+// en un point de lumière (le cœur chaud se resserre et s'intensifie en rampe, sans flash).
 import {
   type Camera,
   Color,
@@ -120,21 +122,32 @@ export type MonumentFrame = {
   camera: Camera
   /** Position de la caméra dans le repère du parc. */
   eye: Vector3
+  /** Beat 0 du second niveau : contraction du B en un point de lumière (0 -> 1). */
+  collapse: number
 }
 
 export function updateMonument(rig: MonumentRig, f: MonumentFrame): void {
   rig.root.visible = f.visible
   if (!f.visible) return
   const t = f.reduced ? 0 : f.time
-  rig.sway.rotation.y = 0.22 * Math.sin(t * 0.21)
-  rig.sway.position.y = 3 * Math.sin(t * 0.33)
+  const c = f.collapse
+  // Contraction : le B rétrécit vers son centre (plus vite à la fin), ses anneaux avec lui
+  const k = Math.max(1e-3, Math.pow(1 - c, 1.6))
+  rig.sway.rotation.y = 0.22 * Math.sin(t * 0.21) + 1.4 * c * c
+  rig.sway.position.y = 3 * Math.sin(t * 0.33) * (1 - c)
+  rig.sway.scale.setScalar(k)
+  rig.sway.visible = c < 0.999
   rig.rings.forEach((ring, i) => {
     ring.rotation.z = (i === 0 ? 0.05 : -0.035) * t
+    ring.scale.setScalar(k)
+    ring.visible = c < 0.999
   })
   away.subVectors(center, f.eye).normalize()
-  rig.outer.position.copy(center).addScaledVector(away, 160)
-  rig.inner.position.copy(center).addScaledVector(away, 90)
+  rig.outer.position.copy(center).addScaledVector(away, 160 * (1 - c))
+  rig.inner.position.copy(center).addScaledVector(away, 90 * (1 - c))
+  // Le cœur se resserre en un point qui s'intensifie, le grand halo s'efface
+  rig.inner.scale.setScalar(200 * (1 - 0.82 * c))
   const gain = f.bloom ? 1 : 0.55
-  updateGlow(rig.outer, rig.outerGlow, f.camera, 0.55 * f.halo * gain)
-  updateGlow(rig.inner, rig.innerGlow, f.camera, 0.3 * f.halo * gain)
+  updateGlow(rig.outer, rig.outerGlow, f.camera, 0.55 * f.halo * gain * (1 - c))
+  updateGlow(rig.inner, rig.innerGlow, f.camera, (0.3 * f.halo + 1.5 * c) * gain)
 }

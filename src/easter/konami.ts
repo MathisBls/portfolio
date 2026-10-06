@@ -45,7 +45,7 @@ export function createKonami(sequence: readonly string[] = KONAMI): (key: string
   }
 }
 
-function isFormField(target: EventTarget | null): boolean {
+export function isFormField(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLElement &&
     (target.isContentEditable || target.closest('input, textarea, select') !== null)

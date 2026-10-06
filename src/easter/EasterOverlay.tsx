@@ -7,6 +7,11 @@
 // musique du parc (useSequence.ts), ou après 8 s sans WebGL.
 // Sous-titres des voix (EasterSubtitles) en bas ; une seule région aria-live pour le message de la route
 // et, son coupé, les sous-titres (en français : lang="fr" sur l'annonce).
+// Second niveau (docs/storyboards/easter-majestic.md, « Déclencheur ») : pendant le final, si la séquence
+// a été jouée jusqu'au bout (easterPlayed), `boulardtv` au clavier ou 5 tapes rapides sur l'overlay
+// (couche de tapes sous la barre) débloquent la musique dans le geste (unlockMajestic), passent au stage
+// 'majestic' et annoncent « Secret level unlocked ». Le retour automatique est alors coupé (useSequence) ;
+// la fin du second niveau affiche THANKS FOR PLAYING (EasterMessage) puis ramène la page.
 import {
   type RefObject,
   useCallback,
@@ -19,11 +24,12 @@ import {
 import { site } from '../content/site'
 import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from '../scene/store'
-import { isMuted, setMuted } from './audio'
+import { isMuted, setMuted, unlockMajestic } from './audio'
 import { EasterMessage } from './EasterMessage'
 import styles from './EasterOverlay.module.css'
 import { EasterSubtitles } from './EasterSubtitles'
 import { useKonami } from './konami'
+import { useMajesticTrigger } from './majestic/trigger'
 import { beginEaster, endEaster, lockPage, setPageHidden } from './session'
 
 /** Retour automatique à la page après la fin de la séquence. */
@@ -91,10 +97,21 @@ function Dialog() {
 
   useDialogKeys(root)
 
-  const live = stage === 'running' || stage === 'finale'
+  const live = stage === 'running' || stage === 'finale' || stage === 'majestic'
   useEffect(() => {
     setPageHidden(live)
   }, [live])
+
+  // Second niveau : mot de passe ou tapes rapides pendant le final d'une séquence jouée en entier
+  const played = useScene((s) => s.easterPlayed)
+  const armed = webgl && stage === 'finale' && played
+  const unlock = useCallback(() => {
+    // Dans le geste (keydown, pointerup) : la musique du second niveau est débloquée ici (iOS)
+    unlockMajestic()
+    useScene.getState().setEasterStage('majestic')
+    setAnnounced({ text: text.majestic.unlocked })
+  }, [])
+  const onTap = useMajesticTrigger(armed, unlock)
 
   const done = stage === 'finale' || !webgl
   // Sans WebGL : retour automatique. Avec la séquence, c'est la timeline qui ramène la page à la fin
@@ -124,6 +141,15 @@ function Dialog() {
       aria-labelledby={titleId}
       aria-describedby={descId}
     >
+      {armed && (
+        <div
+          className={styles.taps}
+          aria-hidden="true"
+          onPointerUp={(event) => {
+            onTap(event.timeStamp)
+          }}
+        />
+      )}
       <div className={styles.bar}>
         <p id={titleId} className={styles.label}>
           <span className={styles.dot} aria-hidden="true" />

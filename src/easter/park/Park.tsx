@@ -14,6 +14,7 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { type DirectionalLight, type Group, type Mesh, type Object3D, Vector3 } from 'three'
+import { M } from '../majestic/state'
 import { useEasterModel } from '../models'
 import { FULLSCREEN_QUAD, createFader, updateFader } from '../shaders'
 import { attachScreens, buildAlley, loadVideos, updateAlley } from './alleyRig'
@@ -268,6 +269,7 @@ function Monument({ bloom, reducedMotion, active }: TierProps) {
       bloom,
       camera,
       eye: eye.copy(camera.position).sub(ORIGIN),
+      collapse: M.collapse,
     })
   })
   return rig ? <primitive object={rig.root} /> : null
