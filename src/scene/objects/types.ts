@@ -34,14 +34,20 @@ export type PrismGLTF = GLTFBase & {
 
 export type ZephyrGLTF = GLTFBase & {
   nodes: {
-    Wind1: THREE.Mesh
-    Wind2: THREE.Mesh
-    Wind3: THREE.Mesh
+    Zep_Logo_Root: THREE.Object3D
+    Zep_Git_Root: THREE.Object3D
+    Zep_Logo_Face: THREE.Mesh
+    Zep_Logo_Side: THREE.Mesh
+    Zep_Git_Diamond: THREE.Mesh
+    Zep_Git_Graph: THREE.Mesh
+    Zep_Star: THREE.Mesh
   }
   materials: {
-    Teal: THREE.MeshStandardMaterial
-    TealGlass: THREE.MeshPhysicalMaterial
-    TealLight: THREE.MeshStandardMaterial
+    ZepLogoFace: THREE.MeshStandardMaterial
+    ZepLogoSide: THREE.MeshStandardMaterial
+    ZepGitOrange: THREE.MeshStandardMaterial
+    ZepGitWhite: THREE.MeshStandardMaterial
+    ZepStar: THREE.MeshStandardMaterial
   }
 }
 

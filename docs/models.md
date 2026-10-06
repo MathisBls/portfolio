@@ -10,10 +10,16 @@ Relevées dans les GLB exportés (accessors POSITION et transforms des nodes), e
 - Couleurs émissives : Spec0 `#ff0000`, Spec1 `#ff8000`, Spec2 `#ffff00`, Spec3 `#00ff00`, Spec4 `#0099ff`, Spec5 `#4d00ff`, Spec6 `#bf00ff`.
 - Emprise totale : x ∈ [−3.4, 3.4], y ∈ [−0.84, 0.97].
 
-## zephyr.glb (~19 Ko)
+## zephyr.glb (~28 Ko, refait le 2026-10-06 : scripts/blender/model_zephyr.py)
 
-- `Wind1` (`Teal`), `Wind2` (`TealGlass`, transmission 1), `Wind3` (`TealLight`) : trois rubans d'environ 2 × 1.8 × 2, centrés sur l'origine, smooth.
-- Attention : `TealGlass` est un matériau transmission. Règle « un seul objet transmission visible à la fois » : le remplacer par un matériau non transmissif tant que le prisme est à l'écran.
+- `Zep_Logo_Root` > `Zep_Logo_Face` (face avant texturée avec le logo, JPEG embarqué) + `Zep_Logo_Side` (flancs et dos bleu profond) : le « Z » de Zephyr tracé depuis `public/textures/zephyr/logo.png`, 4 facettes extrudées et biseautées, décalées en profondeur.
+- `Zep_Star` : étoile GitHub 5 branches, or #e3b341 légèrement émissif.
+- `Zep_Git_Root` > `Zep_Git_Diamond` (losange orange #f05033) + `Zep_Git_Graph` (graphe de branche blanc en relief, deux faces).
+- Emprise utilisée par le composant : largeur 2.8, hauteur 1.8, centrée à l'origine.
+
+## fitness.glb (~24 Ko, ajouté le 2026-10-06 : scripts/blender/model_fitness.py)
+
+- `Fit_Body` + `Fit_Screen` (écran 0.80 × 1.78, UV 0..1, captures appliquées en code), `Fit_Card1`/`Fit_Card2` (écrans flottants), `Fit_RingTrack`/`Fit_RingArc` (anneau de progression), `Fit_Dumbbell_Root` > `Fit_Bar` + 4 disques. Le téléphone sert aussi à Wegir.
 
 ## wegir.glb (~33 Ko)
 
@@ -36,6 +42,8 @@ Relevées dans les GLB exportés (accessors POSITION et transforms des nodes), e
 - Emprise : x ∈ [−1.6, 1.6], y ∈ [−0.05, 1.6].
 
 ## pizza.glb (~13 Ko)
+
+- Ajout du 2026-10-06 (scripts/blender/model_pizza_browser.py) : `Pizza_Browser_Root` > cadre, barre, 3 points, `Pizza_Site` (écran 2:1 où défilent les captures du site).
 
 - Une part : **pointe à l'origine**, croûte à x = 1.6, z ∈ [−0.61, 0.61], hauteur 0.22. `Dough`, `Sauce`, `Cheese`, `Crust`, 4 `Pep*`, 3 `Basil*`.
 - Pour pivoter autour du centre de la part, décaler le contenu de x = −0.8 dans un `<group>`.
