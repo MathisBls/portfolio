@@ -83,14 +83,15 @@ export function Cards({ bloom, reducedMotion }: CardsProps) {
     if (!r.visible) return
     poseCards(rig, E, clock.elapsedTime)
     if (reducedMotion) fadeCards(rig, E)
-    rig.cards.forEach((card, i) => {
+    for (let i = 0; i < rig.cards.length; i++) {
+      const card = rig.cards[i]
       const anchor = anchors.current[i]
       const sprite = sprites.current[i]
       const material: GlowMaterial | undefined = glows[i]
-      if (!anchor || !sprite || !material) return
+      if (!card || !anchor || !sprite || !material) continue
       anchor.position.set(card.position.x, TABLE_Y + 0.04, card.position.z)
       updateGlow(sprite, material, null, glowOf(E, i))
-    })
+    }
     if (light.current) updateCardLight(light.current, anchors.current, E)
   })
 

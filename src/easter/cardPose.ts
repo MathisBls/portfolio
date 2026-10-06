@@ -63,24 +63,28 @@ function poseStanding(card: Object3D, e: EasterState) {
 }
 
 export function poseCards(rig: CardRig, e: EasterState, time: number): void {
-  rig.cards.forEach((card, i) => {
+  // Boucles sans closure : appelé à chaque frame
+  for (let i = 0; i < rig.cards.length; i++) {
+    const card = rig.cards[i]
+    if (!card) continue
     if (i === 2 && e.lift > 0) poseStanding(card, e)
     else poseOnTable(card, i, e, time)
-  })
-  rig.ornaments.forEach(({ object, rest, delay }) => {
-    const t = range(e.crown, delay, delay + 0.45)
+  }
+  for (const ornament of rig.ornaments) {
+    const t = range(e.crown, ornament.delay, ornament.delay + 0.45)
     const s = t <= 0 ? 0.0001 : e.reduced ? 1 : backOut(t)
-    object.scale.copy(rest).multiplyScalar(Math.max(0.0001, s))
-    object.visible = t > 0
-  })
+    ornament.object.scale.copy(ornament.rest).multiplyScalar(Math.max(0.0001, s))
+    ornament.object.visible = t > 0
+  }
 }
 
 /** Fondu des cartes (reduced-motion) : opacité des matériaux clonés de chaque carte. */
 export function fadeCards(rig: CardRig, e: EasterState): void {
-  rig.materials.forEach((materials, i) => {
+  for (let i = 0; i < rig.materials.length; i++) {
+    const materials = rig.materials[i] ?? []
     const alpha = clamp(e.cards[i]?.alpha ?? 1)
     const card = rig.cards[i]
     if (card) card.visible = alpha > 0.001
     for (const material of materials) material.opacity = alpha
-  })
+  }
 }

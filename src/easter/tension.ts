@@ -29,7 +29,7 @@ export function createTension(ctx: AudioContext): TensionEngine {
   filter.Q.value = 7
   filter.frequency.value = 180
   const drone = ctx.createGain()
-  drone.gain.value = 0.16
+  drone.gain.value = 0.11
   filter.connect(drone).connect(bus)
   const oscillators = [55, 55, 82.41].map((frequency, i) => {
     const osc = ctx.createOscillator()
@@ -101,7 +101,7 @@ export function createTension(ctx: AudioContext): TensionEngine {
       if (ended) return
       intensity = Math.min(1, Math.max(0, value))
       ramp(filter.frequency, 160 + 1400 * intensity * intensity)
-      ramp(drone.gain, 0.14 + 0.08 * intensity)
+      ramp(drone.gain, 0.11 + 0.08 * intensity)
       ramp(band.frequency, 400 + 5200 * intensity * intensity)
       ramp(hissGain.gain, 0.16 * Math.pow(intensity, 2.2))
       ramp(whine.frequency, 110 * Math.pow(2, 3.2 * intensity))

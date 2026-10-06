@@ -103,17 +103,19 @@ const flicker = (x: number) =>
  */
 export function updateArena(rig: ArenaRig, light: number, time: number, calm: boolean): void {
   const amount = calm ? 0.25 : 1
-  rig.flames.forEach((flame, i) => {
+  for (let i = 0; i < rig.flames.length; i++) {
+    const flame = rig.flames[i]
+    if (!flame) continue
     const on = Math.min(1, Math.max(0, light * (rig.flames.length + 1) - i))
     const n = flicker(time * 3.1 + i * 1.7) * amount
     flame.mesh.scale.y = flame.height * on * (1 + 0.14 * n)
     flame.mesh.visible = on > 0.01
     flame.material.emissiveIntensity = flame.rest * on * (0.85 + 0.15 * n)
-  })
-  rig.pulses.forEach((pulse) => {
+  }
+  for (const pulse of rig.pulses) {
     const wave = 0.75 + 0.25 * Math.sin(time * pulse.speed * amount + pulse.phase)
     pulse.material.emissiveIntensity = pulse.rest * light * wave
-  })
+  }
 }
 
 export function disposeArena(rig: ArenaRig): void {

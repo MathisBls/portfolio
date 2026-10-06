@@ -85,3 +85,12 @@ Choix non tranchés par `CLAUDE.md` ou les skills. Une ligne de raison par choix
 - **Verre sans transmission** en mobile et reduced-motion (règle 1), lisible : mélange normal + arêtes (`Edges`).
 - **Reduced-motion au hero** : prisme seul tant que le hero est visible, état final à la sortie (plus de rayons derrière le texte).
 - **Rayons pendant les projets** : un seul rayon allumé (projet actif), fondu de 0.4 s, arrêt à l'entrée de la boîte monde de l'objet, allumé seulement quand son chemin à l'écran ne passe pas sous une card ; départ sur la face de sortie du prisme.
+
+## 2026-10-06 — Easter egg (code Konami)
+
+- **Déclencheur** : ↑ ↑ ↓ ↓ ← → ← → B A (`src/easter/konami.ts`, ignoré dans les champs et avec Ctrl/Cmd/Alt). Choix de Mathis.
+- **Assets** depuis les modèles BoulardTV de Mathis, **nom neutralisé** (« PRISM ») : `scripts/blender/easter_assets.py` -> `public/models/easter/`. Le B (logo, sans texte) est conservé à la demande de Mathis. Le dépôt reste privé : les scripts et l'historique mentionnent la source.
+- **Un seul Canvas** : en mode `easter`, la scène normale est démontée et `EasterScene` (chunk lazy, ~14 Ko gz + GLB) prend sa place ; précompilation `compileAsync` avant la séquence.
+- **Son généré en Web Audio** (`tension.ts`) : aucun fichier, aucun droit ; créé au déverrouillage (geste utilisateur) ; muet par défaut en reduced-motion.
+- **Sécurité** : aucun flash au-delà de 3/s, rougissement progressif ; overlay `dialog` modal, Échap à tout moment, page `inert`, scroll et focus restaurés à la sortie.
+- **À reprendre** : décalage des faces avant de COMMON et LEGENDARY corrigé en code (`cardRig.ts`), à reporter dans `easter_assets.py` ; perte de vue du B vers 20-21 s ; mixage à valider à l'écoute par Mathis.
