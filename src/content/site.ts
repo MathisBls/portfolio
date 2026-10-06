@@ -55,8 +55,7 @@ export const site = {
     contact: { id: 'contact', label: '04 / Contact', title: 'Your idea is next.' },
   } satisfies Record<SectionKey, SectionText>,
   projects: {
-    intro:
-      'Four products I build, one website delivered to a client. Each taken from idea to launch.',
+    intro: 'Products I build and projects delivered to clients, each taken from idea to launch.',
     // Label mono de la card : `${index} / ${year}`, index sur 2 chiffres (01, 02…)
     stackLabel: 'Stack',
     links: { site: 'Visit site', store: 'App Store', github: 'Source code' },
@@ -76,7 +75,7 @@ export const site = {
     // Rédigé depuis identity et projects.ts, aucun fait ajouté. À valider par Mathis.
     lines: [
       'Full-stack developer based near Paris, France.',
-      'I build my own products: a navigation app on the App Store, an open-source mod manager, an Android ROM, a pipeline of AI agents that makes games.',
+      'I build my own products: a navigation app on the App Store, an open-source mod manager, a pipeline of AI agents that makes games.',
       'And websites for local businesses, like Meme Rina, a pizzeria in Chatou.',
       'From design to deployment, you talk to the person who writes the code.',
     ],

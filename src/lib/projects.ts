@@ -60,15 +60,22 @@ export function assignRays(accents: readonly string[], rays: readonly string[] =
   return best
 }
 
-/** Mesures d'un emplacement visuel de card (px), relevées au refresh de ScrollTrigger. */
-export type SlotMetrics = { left: number; width: number; height: number; viewportH: number }
-
 /**
- * Centre vertical (px, depuis le haut du viewport) d'un emplacement dont le ScrollTrigger va de
- * 'top bottom' (p = 0) à 'bottom top' (p = 1). Le scroll est linéaire : la position est exacte.
+ * Mesures d'un emplacement visuel de projet (px, viewport), relevées par le DOM à chaque mise à jour
+ * de son ScrollTrigger (scroll) et au refresh. `top` est la position live : les chapitres sont
+ * collants (sticky), la position n'est plus une fonction linéaire du progress.
  */
-export function slotCenterY(p: number, m: SlotMetrics): number {
-  return m.viewportH + m.height / 2 - p * (m.viewportH + m.height)
+export type SlotMetrics = {
+  left: number
+  top: number
+  width: number
+  height: number
+  viewportH: number
+}
+
+/** Centre vertical (px, depuis le haut du viewport) de l'emplacement, à la dernière mesure. */
+export function slotCenter(m: SlotMetrics): number {
+  return m.top + m.height / 2
 }
 
 /** Projet actif = celui dont l'emplacement est le plus proche du centre de l'écran (p le plus proche de 0.5). */

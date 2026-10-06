@@ -46,8 +46,13 @@ const wrap = (v: number, n: number) => ((v % n) + n) % n
 const SCREENS = ['intro', 'convoit', 'convoi', 'signalement', 'amis', 'qr-code-convoi'].map(
   (name) => `/textures/wegir/${name}.webp`,
 )
-/** Téléphone au bout droit de la route, un peu devant, de trois quarts. */
-const PHONE = { position: [2.05, 0.25, 0.7] as [number, number, number], scale: 0.62, turn: -0.35 }
+/**
+ * Téléphone grand format à gauche de la route (retour de Mathis : l'app doit se lire), tourné vers
+ * elle ; il ne chevauche pas les voitures. La route occupe x ∈ [−2.5, 2.5] dans le groupe ancré.
+ */
+const PHONE = { position: [-3.05, 0.2, 0.35] as [number, number, number], scale: 1, turn: 0.3 }
+/** Recentrage de l'ensemble route + téléphone (x ∈ [−3.5, 2.5]). */
+const SHIFT_X = 0.5
 
 export function Wegir({ slug }: WegirProps) {
   const { nodes } = useModel('wegir')
@@ -62,8 +67,8 @@ export function Wegir({ slug }: WegirProps) {
     visibleRef,
   } = useAnchoredObject({
     slug,
-    width: 5,
-    height: 1.5,
+    width: 6.1,
+    height: 1.95,
     center: [-0.6, 0.15, 0],
     hoverSpeed: 1.8,
   })
@@ -96,49 +101,51 @@ export function Wegir({ slug }: WegirProps) {
 
   return (
     <group ref={anchor} visible={false}>
-      <group ref={phone} position={PHONE.position} scale={PHONE.scale} rotation-y={PHONE.turn}>
-        <Part node={device.Fit_Body} />
-        <Part ref={shownRef} node={device.Fit_Screen} material={materials.shown} />
-        <Part
-          ref={nextRef}
-          node={device.Fit_Screen}
-          material={materials.next}
-          position-z={device.Fit_Screen.position.z + 0.001}
-          visible={false}
-        />
-      </group>
-      <group rotation-x={VIEW.tilt}>
-        <group rotation-y={VIEW.turn}>
-          <group position={offset}>
-            <Part node={nodes.Road} />
-            {DASHES.map((name) => (
-              <Part key={name} node={nodes[name]} />
-            ))}
-            {CARS.map((i) => {
-              const root = nodes[`Car${i}_Root` as const]
-              return (
-                <group
-                  key={root.name}
-                  ref={(g) => {
-                    cars.current[i] = g
-                  }}
-                  position={root.position}
-                  rotation={root.rotation}
-                >
-                  <Part node={nodes[`Car${i}_Body` as const]} />
-                  <Part node={nodes[`Car${i}_Cab` as const]} />
-                  {WHEELS.map((w, j) => (
-                    <Part
-                      key={w}
-                      node={nodes[`Car${i}_${w}` as const]}
-                      ref={(m) => {
-                        wheels.current[i * WHEELS.length + j] = m
-                      }}
-                    />
-                  ))}
-                </group>
-              )
-            })}
+      <group position-x={SHIFT_X}>
+        <group ref={phone} position={PHONE.position} scale={PHONE.scale} rotation-y={PHONE.turn}>
+          <Part node={device.Fit_Body} />
+          <Part ref={shownRef} node={device.Fit_Screen} material={materials.shown} />
+          <Part
+            ref={nextRef}
+            node={device.Fit_Screen}
+            material={materials.next}
+            position-z={device.Fit_Screen.position.z + 0.001}
+            visible={false}
+          />
+        </group>
+        <group rotation-x={VIEW.tilt}>
+          <group rotation-y={VIEW.turn}>
+            <group position={offset}>
+              <Part node={nodes.Road} />
+              {DASHES.map((name) => (
+                <Part key={name} node={nodes[name]} />
+              ))}
+              {CARS.map((i) => {
+                const root = nodes[`Car${i}_Root` as const]
+                return (
+                  <group
+                    key={root.name}
+                    ref={(g) => {
+                      cars.current[i] = g
+                    }}
+                    position={root.position}
+                    rotation={root.rotation}
+                  >
+                    <Part node={nodes[`Car${i}_Body` as const]} />
+                    <Part node={nodes[`Car${i}_Cab` as const]} />
+                    {WHEELS.map((w, j) => (
+                      <Part
+                        key={w}
+                        node={nodes[`Car${i}_${w}` as const]}
+                        ref={(m) => {
+                          wheels.current[i * WHEELS.length + j] = m
+                        }}
+                      />
+                    ))}
+                  </group>
+                )
+              })}
+            </group>
           </group>
         </group>
       </group>

@@ -11,7 +11,6 @@ import { Contact } from '../sections/Contact'
 import { Hero } from '../sections/Hero'
 import { Projects } from '../sections/Projects'
 import { Services } from '../sections/Services'
-import { Cursor } from '../ui/Cursor'
 import { Footer } from '../ui/Footer'
 import { Marquee } from '../ui/Marquee'
 import { Nav } from '../ui/Nav'
@@ -69,7 +68,6 @@ export function HomePage() {
         <Contact />
       </main>
       <Footer />
-      <Cursor />
     </>
   )
 }

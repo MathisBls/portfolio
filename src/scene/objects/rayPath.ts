@@ -7,7 +7,7 @@
 import type { RootState } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { projects } from '../../content/projects'
-import { slotCenterY } from '../../lib/projects'
+import { slotCenter } from '../../lib/projects'
 import { getAnchor, getAnchorMetrics, getProgress } from '../store'
 import type { AnchoredTarget } from './useAnchoredObject'
 
@@ -79,7 +79,7 @@ function toScreen(state: RootState, out: Vector3) {
 /**
  * true si le rayon du projet j (de `start` au bord de son objet) passe, à l'écran, sur le corps de la
  * card du projet précédent (mise en page alternée : même côté que l'objet visé, juste au-dessus). Sa
- * position suit celle de son emplacement (slotCenterY), sans lire le DOM.
+ * position suit celle de son emplacement (slotCenter, mesure live), sans lire le DOM.
  */
 export function crossesPreviousCard(
   j: number,
@@ -101,7 +101,7 @@ export function crossesPreviousCard(
   toScreen(state, from.copy(start))
   toScreen(state, to.copy(start).lerp(target.position, k))
 
-  const top = slotCenterY(p, m) - m.height / 2
+  const top = slotCenter(m) - m.height / 2
   slab.enter = 0
   slab.leave = 1
   return (

@@ -1,25 +1,33 @@
 // Storyboard projets (docs/storyboards/projects.md §2, tableau « Par card ») : p 0 → 0.25 « Entrée :
 // scale 0 → 1, rotation y −0.6 → 0 (easeOut) », 0.75 → 1 « Sortie : scale 1 → 0.85 » ; « Position :
-// centre de l'emplacement (slotCenterY, horizontal = left + width / 2), déprojeté sur le plan z = 0.
+// centre de l'emplacement (slotCenter, mesure live du DOM ; horizontal = left + width / 2), déprojeté
+// sur le plan z = 0.
 // Échelle : largeur de l'emplacement × 0.8 / largeur du modèle » ; « Animations continues (seulement
 // quand la card est à l'écran, useContinuousInvalidate) ». §5 : `visible = false` hors écran.
 // §7 : la position monde est exposée (registre, measureTarget) pour que le rayon actif vise l'objet.
 // Passe « motion » (sans storyboard) : au survol, l'objet suit le pointeur dans son emplacement
 // (±HOVER_LOOK rad, amorti, desktop à pointeur fin seulement : pointer.ts).
-import { type RootState, useFrame } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { type RefObject, useEffect, useRef } from 'react'
-import { Box3, type Camera, type Group, Vector3 } from 'three'
+import { Box3, type Group, Vector3 } from 'three'
 import { type Vec3, clamp, easeInOut, lerp, range } from '../../lib/math'
-import { slotCenterY } from '../../lib/projects'
+import { slotCenter } from '../../lib/projects'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
 import { pointerInRect } from '../pointer'
 import { getAnchorMetrics, getProgress, useScene } from '../store'
+import { measure, targets } from './anchorTargets'
+
+export { type AnchoredTarget, measureTarget } from './anchorTargets'
 import { usePointerDamp } from '../usePointerDamp'
 
-/** Part de l'emplacement occupée par l'objet. */
-const FILL = 0.8
-const ENTER: readonly [number, number] = [0, 0.25]
-const EXIT: readonly [number, number] = [0.75, 1]
+/** Part de l'emplacement occupée par l'objet (grand format des chapitres). */
+const FILL = 0.88
+// Chapitres plein écran (2026-10-06) : article 180svh, scène collante collée pour p ∈ [0.36, 0.64] ;
+// entrée en montant, sortie en repartant, plateau tournant (±TURN rad) pendant qu'elle est collée.
+const ENTER: readonly [number, number] = [0.12, 0.36]
+const EXIT: readonly [number, number] = [0.64, 0.88]
+const TURNTABLE: readonly [number, number] = [0.3, 0.7]
+const TURN = 0.45
 const ENTER_ROTATION = -0.6
 const EXIT_SCALE = 0.85
 /** Survol lissé (1/s) et pas de temps maximal (retour d'onglet, première frame après une pause). */
@@ -55,71 +63,6 @@ export type AnchoredObject = {
   phase: RefObject<number>
   /** true quand l'objet est à l'écran (0 < p < 1) : les composants sautent leur animation sinon. */
   visibleRef: RefObject<boolean>
-}
-
-/**
- * Cible des rayons du prisme, une par objet monté : centre de l'emplacement sur le plan z = 0 (monde),
- * boîte monde de l'objet tel qu'il est dessiné (géométries transformées, animation comprise ; vide hors
- * écran : le rayon s'arrête sur son bord), taille de l'emplacement (monde).
- */
-export type AnchoredTarget = {
-  position: Vector3
-  bounds: Box3
-  visible: boolean
-  slotWidth: number
-  slotHeight: number
-}
-
-const targets = new Map<string, AnchoredTarget>()
-
-// Vecteurs de travail partagés (les useFrame s'exécutent l'un après l'autre)
-const origin = new Vector3()
-const edgeA = new Vector3()
-const edgeB = new Vector3()
-
-/** Point écran (px CSS) → intersection du rayon caméra avec le plan z = 0. */
-function toPlane(camera: Camera, size: RootState['size'], x: number, y: number, out: Vector3) {
-  out.set((x / size.width) * 2 - 1, 1 - (y / size.height) * 2, 0.5).unproject(camera)
-  out.sub(origin)
-  const t = Math.abs(out.z) < 1e-6 ? 0 : -origin.z / out.z
-  return out.multiplyScalar(t).add(origin)
-}
-
-/**
- * Recalcule la cible d'un objet pour la frame courante (caméra posée par CameraRig, progress et mesures
- * du DOM) et la renvoie. Appelé par l'objet et par le prisme : aucun des deux ne dépend de l'ordre des
- * useFrame. undefined si l'objet n'est pas monté.
- */
-export function measureTarget(
-  slug: string,
-  state: RootState,
-): Readonly<AnchoredTarget> | undefined {
-  return measure(slug, state)
-}
-
-/** measureTarget, cible modifiable : l'objet y écrit sa boîte (bounds). */
-function measure(slug: string, state: RootState): AnchoredTarget | undefined {
-  const target = targets.get(slug)
-  if (!target) return undefined
-  const id = `project:${slug}` as const
-  const p = getProgress(id)
-  const m = getAnchorMetrics(id)
-  target.visible = m !== undefined && m.width > 0 && p > 0 && p < 1
-  if (!m || !target.visible) return target
-
-  const { camera, size } = state
-  camera.updateMatrixWorld()
-  origin.setFromMatrixPosition(camera.matrixWorld)
-  const cx = m.left + m.width / 2
-  const cy = slotCenterY(p, m)
-  target.slotWidth = toPlane(camera, size, m.left, cy, edgeA).distanceTo(
-    toPlane(camera, size, m.left + m.width, cy, edgeB),
-  )
-  target.slotHeight = toPlane(camera, size, cx, cy - m.height / 2, edgeA).distanceTo(
-    toPlane(camera, size, cx, cy + m.height / 2, edgeB),
-  )
-  toPlane(camera, size, cx, cy, target.position)
-  return target
 }
 
 export function useAnchoredObject({
@@ -187,9 +130,10 @@ export function useAnchoredObject({
     // Pointeur relatif au centre de l'emplacement (±1 sur ses bords), pondéré par le survol lissé
     const m = getAnchorMetrics(id)
     const h = m ? hover.current : 0
-    const local = m ? pointerInRect(m.left, slotCenterY(p, m), m.width, m.height, state.size) : null
+    const local = m ? pointerInRect(m.left, slotCenter(m), m.width, m.height, state.size) : null
     const d = look.to((local?.x ?? 0) * h, (local?.y ?? 0) * h, delta)
-    group.rotation.set(-HOVER_LOOK * d.y, ENTER_ROTATION * (1 - enter) + HOVER_LOOK * d.x, 0)
+    const turn = TURN * (2 * range(p, ...TURNTABLE) - 1)
+    group.rotation.set(-HOVER_LOOK * d.y, ENTER_ROTATION * (1 - enter) + turn + HOVER_LOOK * d.x, 0)
     // Bord visé par le rayon : boîtes des géométries, transforms de la frame (enfants : la précédente)
     target.bounds.setFromObject(group)
   })

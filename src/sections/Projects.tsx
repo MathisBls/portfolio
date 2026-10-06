@@ -1,14 +1,16 @@
-// Section Projets (docs/storyboards/projects.md) : DOM seulement. Les ScrollTriggers écrivent les progress
-// lus par la scène : 'projects' (section, caméra et prisme) et, dans ProjectCard, 'project:<slug>' (un par card).
-// Reduced-motion : aucun trigger, posters seulement (les objets 3D ne sont jamais montés).
+// Section Projets : DOM seulement (chapitres plein écran, ui/ProjectChapter). Les ScrollTriggers écrivent
+// les progress lus par la scène : 'projects' (section : caméra et prisme) ici, et 'project:<slug>' (un par
+// chapitre) dans ProjectChapter.
+// Reduced-motion : aucun trigger scrubé, posters seulement (les objets 3D ne sont jamais montés). Seul
+// 'projects' passe de 0 à 1 à l'entrée de la section, pour que la scène ne garde pas l'éventail du hero.
 import { useLayoutEffect, useRef } from 'react'
 import { projects } from '../content/projects'
 import { site } from '../content/site'
 import { ScrollTrigger, gsap } from '../lib/gsap'
 import { stagger } from '../lib/stagger'
-import { useReducedMotion } from '../lib/useReducedMotion'
+import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
 import { setProgress, useScene } from '../scene/store'
-import { ProjectCard } from '../ui/ProjectCard'
+import { ProjectChapter } from '../ui/ProjectChapter'
 import { RevealTitle } from '../ui/RevealTitle'
 import { SectionLabel } from '../ui/SectionLabel'
 import styles from './Projects.module.css'
@@ -16,12 +18,39 @@ import styles from './Projects.module.css'
 export function Projects() {
   const { id, label, title } = site.sections.projects
   const { intro } = site.projects
-  const reducedMotion = useReducedMotion()
+  // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
+  const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
 
   useLayoutEffect(() => {
     const section = sectionRef.current
-    if (!section || reducedMotion) return
+    if (!section) return
+
+    if (reducedMotion) {
+      // Sans scrub, sur le modèle du Hero : 1 (prisme levé, plus d'éventail) dès que le hero est
+      // entièrement sorti, 0 si on remonte au-dessus de la section. Jamais d'état intermédiaire.
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: 'bottom top',
+        onEnter: () => {
+          setProgress('projects', 1)
+        },
+        onLeave: () => {
+          setProgress('projects', 1)
+        },
+        onEnterBack: () => {
+          setProgress('projects', 1)
+        },
+        onLeaveBack: () => {
+          setProgress('projects', 0)
+        },
+      })
+      setProgress('projects', trigger.progress > 0 ? 1 : 0)
+      return () => {
+        trigger.kill()
+      }
+    }
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
@@ -65,8 +94,8 @@ export function Projects() {
 
       <ol className={styles.list}>
         {projects.map((project, index) => (
-          <li key={project.slug}>
-            <ProjectCard project={project} index={index} />
+          <li key={project.slug} className={styles.item}>
+            <ProjectChapter project={project} index={index} />
           </li>
         ))}
       </ol>

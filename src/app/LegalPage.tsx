@@ -1,12 +1,11 @@
 // Mentions légales (docs/storyboards/about-legal.md) : générées depuis identity et site.legal, aucun
-// texte en dur. Cette page ne monte ni la scène, ni Lenis ; GSAP n'y sert qu'au curseur (ui/Cursor).
+// texte en dur. Cette page ne monte ni la scène, ni Lenis, ni GSAP.
 // Une valeur "TODO:" reste du texte, jamais un lien, et s'affiche dans un cadre pointillé pour ne pas
 // passer inaperçue.
 import { type ReactNode, useId } from 'react'
 import { identity } from '../content/services'
 import { site } from '../content/site'
 import { displayUrl, isFilled, telHref } from '../lib/content'
-import { Cursor } from '../ui/Cursor'
 import { Footer } from '../ui/Footer'
 import styles from './LegalPage.module.css'
 
@@ -150,7 +149,6 @@ export function LegalPage() {
         </p>
       </main>
       <Footer isLegalPage />
-      <Cursor />
     </>
   )
 }

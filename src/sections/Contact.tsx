@@ -1,13 +1,11 @@
 // Contact (docs/storyboards/services-contact.md) : coordonnées à gauche, formulaire à droite dès 1024 px.
 // Le progress 'contact' (scrub, sans pin) pilote le retour du prisme dans la scène. Reduced-motion : pas de trigger.
-import { useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { identity } from '../content/services'
 import { site } from '../content/site'
 import { isFilled, telHref } from '../lib/content'
-import { ScrollTrigger } from '../lib/gsap'
 import { stagger } from '../lib/stagger'
-import { useReducedMotion } from '../lib/useReducedMotion'
-import { setProgress } from '../scene/store'
+import { useSectionProgress } from '../lib/useSectionProgress'
 import { ContactForm } from '../ui/ContactForm'
 import { RevealTitle } from '../ui/RevealTitle'
 import { SectionLabel } from '../ui/SectionLabel'
@@ -16,26 +14,10 @@ import styles from './Contact.module.css'
 export function Contact() {
   const { id, label, title } = site.sections.contact
   const { intro, direct, emailLabel, phoneLabel, locationLabel, sirenLabel } = site.contact
-  const reduced = useReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
 
-  useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section || reduced) return
-    const trigger = ScrollTrigger.create({
-      id: 'contact',
-      trigger: section,
-      start: 'top bottom',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (self) => {
-        setProgress('contact', self.progress)
-      },
-    })
-    return () => {
-      trigger.kill()
-    }
-  }, [reduced])
+  // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)
+  useSectionProgress('contact', sectionRef)
 
   return (
     <section id={id} ref={sectionRef} aria-labelledby={`${id}-titre`} className={styles.section}>

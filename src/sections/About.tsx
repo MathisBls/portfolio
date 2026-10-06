@@ -1,14 +1,12 @@
 // À propos (docs/storyboards/about-legal.md) : 4 lignes, stack déduite des projets, disponibilité.
 // Pas de pin : un ScrollTrigger scrubé écrit seulement le progress 'about' lu par la scène (calme ici).
 // Les apparitions passent par [data-reveal] (CSS + IntersectionObserver, lib/reveal.ts).
-import { useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { projects } from '../content/projects'
 import { site } from '../content/site'
-import { ScrollTrigger } from '../lib/gsap'
 import { uniqueStack } from '../lib/stack'
 import { stagger } from '../lib/stagger'
-import { useReducedMotion } from '../lib/useReducedMotion'
-import { setProgress } from '../scene/store'
+import { useSectionProgress } from '../lib/useSectionProgress'
 import { RevealTitle } from '../ui/RevealTitle'
 import { SectionLabel } from '../ui/SectionLabel'
 import styles from './About.module.css'
@@ -18,29 +16,10 @@ const stack = uniqueStack(projects)
 export function About() {
   const { id, label, title } = site.sections.about
   const { lines, stackLabel, availability } = site.about
-  const reducedMotion = useReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Sans mouvement : pas de ScrollTrigger, la scène garde son état courant.
-  useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section || reducedMotion) return
-
-    const trigger = ScrollTrigger.create({
-      id: 'about',
-      trigger: section,
-      start: 'top bottom',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (st) => {
-        setProgress('about', st.progress)
-      },
-    })
-
-    return () => {
-      trigger.kill()
-    }
-  }, [reducedMotion])
+  // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)
+  useSectionProgress('about', sectionRef)
 
   return (
     <section id={id} ref={sectionRef} aria-labelledby={`${id}-titre`} className={styles.about}>

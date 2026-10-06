@@ -9,6 +9,8 @@ export type Project = {
   model: 'prism' | 'zephyr' | 'wegir' | 'quorin' | 'gamefactory' | 'pizza' | 'fitness'
   accent: string
   year: string
+  /** Fait marquant affiché à côté du projet (fourni par Mathis). */
+  highlight?: string
 }
 
 export const projects: Project[] = [
@@ -23,6 +25,7 @@ export const projects: Project[] = [
     model: 'zephyr',
     accent: '#12b5bd',
     year: '2026',
+    highlight: '25+ stars on GitHub · Community project',
   },
   {
     slug: 'wegir',
@@ -49,18 +52,6 @@ export const projects: Project[] = [
     model: 'fitness',
     accent: '#13c6d3',
     year: 'TODO: année',
-  },
-  {
-    slug: 'quorin',
-    name: 'QuorinOS',
-    tagline: 'One phone, many faces',
-    description:
-      'Android ROM based on LineageOS with multiple profiles per device. RRO overlays, custom launcher and SystemUI.',
-    stack: ['Android', 'LineageOS', 'AOSP'],
-    links: { github: 'https://github.com/Prismo-Studio/QuorinOS' },
-    model: 'quorin',
-    accent: '#8a5cff',
-    year: '2026',
   },
   {
     slug: 'game-factory',

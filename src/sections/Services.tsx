@@ -1,14 +1,12 @@
 // Services (docs/storyboards/services-contact.md) : trois cartes (prix, pour qui, inclus) puis le CTA.
 // Le progress 'services' (scrub, sans pin) pilote la rétractation des rayons dans la scène.
 // Reduced-motion : pas de trigger, la scène affiche son état statique.
-import { useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { type Service, services } from '../content/services'
 import { site } from '../content/site'
-import { ScrollTrigger } from '../lib/gsap'
 import { stagger } from '../lib/stagger'
-import { useReducedMotion } from '../lib/useReducedMotion'
+import { useSectionProgress } from '../lib/useSectionProgress'
 import { useTilt } from '../lib/useTilt'
-import { setProgress } from '../scene/store'
 import { Button } from '../ui/Button'
 import { RevealTitle } from '../ui/RevealTitle'
 import { SectionLabel } from '../ui/SectionLabel'
@@ -76,26 +74,10 @@ function ServiceItem({ service, index, sectionId }: ItemProps) {
 export function Services() {
   const { id, label, title } = site.sections.services
   const { intro, cta } = site.services
-  const reduced = useReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
 
-  useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section || reduced) return
-    const trigger = ScrollTrigger.create({
-      id: 'services',
-      trigger: section,
-      start: 'top bottom',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (self) => {
-        setProgress('services', self.progress)
-      },
-    })
-    return () => {
-      trigger.kill()
-    }
-  }, [reduced])
+  // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)
+  useSectionProgress('services', sectionRef)
 
   return (
     <section id={id} ref={sectionRef} aria-labelledby={`${id}-titre`} className={styles.section}>

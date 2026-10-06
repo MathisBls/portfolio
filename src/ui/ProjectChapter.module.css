@@ -1,0 +1,290 @@
+/* Chapitre projet. Mobile first : une colonne, le poster au-dessus du texte, hauteur automatique.
+   À partir de 1024 px : article de 180svh, .stage collée (sticky) de 100svh, deux colonnes (texte ~34 %,
+   emplacement ~66 %), alternées par data-side (= côté de l'emplacement) sans changer l'ordre du DOM.
+   --accent-project (accent du projet) est posé en inline par ProjectChapter.tsx.
+   Le texte posé sur la 3D porte un halo --bg (text-shadow) : il reste lisible quand un rayon passe derrière. */
+.chapter {
+  position: relative;
+  --accent-project: var(--accent);
+}
+
+.stage {
+  display: grid;
+}
+
+/* Emplacement : la scène y ancre le modèle 3D. Ni fond, ni bordure, ni transform, ni reveal. */
+.slot {
+  position: relative;
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  aspect-ratio: 1;
+}
+
+/* Poster : le visuel sans WebGL (mobile, reduced-motion). S'efface quand les objets 3D sont prêts. */
+.poster {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+html:global(.has-project-objects) .poster {
+  opacity: 0;
+}
+
+.text {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  max-width: 40rem;
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.name {
+  position: relative;
+  font-size: clamp(3rem, min(7vw, 12svh), 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+
+/* Lueur discrète de l'accent du projet sous le nom (dégradé radial, sans filter) */
+.name::after {
+  content: '';
+  position: absolute;
+  inset: 60% -10% -40% -10%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side at 40% 50%,
+    color-mix(in srgb, var(--accent-project) 42%, transparent),
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease);
+}
+
+.text:hover .name::after,
+.chapter:has(:focus-visible) .name::after {
+  opacity: 1;
+}
+
+/* Fait marquant : badge mono, point accent + étoile décorative */
+.highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent-project) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-project) 10%, var(--bg));
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-shadow: none;
+}
+
+.dot {
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--accent-project);
+  box-shadow: 0 0 0.5rem var(--accent-project);
+}
+
+.star {
+  flex: none;
+  color: var(--accent-project);
+}
+
+.tagline {
+  font-size: var(--text-lg);
+  line-height: 1.35;
+}
+
+.description {
+  max-width: 34rem;
+  color: var(--fg-2);
+}
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: var(--fg-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+  /* Le Button est clair : pas de halo sombre sur son texte (les liens secondaires le reprennent) */
+  text-shadow: none;
+}
+
+/* Contenu du Button principal : libellé + flèche */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Liens secondaires : texte souligné, cible tactile de 44 px */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-decoration-color: var(--fg-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  color: var(--fg);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+  transition: text-decoration-color 0.4s var(--ease);
+}
+
+.arrow {
+  flex: none;
+  transition: translate 0.4s var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: var(--accent-project);
+  }
+
+  .link:hover .arrow {
+    translate: 2px -2px;
+  }
+}
+
+@media (min-width: 640px) {
+  .tagline {
+    font-size: 1.5rem;
+  }
+}
+
+/* Chapitres plein écran : 180svh de scroll, scène collée. L'emplacement fait 86svh. */
+@media (min-width: 1024px) {
+  .chapter {
+    height: 180svh;
+  }
+
+  .stage {
+    position: sticky;
+    top: 0;
+    grid-template-columns: minmax(0, 66fr) minmax(0, 34fr);
+    align-items: center;
+    column-gap: var(--space-4);
+    height: 100svh;
+  }
+
+  .slot {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 86svh;
+    margin-inline: 0;
+    aspect-ratio: auto;
+  }
+
+  .text {
+    grid-column: 2;
+    grid-row: 1;
+    gap: clamp(0.75rem, 2svh, 1.5rem);
+  }
+
+  .tagline {
+    font-size: var(--text-lg);
+  }
+
+  .chapter[data-side='right'] .stage {
+    grid-template-columns: minmax(0, 34fr) minmax(0, 66fr);
+  }
+
+  .chapter[data-side='right'] .slot {
+    grid-column: 2;
+  }
+
+  .chapter[data-side='right'] .text {
+    grid-column: 1;
+  }
+}
+
+@media (min-width: 1440px) {
+  .stage {
+    column-gap: var(--space-5);
+  }
+}
+
+/* Pas de scène collée quand elle ne tiendrait pas dans l'écran (viewport très bas) ni en reduced-motion
+   (aucun objet 3D, rien ne bouge : le défilement mort de 80svh n'apporterait rien). Le chapitre reprend
+   sa hauteur naturelle, l'emplacement reste mesuré par la scène (position live). */
+@media (min-width: 1024px) and (max-height: 600px),
+  (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .chapter {
+    height: auto;
+    padding-block: var(--space-5);
+  }
+
+  .stage {
+    position: static;
+    height: auto;
+  }
+
+  .slot {
+    height: 70svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster,
+  .name::after,
+  .link,
+  .arrow {
+    transition: none;
+  }
+
+  .link:hover .arrow {
+    translate: none;
+  }
+}

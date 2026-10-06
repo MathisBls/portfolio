@@ -1,5 +1,6 @@
 /* Section Projets : mobile first, une colonne. Responsive en media queries seulement (prerender sans window).
-   Le fond reste transparent : le canvas 3D (position: fixed, derrière) se voit entre les cards. */
+   Le fond reste transparent : le canvas 3D (position: fixed, derrière) se voit derrière les chapitres.
+   Aucun overflow sur la section ni sur la liste : il casserait le sticky des chapitres (ProjectChapter). */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -32,11 +33,16 @@
 }
 
 .list {
-  display: grid;
-  gap: var(--space-5);
   margin-top: var(--space-5);
   padding: 0;
   list-style: none;
+}
+
+/* Mobile : les chapitres s'empilent, un filet les sépare */
+.item + .item {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
 }
 
 @media (min-width: 640px) {
@@ -45,10 +51,12 @@
   }
 }
 
-/* Scène cinématique : un projet à la fois à l'écran, de grands blancs entre les cards */
+/* Chapitres plein écran : la hauteur (180svh) et le sticky vivent dans ProjectChapter.module.css, le
+   rythme vient des chapitres eux-mêmes, ni filet ni marge entre eux. */
 @media (min-width: 1024px) {
-  .list {
-    gap: clamp(8rem, 22svh, 14rem);
-    margin-top: var(--space-6);
+  .item + .item {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { projects } from '../content/projects'
-import { activeIndex, assignRays, hue, slotCenterY } from './projects'
+import { activeIndex, assignRays, hue, slotCenter } from './projects'
 
 describe('hue', () => {
   it('calcule la teinte des couleurs primaires', () => {
@@ -31,20 +31,13 @@ describe('assignRays', () => {
     expect(bySlug.wegir).toBe(2) // jaune
     // Deux accents cyan (Zephyr, Fitness Kass) : ils se partagent le vert et le bleu
     expect([bySlug.zephyr, bySlug['fitness-kass']].sort()).toEqual([3, 4])
-    expect(bySlug.quorin).toBe(5) // indigo
   })
 })
 
-describe('slotCenterY', () => {
-  const m = { left: 0, width: 400, height: 300, viewportH: 900 }
-
-  it('part sous l’écran et finit au-dessus', () => {
-    expect(slotCenterY(0, m)).toBe(1050)
-    expect(slotCenterY(1, m)).toBe(-150)
-  })
-
-  it('est centré à mi-parcours', () => {
-    expect(slotCenterY(0.5, m)).toBe(450)
+describe('slotCenter', () => {
+  it('donne le centre vertical de l’emplacement à sa dernière position mesurée', () => {
+    expect(slotCenter({ left: 0, top: 100, width: 400, height: 300, viewportH: 900 })).toBe(250)
+    expect(slotCenter({ left: 0, top: -150, width: 400, height: 300, viewportH: 900 })).toBe(0)
   })
 })
 

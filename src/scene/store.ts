@@ -90,7 +90,7 @@ export function onAnchorsChange(fn: () => void): () => void {
 /**
  * Mesures des emplacements visuels des cards projets (docs/storyboards/projects.md), écrites par le
  * DOM au refresh de ScrollTrigger. Avec le progress 'project:<slug>', la scène en déduit la position
- * exacte à l'écran (slotCenterY) sans lire le DOM dans useFrame.
+ * exacte à l'écran (slotCenter) sans lire le DOM dans useFrame.
  */
 const anchorMetrics = new Map<AnchorId, SlotMetrics>()
 
