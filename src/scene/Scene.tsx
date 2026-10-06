@@ -15,6 +15,7 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { Suspense, lazy, useEffect } from 'react'
 import { useMediaQuery } from '../lib/media'
+import { AdaptiveDpr } from './AdaptiveDpr'
 import { CameraRig } from './CameraRig'
 import { Effects } from './Effects'
 import { Lighting } from './Lighting'
@@ -120,6 +121,7 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
       camera={{ fov: 35, near: 0.1, far: 50, position: [0, 0, 8] }}
     >
       <color attach="background" args={[background()]} />
+      <AdaptiveDpr max={mobile ? 1.5 : 2} />
       <InvalidateBridge />
       <PointerBridge enabled={!mobile && !reducedMotion} />
       {normal && <CameraRig />}

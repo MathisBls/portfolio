@@ -28,10 +28,6 @@ export const CARD_LIFT = 0.2
 /** Beat 4 : la légendaire levée, debout, dos (et B) face à la caméra. */
 export const STAND: V3 = [3.5, 3.3, 1.4]
 
-/** Beat 6 : le B géant du final, centré à l'origine (l'arène et la route sont alors masquées). */
-export const GIANT_SCALE = 30
-/** Beat 6 : caméra du final, devant la face lisible (−Z) du B géant. */
-export const FINALE_CAMERA: V3 = [0, 0, -125]
 
 /**
  * Repère monde du B au dos de la légendaire une fois levée et retournée (carte debout en STAND, demi-tour

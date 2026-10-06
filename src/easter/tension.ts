@@ -1,21 +1,30 @@
-// Easter egg : son de tension généré en Web Audio (aucun fichier audio). API : start(),
-// setIntensity(0..1), hush(), climax(), cue(), mute(bool), stop() (type TensionEngine, audio.ts).
+// Easter egg (docs/storyboards/easter-park.md, colonne « Ce qu'on entend ») : son de tension généré en
+// Web Audio (aucun fichier). API : start(), setIntensity(0..1), hush(), climax(), cue(), mute(bool),
+// stop() (type TensionEngine, audio.ts), plus sfx() pour les beats 4 à 7 (SequenceEngine).
 // - Nappe grave : trois scies désaccordées (la1, mi2), filtre passe-bas résonant ouvert par l'intensité,
 //   balayé lentement par un LFO.
 // - Riser : bruit filtré dont la bande monte, plus un sinus dont la hauteur monte avec l'intensité.
 // - Cœur : double battement (kick sinus à hauteur qui chute), tempo de 52 à 160 bpm selon l'intensité,
 //   planifié à l'avance sur l'horloge audio (pas de dérive).
 // - Suspension (hush) : une demi-seconde de silence avant l'éclatement du prisme, puis tout reprend.
-// - Climax : silence d'une demi-seconde, impact grave, puis une nappe calme (accord de la majeur).
+// - Sortie du warp (climax, beat 4) : tout retombe (le riser plonge, le cœur s'arrête), un grave sourd,
+//   puis une nappe spatiale calme dont le niveau suit l'intensité : basse sous les voix, coupée à
+//   l'arrivée de la musique (timeline.ts).
 // - Tics du message (cue 'type') : un bip court et discret par lettre.
+// - Beats 6 et 7 (sfx) : souffle au mot « BoulardTV », bond et impact doux, grondement des portes.
 // Volume : bus maître + compresseur ; mute agit sur une sortie séparée (l'enveloppe du bus continue).
 import type { TensionCue, TensionEngine } from './audio'
-import { kick, noise, noiseBuffer, playCue } from './sfx'
+import { type SpaceCue, kick, noise, noiseBuffer, playCue, playSpaceCue } from './sfx'
 
 const SILENCE = 0.5
 const LOOKAHEAD = 0.15
+/** Nappe spatiale (après la sortie du warp) : la2, mi3, si3 (accord suspendu), gain maximal. */
+const PAD = { notes: [110, 164.81, 246.94], gain: 0.05 }
 
-export function createTension(ctx: AudioContext): TensionEngine {
+/** Moteur de la séquence : tension, plus les sons ponctuels des beats 4 à 7. */
+export type SequenceEngine = TensionEngine & { sfx: (name: SpaceCue) => void }
+
+export function createTension(ctx: AudioContext): SequenceEngine {
   const out = ctx.createGain()
   const compressor = ctx.createDynamicsCompressor()
   compressor.threshold.value = -16
@@ -67,7 +76,22 @@ export function createTension(ctx: AudioContext): TensionEngine {
   const heart = ctx.createGain()
   heart.gain.value = 0.9
   heart.connect(bus)
-  const sources: AudioScheduledSourceNode[] = [...oscillators, lfo, hiss, whine]
+  // Nappe spatiale : muette jusqu'à la sortie du warp, filtrée, légère pulsation lente (0.08 Hz)
+  const pad = ctx.createGain()
+  pad.gain.value = 0
+  const padFilter = ctx.createBiquadFilter()
+  padFilter.type = 'lowpass'
+  padFilter.frequency.value = 900
+  padFilter.connect(pad).connect(bus)
+  const padVoices = PAD.notes.map((frequency, i) => {
+    const osc = ctx.createOscillator()
+    osc.type = i === 0 ? 'triangle' : 'sine'
+    osc.frequency.value = frequency
+    osc.detune.value = [0, -4, 5][i] ?? 0
+    osc.connect(padFilter)
+    return osc
+  })
+  const sources: AudioScheduledSourceNode[] = [...oscillators, lfo, hiss, whine, ...padVoices]
 
   let intensity = 0
   let ended = false
@@ -107,8 +131,12 @@ export function createTension(ctx: AudioContext): TensionEngine {
       timer = window.setInterval(schedule, 40)
     },
     setIntensity(value) {
-      if (ended) return
       intensity = Math.min(1, Math.max(0, value))
+      // Après la sortie du warp : l'intensité règle seulement la nappe spatiale (0 : silence)
+      if (ended) {
+        ramp(pad.gain, PAD.gain * intensity, 0.5)
+        return
+      }
       ramp(filter.frequency, 160 + 1400 * intensity * intensity)
       ramp(drone.gain, 0.11 + 0.08 * intensity)
       ramp(band.frequency, 400 + 5200 * intensity * intensity)
@@ -129,27 +157,24 @@ export function createTension(ctx: AudioContext): TensionEngine {
       ended = true
       resumeAt = 0
       beating = false
-      bus.gain.cancelScheduledValues(now)
-      bus.gain.setTargetAtTime(0, now, 0.03)
-      const hit = now + SILENCE
+      // Tout retombe : le riser plonge, la nappe se ferme, puis un grave sourd
+      ;[whine.frequency, band.frequency, filter.frequency].forEach((param) => {
+        param.cancelScheduledValues(now)
+      })
+      whine.frequency.setValueAtTime(whine.frequency.value, now)
+      whine.frequency.exponentialRampToValueAtTime(38, now + 1.1)
+      band.frequency.setValueAtTime(band.frequency.value, now)
+      band.frequency.exponentialRampToValueAtTime(160, now + 1)
+      filter.frequency.setTargetAtTime(110, now, 0.3)
       ;[drone.gain, hissGain.gain, whineGain.gain].forEach((param) => {
         param.cancelScheduledValues(now)
-        param.setTargetAtTime(0, now, 0.03)
+        param.setTargetAtTime(0, now, 0.35)
       })
-      bus.gain.setValueAtTime(1, hit)
-      kick(ctx, bus, hit, 1, { from: 70, to: 26, drop: 1.4, length: 3.2 })
-      noise(ctx, bus, hit, 0.5, { from: 1400, to: 120, length: 1.1, q: 0.5, type: 'lowpass' })
-      // Nappe finale : accord de la majeur, attaque lente
-      ;[110, 164.81, 277.18].forEach((frequency) => {
-        const osc = ctx.createOscillator()
-        osc.frequency.value = frequency
-        const gain = ctx.createGain()
-        gain.gain.setValueAtTime(0, hit)
-        gain.gain.linearRampToValueAtTime(0.045, hit + 2.5)
-        osc.connect(gain).connect(bus)
-        osc.start(hit)
-        sources.push(osc)
-      })
+      kick(ctx, bus, now + 0.25, 0.75, { from: 58, to: 24, drop: 1.8, length: 3.6 })
+      noise(ctx, bus, now + 0.2, 0.3, { from: 700, to: 70, length: 2.4, q: 0.4, type: 'lowpass' })
+    },
+    sfx(name: SpaceCue) {
+      playSpaceCue(ctx, bus, name)
     },
     cue(name: TensionCue) {
       // L'éclatement suit la suspension : hors du bus, il ne dépend pas de l'instant où le bus revient

@@ -141,10 +141,53 @@
   }
 }
 
+/* Sous-titres des voix (EasterSubtitles.tsx), façon cinéma : bandeau sombre par ligne (contraste AA quelle
+   que soit l'image derrière : blanc sur au moins 78 % de noir), fondu court. */
+.subtitles {
+  position: absolute;
+  right: var(--gutter);
+  /* Au-dessus du tableau de bord du cockpit (≈ 25 % du bas de l'image), pas sur le HUD */
+  bottom: max(calc(var(--gutter) + 2.75rem), 27svh);
+  left: var(--gutter);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.subtitlesOn {
+  opacity: 1;
+  animation: subtitle-in 0.2s var(--ease);
+}
+
+@keyframes subtitle-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.subtitle {
+  display: inline;
+  padding: 0.12em 0.5em;
+  border-radius: 4px;
+  background: rgba(6, 6, 8, 0.78);
+  font-family: var(--font-text);
+  font-size: clamp(1rem, 1.8vw, 1.375rem);
+  line-height: 1.65;
+  color: #f5f5f7;
+  white-space: pre-line;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
   .highlight,
-  .caret {
+  .caret,
+  .subtitlesOn {
     animation: none;
+  }
+
+  .subtitles {
+    transition: none;
   }
 }

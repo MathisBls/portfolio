@@ -6,6 +6,9 @@ const root = import.meta.dirname
 
 export default defineConfig({
   plugins: [react()],
+  // Démo à distance du serveur de dev via un tunnel ngrok (sous-domaines *.ngrok-free.app)
+  server: { allowedHosts: ['.ngrok-free.app'] },
+  preview: { allowedHosts: ['.ngrok-free.app'] },
   build: {
     target: 'es2022',
     // La scène (three + R3F) est un chunk lazy d'environ 1 Mo non compressé, attendu.

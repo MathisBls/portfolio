@@ -3,20 +3,35 @@
 // et piégé dans l'overlay (Tab), Échap quitte à tout moment, bouton son (aria-pressed). La page
 // derrière est inerte et aria-hidden (session.ts) ; elle ne s'efface visuellement qu'au début de la
 // séquence (stage 'running').
-// En fin de séquence (stage 'finale'), « Exit » est mis en avant et la page revient seule après 8 s.
-import { type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+// En fin de séquence (stage 'finale'), « Exit » est mis en avant ; la page revient seule à la fin de la
+// musique du parc (useSequence.ts), ou après 8 s sans WebGL.
+// Sous-titres des voix (EasterSubtitles) en bas ; une seule région aria-live pour le message de la route
+// et, son coupé, les sous-titres (en français : lang="fr" sur l'annonce).
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { site } from '../content/site'
 import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from '../scene/store'
 import { isMuted, setMuted } from './audio'
 import { EasterMessage } from './EasterMessage'
 import styles from './EasterOverlay.module.css'
+import { EasterSubtitles } from './EasterSubtitles'
 import { useKonami } from './konami'
 import { beginEaster, endEaster, lockPage, setPageHidden } from './session'
 
 /** Retour automatique à la page après la fin de la séquence. */
 const AUTO_EXIT_MS = 8000
 const text = site.easter
+
+/** Annonce de la région aria-live : ligne de la route (anglais) ou sous-titre (français). */
+type Announce = { text: string; lang?: string }
 
 function useDialogKeys(root: RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -52,8 +67,15 @@ function Dialog() {
   const stage = useScene((s) => s.easterStage)
   const [webgl] = useState(hasWebGL2)
   const [soundOn, setSoundOn] = useState(() => !isMuted())
-  // Dernière ligne complète du message de la route, annoncée une fois (aria-live)
-  const [announced, setAnnounced] = useState('')
+  // Dernière ligne complète du message de la route ou sous-titre (son coupé), annoncé une fois
+  const [announced, setAnnounced] = useState<Announce>({ text: '' })
+  // Stables : EasterMessage relance sa frappe si son callback change
+  const announceLine = useCallback((line: string) => {
+    setAnnounced({ text: line })
+  }, [])
+  const announceSubtitle = useCallback((subtitle: string) => {
+    setAnnounced({ text: subtitle, lang: 'fr' })
+  }, [])
   const root = useRef<HTMLDivElement>(null)
   const exit = useRef<HTMLButtonElement>(null)
   const titleId = useId()
@@ -75,13 +97,15 @@ function Dialog() {
   }, [live])
 
   const done = stage === 'finale' || !webgl
+  // Sans WebGL : retour automatique. Avec la séquence, c'est la timeline qui ramène la page à la fin
+  // de la musique du parc (useSequence.ts) : le final reste affiché tant qu'elle joue.
   useEffect(() => {
-    if (!done) return
+    if (webgl) return
     const id = window.setTimeout(endEaster, AUTO_EXIT_MS)
     return () => {
       window.clearTimeout(id)
     }
-  }, [done])
+  }, [webgl])
 
   const toggleSound = () => {
     setMuted(soundOn)
@@ -131,9 +155,10 @@ function Dialog() {
       <p id={descId} className="sr-only">
         {text.description}
       </p>
-      <EasterMessage onLine={setAnnounced} />
-      <p className="sr-only" aria-live="polite">
-        {announced}
+      <EasterMessage onLine={announceLine} />
+      <EasterSubtitles soundOn={soundOn} onAnnounce={announceSubtitle} />
+      <p className="sr-only" aria-live="polite" lang={announced.lang}>
+        {announced.text}
       </p>
       {status && (
         <p className={styles.status} role="status">

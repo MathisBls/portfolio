@@ -1,6 +1,7 @@
 // Easter egg : chargement des GLB de public/models/easter/ (Draco, décodeur local /draco/ comme useModel).
-// Le préchargement part à l'évaluation du chunk lazy : les trois fichiers se téléchargent en parallèle
-// pendant que React monte la scène. Noms des nœuds : ceux de Blender (B_*, CARD_*, B_Logo).
+// Le préchargement part à l'évaluation du chunk lazy : les fichiers se téléchargent en parallèle pendant
+// que React monte la scène. Noms des nœuds : ceux de Blender (B_*, CARD_*, B_Logo ; park.glb, agent B :
+// Cockpit_*, Gate_*, Ship_*, Coaster_Car, Wheel_*, Screen_*, voir park/types.ts).
 import { useGLTF } from '@react-three/drei'
 import { type Group, type Material, Mesh, type Object3D } from 'three'
 
@@ -10,6 +11,7 @@ export const EASTER_MODELS = {
   arena: '/models/easter/arena.glb',
   cards: '/models/easter/cards.glb',
   logo: '/models/easter/b_logo.glb',
+  park: '/models/easter/park.glb',
 } as const
 
 export type EasterModel = keyof typeof EASTER_MODELS

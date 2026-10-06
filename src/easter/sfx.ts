@@ -1,6 +1,7 @@
 // Easter egg : sons ponctuels en Web Audio (aucun fichier audio). Utilisés par tension.ts : battement
-// de cœur (kick sinus à hauteur qui chute), impact du climax, bruit filtré (souffle, éclats de verre),
-// carillon de la légendaire. Chaque son crée ses nœuds et les libère à la fin (stop programmé).
+// de cœur (kick sinus à hauteur qui chute), grave de la sortie du warp, bruit filtré (souffle, éclats de
+// verre), carillon de la légendaire, et les sons des beats 6 et 7 (docs/storyboards/easter-park.md :
+// « souffle, impact doux », portes). Chaque son crée ses nœuds et les libère à la fin (stop programmé).
 import type { TensionCue } from './audio'
 
 /** Bruit blanc partagé (2 s), créé une fois par contexte. */
@@ -120,5 +121,26 @@ export function playCue(ctx: AudioContext, out: AudioNode, name: TensionCue) {
     kick(ctx, out, now, 0.4, { from: 80, to: 45, drop: 0.4, length: 1.2 })
   } else {
     noise(ctx, out, now, 0.22, { from: 300, to: 4500, length: 0.7, q: 0.8 })
+  }
+}
+
+/** Sons des beats 6 et 7 : souffle au mot, bond (et son arrivée), grondement des portes. */
+export type SpaceCue = 'reveal' | 'leap' | 'doors'
+
+export function playSpaceCue(ctx: AudioContext, out: AudioNode, name: SpaceCue) {
+  const now = ctx.currentTime + 0.01
+  if (name === 'reveal') {
+    // Souffle qui monte pendant que la porte s'allume, carillon grave et doux
+    noise(ctx, out, now, 0.22, { from: 180, to: 2600, length: 1.6, q: 0.7 })
+    chime(ctx, out, now + 0.3, [220, 329.63, 440], { peak: 0.035, gap: 0.12, length: 2.6 })
+  } else if (name === 'leap') {
+    // Bond : souffle large qui file, puis impact doux à l'arrivée devant la porte
+    noise(ctx, out, now, 0.32, { from: 260, to: 5200, length: 0.9, q: 0.6 })
+    kick(ctx, out, now + 1.05, 0.55, { from: 72, to: 30, drop: 0.7, length: 1.8 })
+    noise(ctx, out, now + 1.05, 0.18, { from: 900, to: 90, length: 1.4, q: 0.4, type: 'lowpass' })
+  } else {
+    // Portes : grondement grave qui roule, un choc sourd au déverrouillage
+    kick(ctx, out, now, 0.45, { from: 52, to: 30, drop: 0.5, length: 1.4 })
+    noise(ctx, out, now, 0.3, { from: 90, to: 420, length: 2.2, q: 0.5, type: 'lowpass' })
   }
 }

@@ -1,6 +1,7 @@
-// Easter egg, beat 5 : matériau des traînées d'étoiles (Streaks.tsx). Étoiles étirées dans l'axe de la
-// caméra, tout en vertex shader (zéro calcul CPU par frame) : profondeur qui boucle selon le trajet
-// parcouru, longueur et largeur selon la vitesse. Mélange additif, alpha 1 (HDR sous bloom).
+// Easter egg, beats 3 et 4 : matériau des traînées d'étoiles (Streaks.tsx). Étoiles étirées dans l'axe de
+// la caméra, tout en vertex shader (zéro calcul CPU par frame) : profondeur qui boucle selon le trajet
+// parcouru, longueur et largeur selon la vitesse, étirement de la sortie du warp, puis simples points.
+// Mélange additif, alpha 1 (HDR sous bloom).
 import {
   AdditiveBlending,
   Color,
@@ -55,18 +56,23 @@ export type StreakMaterial = ShaderMaterial & {
 
 export const STREAK_DEPTH = 140
 
-/** Réglage par frame des traînées : trajet (profondeur qui boucle), longueur, opacité, couleur. */
+/**
+ * Réglage par frame des traînées : trajet (profondeur qui boucle), longueur, opacité, couleur.
+ * `stretch` (0 -> 1) : étirement de la sortie du warp ; `fade` : effacement quand le ciel apparaît.
+ */
 export function updateStreaks(
   material: StreakMaterial,
   delta: number,
   speed: number,
   color: Color,
+  stretch = 0,
+  fade = 1,
 ): void {
   const u = material.uniforms
-  u.uTravel.value += delta * (8 + 260 * speed * speed)
-  u.uLength.value = 0.4 + 30 * speed * speed
-  u.uWidth.value = 0.04 + 0.1 * speed
-  u.uOpacity.value = Math.min(1, 0.15 + 1.4 * speed)
+  u.uTravel.value += delta * (8 + 260 * speed * speed) * (1 - 0.6 * stretch)
+  u.uLength.value = (0.4 + 30 * speed * speed) * (1 + 1.6 * stretch)
+  u.uWidth.value = 0.04 + 0.1 * speed * (1 - 0.5 * stretch)
+  u.uOpacity.value = Math.min(1, 0.15 + 1.4 * speed + 0.4 * stretch) * fade
   u.uColor.value.copy(color)
 }
 

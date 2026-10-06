@@ -1,17 +1,21 @@
-// Easter egg : pose de la caméra selon l'état de la séquence (E, state.ts). C'est la séquence qui pilote
-// la caméra (CameraRig est démonté) ; application et tremblement : EasterCamera.tsx. Sans allocation.
-// - Ciel (beat 1) : zoom lent vers le prisme intact (E.zoom, 0–5 s), recul bref à l'éclatement.
+// Easter egg v3 (docs/storyboards/easter-park.md, beats 1 à 7) : pose de la caméra selon l'état de la
+// séquence (E, state.ts). C'est la séquence qui pilote la caméra (CameraRig est démonté) ; application,
+// tremblement et délégation au parc (beat 8, parkCamera de D2) : EasterCamera.tsx. Sans allocation.
+// - Ciel (beat 1) : zoom de 3 s vers le prisme intact (E.zoom), recul bref à l'éclatement.
 // - Arène (beats 2–3) : descente du ciel vers la table, puis suit la distribution et les retournements
 //   (clés sur le temps, spline Catmull-Rom). Reduced-motion : plan fixe.
 // - Beat 4 : rapprochement du dos de la légendaire puis plongée sur le B (repère du B de la carte,
 //   LOGO_FRAME) jusqu'à ce que son rose remplisse l'écran.
-// - Beat 5 : la route, caméra fixe dans une voie (c'est la route qui défile), légère dérive, FOV qui
-//   s'élargit avec la vitesse.
-// - Beat 6 : le B entier, de face, secousse unique à l'impact.
+// - Route : caméra fixe dans une voie (c'est la route qui défile), légère dérive, FOV qui s'élargit avec
+//   la vitesse.
+// - Espace (beats 4 à 7) : à l'origine, regard vers −Z, dérive très lente (lacet, tangage, roulis de
+//   quelques centièmes de radian), FOV qui s'ouvre pour le cockpit ; au bond, le regard s'aligne sur la
+//   porte et le FOV pousse brièvement. C'est la porte qui approche (space/layout.ts).
 import { CatmullRomCurve3, Vector3 } from 'three'
 import { clamp, lerp, range } from '../lib/math'
-import { FINALE_CAMERA, LOGO_FRAME, SKY_CAMERA, SKY_Y } from './layout'
+import { LOGO_FRAME, SKY_CAMERA, SKY_Y } from './layout'
 import { CAMERA_Z } from './roadPath'
+import { GATE_DIRECTION } from './space/layout'
 import { type EasterState, SHOT } from './state'
 import { T } from './times'
 
@@ -64,6 +68,14 @@ const APPROACH = { y: 0.05, z: -5 }
 /** Route : caméra dans la voie de droite, regard vers l'horizon. */
 const ROAD = { x: 2.1, y: 1.55, look: { y: 1.05, z: -90 }, drift: 0.35 }
 
+/** Espace : dérive (amplitudes en radians, pulsations en rad/s), ouverture du FOV pour le cockpit. */
+const SPACE = {
+  yaw: { amp: 0.014, freq: 0.07 },
+  pitch: { amp: 0.009, freq: 0.053 },
+  roll: { amp: 0.022, freq: 0.041 },
+  fov: 60,
+}
+
 const local = { position: new Vector3(), look: new Vector3() }
 const scratch = new Vector3()
 const UP_Y = new Vector3(0, 1, 0)
@@ -106,6 +118,35 @@ function arenaPose(e: EasterState, pose: CameraPose, aspect: number, fov: number
   pose.look.lerp(scratch.copy(local.look).applyMatrix4(LOGO_FRAME), e.approach)
 }
 
+/** FOV du parc (donné pour un écran paysage) élargi en portrait : même champ horizontal qu'à 4:3. */
+export function portraitFov(fov: number, aspect: number): number {
+  const reference = 4 / 3
+  if (aspect >= reference) return fov
+  const half = Math.tan((fov * Math.PI) / 360) * reference
+  return clamp((2 * Math.atan(half / Math.max(aspect, 0.1)) * 180) / Math.PI, fov, 88)
+}
+
+/** FOV de l'espace : celui du cockpit de park.glb (60° en 16:9, park/types.ts), élargi en portrait. */
+export function spaceFov(aspect: number): number {
+  return portraitFov(SPACE.fov, aspect)
+}
+
+/** Beats 4 à 7 : dérive lente autour de −Z, regard aligné sur la porte au bond. */
+function spacePose(e: EasterState, pose: CameraPose, aspect: number, fov: number) {
+  const t = e.t
+  const still = e.reduced ? 0 : 1
+  const yaw = still * SPACE.yaw.amp * Math.sin(t * SPACE.yaw.freq)
+  const pitch = still * SPACE.pitch.amp * Math.sin(t * SPACE.pitch.freq + 1)
+  const roll = still * SPACE.roll.amp * Math.sin(t * SPACE.roll.freq + 2)
+  pose.position.set(0, 0, 0)
+  pose.look.set(Math.sin(yaw), Math.sin(pitch), -1).lerp(GATE_DIRECTION, e.leap)
+  pose.up.set(Math.sin(roll), Math.cos(roll), 0)
+  pose.fov =
+    lerp(fov, spaceFov(aspect), e.cockpit) +
+    40 * Math.pow(e.speed, 1.5) +
+    12 * Math.sin(Math.PI * e.leap)
+}
+
 export function solveCamera(e: EasterState, aspect: number, pose: CameraPose): void {
   const fov = baseFov(aspect)
   pose.fov = fov
@@ -122,17 +163,15 @@ export function solveCamera(e: EasterState, aspect: number, pose: CameraPose): v
     pose.look.set(ROAD.x * 0.85 + drift, ROAD.look.y, ROAD.look.z)
     pose.fov = fov + 40 * Math.pow(e.speed, 1.5)
   } else {
-    pose.position.fromArray(FINALE_CAMERA)
-    pose.look.set(0, 0, 0)
-    pose.fov = fov + 5 * e.impact
+    spacePose(e, pose, aspect, fov)
   }
 }
 
-/** Amplitude du tremblement (radians) : tension du zoom, éclatement, vitesse, impact. Rien en reduced. */
+/** Amplitude du tremblement (radians) : tension du zoom, éclatement, vitesse, bond. Rien en reduced. */
 export function shakeAmount(e: EasterState): number {
   if (e.reduced) return 0
   if (e.shot === SHOT.sky) return 0.0025 * e.tremble + 0.03 * e.kick
   if (e.shot === SHOT.arena) return 0.002 * e.charge
   if (e.shot === SHOT.road) return 0.011 * e.speed * e.speed
-  return 0.02 * e.impact
+  return 0.02 * e.kick + 0.006 * Math.sin(Math.PI * e.leap)
 }

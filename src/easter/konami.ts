@@ -2,6 +2,7 @@
 // lignes, aucun import de three. La logique pure (createKonami, normalizeKey, isModified) est testée
 // (konami.test.ts) ; useKonami la branche sur window, hors champs de formulaire.
 import { useEffect } from 'react'
+import { consumeDebugStart } from './debug'
 
 export const KONAMI = [
   'ArrowUp',
@@ -51,10 +52,17 @@ function isFormField(target: EventTarget | null): boolean {
   )
 }
 
-/** Appelle `onUnlock` (stable) à la fin de la séquence. Inactif si `enabled` est faux. */
+/**
+ * Appelle `onUnlock` (stable) à la fin de la séquence. Inactif si `enabled` est faux. En DEV, `?easter=1`
+ * ou `?easter-at=<s>` déverrouille dès le montage (debug.ts).
+ */
 export function useKonami(onUnlock: () => void, enabled = true): void {
   useEffect(() => {
     if (!enabled) return
+    if (consumeDebugStart()) {
+      onUnlock()
+      return
+    }
     const match = createKonami()
     const onKeyDown = (event: KeyboardEvent) => {
       if (isModified(event) || isFormField(event.target)) return

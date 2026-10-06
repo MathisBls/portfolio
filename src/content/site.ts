@@ -128,6 +128,7 @@ export const site = {
       text: [
         'Text, visuals and 3D models: © Mathis Boulais.',
         'Fonts Instrument Serif, Inter and JetBrains Mono, under the SIL Open Font License 1.1.',
+        'Planet textures: Solar System Scope (solarsystemscope.com), based on NASA data, CC BY 4.0. Milky Way panorama: ESO/S. Brunier, CC BY 4.0.',
       ],
     },
     labels: {
@@ -144,11 +145,12 @@ export const site = {
     legal: 'Legal notice',
     home: 'Back to home',
   },
-  // Easter egg (code Konami, src/easter/) : overlay de la séquence. Aucun nom de marque.
+  // Easter egg (code Konami, src/easter/) : overlay de la séquence. Nom BoulardTV assumé (décision du
+  // 2026-10-06), aucun lien vers la plateforme.
   easter: {
     label: 'Secret level',
     description:
-      'A glass prism shatters, a card arena lights up and three cards are turned over. Then a road at light speed, past my projects, toward a giant B. Decorative only. Press Escape to leave at any time.',
+      'A glass prism shatters, a card arena lights up and three cards are turned over. Then a road at light speed, past my projects. The ship drops out of warp into deep space and Houston calls on the radio, in French with subtitles: a signal is coming, and its name is BoulardTV. The gates of a space theme park open. You fly through it in a ship, past giant screens, planets and a roller coaster, up to a giant B. Decorative only. Press Escape to leave at any time.',
     loading: 'Loading…',
     noWebGL: 'This one needs WebGL 2. Press Escape to go back.',
     sound: 'Sound',
@@ -158,5 +160,42 @@ export const site = {
     exitKey: '(Esc)',
     // Message tapé sur la route (src/easter/times.ts, T.lines) : chaque ligne remplace la précédente
     lines: ['You’ve seen my projects.', 'Well… almost.', 'There’s one I never told you about.'],
+    // Sous-titres des voix, en français comme les voix (lang="fr" à l'affichage) : index i = SUBTITLES[i]
+    // de src/easter/voice.ts (clip et repères). « \n » : retour à la ligne, 42 caractères au plus par ligne.
+    subtitles: [
+      'Ici Houston… vous me recevez ?',
+      'Il y a des millions d’années,\nl’Homme a levé les yeux vers le ciel…',
+      '… et il a eu peur.',
+      'Puis il a découvert le feu.',
+      'Il a inventé la roue,\nl’écriture, les cathédrales.',
+      'Il a traversé les océans,\ndompté l’électricité,',
+      'il a même posé le pied sur la Lune.',
+      'Il a créé Internet…\net des milliards de vidéos.',
+      'Des chats. Des tutos. Des clashs.',
+      'Mais au fond, l’humanité\ncherchait encore quelque chose.',
+      'Une chose plus grande que les étoiles.',
+      'Ce soir, après des siècles de recherche…\nnotre radar vient de capter un signal.',
+      'Inconnu. Puissant.',
+      'Il se rapproche de la Terre\nà une vitesse impossible…',
+      'On confirme son identité…',
+      'Explorer, vous me recevez ?',
+      'Le signal porte un nom…',
+      'BoulardTV.',
+      'Alors… mesdames et messieurs…\nles portes s’ouvrent… MAINTENANT !',
+      'Bienvenue… à BOULARDTV !',
+    ],
+    // Libellés du HUD du cockpit (beats 4 à 6), décoratifs : l'histoire est dans `description`
+    hud: {
+      ship: 'EXPLORER',
+      comms: 'HOUSTON · COMMS',
+      radar: 'RADAR',
+      signal: 'SIGNAL DETECTED',
+      unknown: 'UNKNOWN',
+      distance: 'DISTANCE',
+      velocity: 'VELOCITY',
+      identity: 'IDENTITY',
+      locked: 'LOCKED',
+      name: 'BOULARDTV',
+    },
   },
 }

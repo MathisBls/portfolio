@@ -154,6 +154,8 @@ type SceneState = {
   easterStage: EasterStage
   /** Ligne du message affichée sur la route (site.easter.lines), −1 : aucune. */
   easterLine: number
+  /** Sous-titre affiché (site.easter.subtitles, repères dans src/easter/voice.ts), −1 : aucun. */
+  easterSubtitle: number
   setHovered: (slug: Project['slug'] | null) => void
   setProjectsNear: (near: boolean) => void
   setIdeaSent: () => void
@@ -162,6 +164,7 @@ type SceneState = {
   exitEaster: () => void
   setEasterStage: (stage: EasterStage) => void
   setEasterLine: (line: number) => void
+  setEasterSubtitle: (index: number) => void
 }
 
 export const useScene = create<SceneState>((set) => ({
@@ -171,6 +174,7 @@ export const useScene = create<SceneState>((set) => ({
   easter: 'idle',
   easterStage: 'loading',
   easterLine: -1,
+  easterSubtitle: -1,
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
@@ -183,10 +187,16 @@ export const useScene = create<SceneState>((set) => ({
     invalidate()
   },
   startEaster: () => {
-    set({ easter: 'playing', easterStage: 'loading', easterLine: -1, hovered: null })
+    set({
+      easter: 'playing',
+      easterStage: 'loading',
+      easterLine: -1,
+      easterSubtitle: -1,
+      hovered: null,
+    })
   },
   exitEaster: () => {
-    set({ easter: 'idle', easterStage: 'loading', easterLine: -1 })
+    set({ easter: 'idle', easterStage: 'loading', easterLine: -1, easterSubtitle: -1 })
     invalidate()
   },
   setEasterStage: (stage) => {
@@ -194,5 +204,8 @@ export const useScene = create<SceneState>((set) => ({
   },
   setEasterLine: (line) => {
     set({ easterLine: line })
+  },
+  setEasterSubtitle: (index) => {
+    set({ easterSubtitle: index })
   },
 }))

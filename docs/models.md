@@ -47,3 +47,14 @@ Relevées dans les GLB exportés (accessors POSITION et transforms des nodes), e
 
 - Une part : **pointe à l'origine**, croûte à x = 1.6, z ∈ [−0.61, 0.61], hauteur 0.22. `Dough`, `Sauce`, `Cheese`, `Crust`, 4 `Pep*`, 3 `Basil*`.
 - Pour pivoter autour du centre de la part, décaler le contenu de x = −0.8 dans un `<group>`.
+
+## park.glb (easter egg v3, ~800 Ko, scripts/blender/model_easter_park.py)
+
+Modélisé entièrement par script depuis une scène vide (`"D:/Blender/blender.exe" -b --factory-startup --python scripts/blender/model_easter_park.py`, ajouter `-- --render <dossier>` pour les vignettes EEVEE). Source : `blender/easter_park.blend`. Aucune texture : matériaux PBR, émissifs nommés (`GateNeon`, `GateLights`, `ShipEngine`, `CockpitScreen`, `ScreenPanel`…). Types et cotes : `src/easter/park/types.ts`.
+
+- **Cockpit** (caméra à l'origine, regard -Z, fov 60°, 16:9) : `Cockpit_Frame` (arceau, rivets, joints, filet LED rose), `Cockpit_Dash` (25 % du bas de l'image), `Cockpit_ScreenL/C/R` (quads UV 0→1, C 16:9, L/R 4:3), `Cockpit_Stick` (hors champ).
+- **Porte** (plan XY, face +Z) : `Gate_Ring` Ø 77 m (r 30 → 38.5, modules jusqu'à r 41), `Gate_Sign` (BOULARDTV en arc, y 33 → 52 m, UV.x = position dans le mot), `Gate_Lights` (UV.x = angle depuis le bas / π), `Gate_DoorL/R` (demi-disques r 29.85, origine = charnière en x = ∓29.9 : `rotation.y` = +θ / -θ, θ ≤ 100°).
+- **Vaisseaux** (avant -Z, flammes `Ship_X_Engine` enfants) : `Ship_A` chasseur 13 m, `Ship_B` yacht 32 m, `Ship_C` cargo 41.7 m.
+- **Wagon** `Coaster_Car` : 3.4 m, centré sur un rail tubulaire r 0.18 m selon Z.
+- **Grande roue** (plan XY) : `Wheel_Rim` Ø 60 m (tourner = `rotation.z`), `Wheel_Hub` (pylônes, socle à y -39 m), `Wheel_Cabin` (origine = accroche ; 24 accroches sur r = 30 m).
+- **Écran** : `Screen_Frame` + `Screen_Panel` 16 × 9 m face +Z (z = 0.62), UV 0→1.

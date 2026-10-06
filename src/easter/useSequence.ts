@@ -1,15 +1,21 @@
-// Easter egg : lance la séquence quand la scène est prête (stage 'running') : état remis à zéro,
-// moteur de tension branché sur l'AudioContext ouvert au déverrouillage (audio.ts), timeline GSAP
-// (timeline.ts). Onglet masqué : timeline et son en pause (sinon le ticker GSAP, sans lissage du
-// décalage quand Lenis tourne, sauterait à la fin au retour). Intensité du son relue chaque frame.
-// En dev : window.__easter (seek, pause, play) pour vérifier chaque beat.
+// Easter egg v3 (docs/storyboards/easter-park.md, « Contrats entre agents », hooks de la timeline) : lance
+// la séquence quand la scène est prête (stage 'running') : état remis à zéro, moteur de tension branché
+// sur l'AudioContext ouvert au déverrouillage (audio.ts), timeline GSAP (timeline.ts) dont les hooks
+// jouent les clips (voice.ts, playClip) et posent message et sous-titres dans le store. Onglet masqué :
+// timeline en pause (le contexte audio est suspendu par audio.ts ; sinon le ticker GSAP, sans lissage
+// du décalage quand Lenis tourne, sauterait à la fin au retour). Intensité du son relue chaque frame.
+// En DEV : `?easter-at=<s>` démarre à ce temps (debug.ts) et window.__easter (seek, pause, play).
 import { useFrame } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { useScene } from '../scene/store'
 import { attachEngine, getAudioContext, getEngine } from './audio'
+import { debugStartAt } from './debug'
+import { endEaster } from './session'
 import { E, resetEaster } from './state'
-import { createTension } from './tension'
+import { type SequenceEngine, createTension } from './tension'
+import { R, T, clipStart, cueAt, lineCues, subtitleCues } from './times'
 import { buildTimeline } from './timeline'
+import { CLIPS, type ClipId, loadClips, playClip, stopClips } from './voice'
 
 type Debug = {
   seek: (t: number) => void
@@ -19,38 +25,78 @@ type Debug = {
   audio: () => string
 }
 
+const CLIP_IDS = Object.keys(CLIPS) as ClipId[]
+/** Silence après la dernière note de la musique, avant le retour à la page (s). */
+const MUSIC_TAIL = 2
+
 let sentIntensity = -1
+
+/**
+ * Saut de debug à `t` : la timeline est rendue à ce temps sans ses appels (seek), puis on rétablit ce
+ * qu'ils auraient posé : ligne, sous-titre, sortie du warp côté son, clip en cours à la bonne position.
+ */
+function jumpTo(
+  tl: gsap.core.Timeline,
+  t: number,
+  engine: SequenceEngine | null,
+  isLive: () => boolean,
+): void {
+  const reduced = E.reduced
+  tl.seek(t)
+  const scene = useScene.getState()
+  scene.setEasterLine(cueAt(lineCues(reduced), t))
+  scene.setEasterSubtitle(cueAt(subtitleCues(reduced), t))
+  if (t >= (reduced ? R.warp : T.warp)) engine?.climax()
+  stopClips(0.05)
+  void loadClips().then(() => {
+    if (!isLive()) return
+    const now = tl.time()
+    for (const id of CLIP_IDS) {
+      const start = clipStart(id, reduced)
+      if (now >= start && now < start + CLIPS[id].duration) playClip(id, now - start)
+    }
+  })
+}
 
 export function useSequence(running: boolean, reducedMotion: boolean, bloom: boolean): void {
   useEffect(() => {
     if (!running) return
     resetEaster(reducedMotion, bloom)
     sentIntensity = -1
+    let live = true
+    const isLive = () => live
     const ctx = getAudioContext()
     const engine = ctx ? createTension(ctx) : null
     attachEngine(engine)
+    const scene = useScene.getState()
     const tl = buildTimeline({
       cue: (name) => engine?.cue(name),
+      sfx: (name) => engine?.sfx(name),
       hush: () => engine?.hush(),
       climax: () => engine?.climax(),
       line: (index) => {
-        useScene.getState().setEasterLine(index)
+        scene.setEasterLine(index)
+      },
+      clip: (id) => {
+        playClip(id)
+      },
+      subtitle: (index) => {
+        scene.setEasterSubtitle(index)
       },
       finale: () => {
-        useScene.getState().setEasterStage('finale')
+        scene.setEasterStage('finale')
       },
     })
+    // Retour à la page quand la musique du parc se termine (le final reste affiché tant qu'elle joue)
+    tl.call(endEaster, [], clipStart('park', reducedMotion) + CLIPS.park.duration + MUSIC_TAIL)
     engine?.start()
+    const at = debugStartAt()
+    if (at !== null) jumpTo(tl, at, engine, isLive)
     tl.play()
 
     const onVisibility = () => {
-      if (document.hidden) {
-        tl.pause()
-        void ctx?.suspend().catch(() => undefined)
-      } else {
-        tl.resume()
-        void ctx?.resume().catch(() => undefined)
-      }
+      if (document.hidden) tl.pause()
+      else tl.resume()
     }
     document.addEventListener('visibilitychange', onVisibility)
 
@@ -59,7 +105,7 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
       host.__easter = {
         seek: (t) => {
           tl.pause()
-          tl.seek(t)
+          jumpTo(tl, t, engine, isLive)
         },
         play: () => {
           tl.play()
@@ -72,9 +118,12 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
       }
     }
     return () => {
+      live = false
       document.removeEventListener('visibilitychange', onVisibility)
       tl.kill()
-      useScene.getState().setEasterLine(-1)
+      scene.setEasterLine(-1)
+      scene.setEasterSubtitle(-1)
+      stopClips(0.4)
       engine?.stop()
       attachEngine(null)
       delete host.__easter

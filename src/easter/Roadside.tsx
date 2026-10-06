@@ -1,6 +1,7 @@
-// Easter egg, beat 5 (retour de Mathis du 2026-10-06) : « On dépasse les modèles des projets comme des
-// repères, alternés gauche et droite, à bonne échelle. » Placement et passage : roadPath.ts (LANDMARKS, la
-// distance de chaque repère, landmarkZ) ; modèles et animations légères : RoadsideWegir.tsx et
+// Easter egg v3, beat 3 (docs/storyboards/easter-park.md, route : « on dépasse plus de choses ») : « On
+// dépasse les modèles des projets comme des repères, alternés gauche et droite, à bonne échelle », un
+// toutes les 2.2 s pendant la montée lente. Placement et passage : roadPath.ts (LANDMARKS, la distance
+// de chaque repère, landmarkZ) ; modèles et animations légères : RoadsideWegir.tsx et
 // roadsideMarks.tsx. Chaque repère est tourné vers la route, posé sur une aura discrète pour se
 // détacher de la nuit. Reduced-motion : route immobile, repères rapprochés et figés.
 import { useFrame } from '@react-three/fiber'
@@ -44,7 +45,7 @@ export function Roadside({ reducedMotion }: RoadsideProps) {
   const marks = useRef<(Group | null)[]>([])
 
   useFrame(() => {
-    const onRoad = E.shot === SHOT.road
+    const onRoad = E.shot === SHOT.road && E.roadDim < 0.999
     for (let i = 0; i < LANDMARKS.length; i++) {
       const group = marks.current[i]
       if (!group) continue

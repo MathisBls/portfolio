@@ -1,6 +1,8 @@
-// Easter egg (code Konami) : scène de la séquence, chunk lazy chargé seulement au déverrouillage
-// (Scene.tsx, React.lazy), avec ses GLB (models.ts). Monté dans le Canvas unique ; il remplace le contenu
-// normal (prisme, éclats, objets) et CameraRig : c'est la séquence qui pilote la caméra.
+// Easter egg v3 (code Konami, docs/storyboards/easter-park.md, toute la séquence) : scène de la séquence,
+// chunk lazy chargé seulement au déverrouillage (Scene.tsx, React.lazy), avec ses GLB (models.ts) et ses
+// textures. Monté dans le Canvas unique ; il remplace le contenu normal (prisme, éclats, objets) et
+// CameraRig : c'est la séquence qui pilote la caméra. Beats 1 à 3 : prisme, arène, cartes, route ;
+// beats 4 à 7 : espace (space/) ; beats 8 et 9 : le parc (park/, D2).
 // Étapes (store.ts, easterStage) :
 // - 'loading' : chunk et modèles ; la scène normale reste affichée, la page aussi.
 // - 'compiling' : frameloop "never" (dernière image figée), scène normale démontée, objets de la
@@ -8,8 +10,8 @@
 // - 'running' : rendu continu, timeline (useSequence) ; la page s'efface (overlay, html.easter-live).
 // Paliers : desktop (bloom, transmission absente), mobile (moins d'objets, sans postprocessing),
 // reduced-motion (fondus seulement : ni éclatement, ni plongée, route immobile, ni traînées, ni
-// postprocessing). Modèles chargés pendant 'loading' : les trois GLB de l'easter egg, le prisme, et
-// les cinq projets de la route (useModel, docs/models.md) avec l'écran de l'app fitness.
+// postprocessing). Modèles chargés pendant 'loading' : les GLB de l'easter egg, le prisme, les cinq
+// projets de la route (useModel, docs/models.md) avec l'écran de l'app fitness, et le ciel de l'espace.
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { useContinuousInvalidate } from '../scene/hooks'
@@ -22,11 +24,15 @@ import { Cards } from './Cards'
 import { EasterCamera } from './EasterCamera'
 import { EasterEffects } from './EasterEffects'
 import { EasterLights } from './EasterLights'
-import { GiantB } from './GiantB'
-import { preloadEasterModels, useEasterModel } from './models'
+import { type EasterGLTF, preloadEasterModels, useEasterModel } from './models'
+import { Park } from './park/Park'
 import { Road } from './Road'
 import { Roadside } from './Roadside'
 import { Shatter } from './Shatter'
+import { Cockpit } from './space/Cockpit'
+import { Gate } from './space/Gate'
+import { Sky } from './space/Sky'
+import { useSpaceParts } from './space/useSpaceParts'
 import { resetEaster } from './state'
 import { Streaks } from './Streaks'
 import { useSequence } from './useSequence'
@@ -38,6 +44,7 @@ preloadEasterModels()
 PROJECTS.forEach(preloadModel)
 
 type EasterSceneProps = { mobile: boolean; reducedMotion: boolean }
+type WorldProps = EasterSceneProps & { park: EasterGLTF }
 
 /** Précompilation des shaders de la séquence, puis départ (stage 'running'). */
 function Compile() {
@@ -61,12 +68,13 @@ function Compile() {
   return null
 }
 
-function World({ mobile, reducedMotion }: EasterSceneProps) {
+function World({ mobile, reducedMotion, park }: WorldProps) {
   const stage = useScene((s) => s.easterStage)
   const running = stage === 'running' || stage === 'finale'
   const bloom = !mobile && !reducedMotion
   useSequence(running, reducedMotion, bloom)
   useContinuousInvalidate(running)
+  const space = useSpaceParts(park.nodes)
   return (
     <>
       <EasterCamera />
@@ -75,10 +83,19 @@ function World({ mobile, reducedMotion }: EasterSceneProps) {
       <Shatter mobile={mobile} reducedMotion={reducedMotion} />
       <Arena bloom={bloom} mobile={mobile} />
       <Cards bloom={bloom} reducedMotion={reducedMotion} />
-      <Road mobile={mobile} />
+      <Road mobile={mobile} reducedMotion={reducedMotion} />
       <Roadside reducedMotion={reducedMotion} />
-      <GiantB bloom={bloom} reducedMotion={reducedMotion} />
       {!reducedMotion && <Streaks mobile={mobile} />}
+      <Sky mobile={mobile} reducedMotion={reducedMotion} />
+      <Gate nodes={space} bloom={bloom} />
+      <Cockpit
+        nodes={space}
+        model={park.nodes}
+        mobile={mobile}
+        bloom={bloom}
+        reducedMotion={reducedMotion}
+      />
+      <Park mobile={mobile} reducedMotion={reducedMotion} bloom={bloom} />
       {bloom && <EasterEffects />}
       {stage === 'compiling' && <Compile />}
     </>
@@ -90,6 +107,7 @@ export default function EasterScene({ mobile, reducedMotion }: EasterSceneProps)
   useEasterModel('arena')
   useEasterModel('cards')
   useEasterModel('logo')
+  const park = useEasterModel('park')
   useModel('prism')
   useModel('wegir')
   useModel('zephyr')
@@ -108,5 +126,5 @@ export default function EasterScene({ mobile, reducedMotion }: EasterSceneProps)
   }, [stage, reducedMotion, mobile, setFrameloop])
 
   if (stage === 'loading') return null
-  return <World mobile={mobile} reducedMotion={reducedMotion} />
+  return <World mobile={mobile} reducedMotion={reducedMotion} park={park} />
 }

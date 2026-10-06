@@ -1,18 +1,25 @@
 // Easter egg : entrée et sortie côté page (bundle initial, aucun import de three).
-// - beginEaster : appelé dans le keydown du code Konami (geste utilisateur : ouvre l'AudioContext).
+// - beginEaster : appelé dans le keydown du code Konami (geste utilisateur : ouvre l'AudioContext), puis
+//   lance le chargement des voix et de la musique (voice.ts, chunk à part importé à la demande).
 // - lockPage : Lenis arrêté, scroll bloqué (html.easter), DOM de la page inerte et aria-hidden ; le
 //   masquage visuel (html.easter-live) n'arrive qu'au début de la séquence, quand la scène est prête.
 // - La sortie restaure tout : attributs, position de scroll, Lenis, focus.
 import { getLenis } from '../lib/lenis'
 import { prefersReducedMotion } from '../lib/useReducedMotion'
+import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from '../scene/store'
 import { closeAudio, openAudio } from './audio'
 
 export function beginEaster(): void {
   const scene = useScene.getState()
   if (scene.easter !== 'idle') return
-  openAudio(prefersReducedMotion())
+  // Sans WebGL 2 la séquence ne démarre pas : ni musique ni clips à charger
+  const webgl = hasWebGL2()
+  openAudio(prefersReducedMotion(), webgl)
   scene.startEaster()
+  if (webgl) {
+    void import('./voice').then((voice) => voice.loadClips()).catch(() => undefined)
+  }
 }
 
 export function endEaster(): void {

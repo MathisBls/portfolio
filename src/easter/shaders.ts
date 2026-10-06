@@ -1,9 +1,9 @@
 // Easter egg : matériaux procéduraux (aucune texture à télécharger), et leurs réglages par frame.
 // - Halo : dégradé radial additif (éclair du prisme, auras des cartes, halo rouge du final), face
 //   caméra ou posé. Mélange additif avec alpha 1 : la couleur s'ajoute telle quelle (HDR sous bloom).
-// - Fondu : quad plein écran (noir des transitions, rose du passage carte -> route), vignette noire qui
-//   resserre le zoom sur le prisme puis rouge sur la route et au final. Sans postprocessing (mobile,
-//   reduced-motion), c'est lui qui porte l'ambiance rouge.
+// - Fondu : quad plein écran (noir des transitions, rose du passage carte -> route, blanc rosé de la
+//   lumière des portes du parc), vignette noire qui resserre le zoom sur le prisme puis rouge sur la
+//   route et au final. Sans postprocessing (mobile, reduced-motion), c'est lui qui porte l'ambiance rouge.
 // Traînées d'étoiles : streakShader.ts.
 import {
   AdditiveBlending,
@@ -122,12 +122,17 @@ export function createFader(): FaderMaterial {
 
 export const FULLSCREEN_QUAD = new PlaneGeometry(2, 2)
 
-const FADE = { black: new Color('#000000'), pink: new Color('#f2b6ac') }
+const FADE = {
+  black: new Color('#000000'),
+  pink: new Color('#f2b6ac'),
+  /** Lumière qui inonde à l'ouverture des portes (beat 7) : blanc rosé, au-dessus de 1 sous bloom. */
+  light: new Color('#ffeef4'),
+}
 const VIGNETTE = { black: new Color('#000000'), red: new Color('#3a0006') }
 
 export type FaderState = {
   fade: number
-  /** Teinte du fondu : 0 noir, 1 rose du B. */
+  /** Teinte du fondu : 0 noir, 1 rose du B, 2 blanc rosé (lumière des portes). */
   tint: number
   vignette: number
   /** Teinte de la vignette : 0 noire, 1 rouge. */
@@ -139,7 +144,8 @@ export type FaderState = {
 export function updateFader(material: FaderMaterial, state: FaderState): boolean {
   const u = material.uniforms
   u.uFade.value = state.fade
-  u.uFadeColor.value.copy(FADE.black).lerp(FADE.pink, state.tint)
+  if (state.tint <= 1) u.uFadeColor.value.copy(FADE.black).lerp(FADE.pink, state.tint)
+  else u.uFadeColor.value.copy(FADE.pink).lerp(FADE.light, Math.min(1, state.tint - 1))
   u.uVignette.value = state.vignette
   u.uVignetteColor.value.copy(VIGNETTE.black).lerp(VIGNETTE.red, state.red)
   u.uAspect.value = state.aspect
