@@ -2,6 +2,8 @@
 // voitures roulent sur l'arc (centre (−2.2, 0, 0), rayon 2.2, φ ∈ [−70°, 70°], bouclage),
 // rotation.y = π/2 − φ, roues en rotation.y. Groupe recentré (+0.6 en x) et incliné (x 0.5) pour lire
 // la route d'en haut. Survol : vitesse ×1.8. » Mesures : docs/models.md (wegir.glb).
+// Ajout du 2026-10-06 : un téléphone (celui de fitness.glb) debout au bout de la route fait défiler les
+// vrais écrans de l'app (captures de Mathis) ; il reste face caméra, hors de l'inclinaison de la route.
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Group, Mesh } from 'three'
@@ -9,6 +11,7 @@ import { easeInOut, range } from '../../lib/math'
 import { useModel } from '../useModel'
 import { Part } from './Part'
 import { useAnchoredObject } from './useAnchoredObject'
+import { useScreenCycle } from './useScreenCycle'
 
 type WegirProps = { slug: string }
 
@@ -40,8 +43,17 @@ const VIEW = { tilt: 0.5, turn: -Math.PI / 2 }
 
 const wrap = (v: number, n: number) => ((v % n) + n) % n
 
+const SCREENS = ['intro', 'convoit', 'convoi', 'signalement', 'amis', 'qr-code-convoi'].map(
+  (name) => `/textures/wegir/${name}.webp`,
+)
+/** Téléphone au bout droit de la route, un peu devant, de trois quarts. */
+const PHONE = { position: [2.05, 0.25, 0.7] as [number, number, number], scale: 0.62, turn: -0.35 }
+
 export function Wegir({ slug }: WegirProps) {
   const { nodes } = useModel('wegir')
+  const { nodes: device } = useModel('fitness')
+  const { materials, shownRef, nextRef, update } = useScreenCycle(SCREENS, { hold: 2.4 })
+  const phone = useRef<Group>(null)
   // Recentrage +0.6 en x (centre du modèle −0.6) ; emprise vue de face, arc en largeur
   const {
     ref: anchor,
@@ -60,6 +72,9 @@ export function Wegir({ slug }: WegirProps) {
 
   useFrame(() => {
     if (!visibleRef.current) return
+    update(phase.current)
+    const ph = phone.current
+    if (ph) ph.rotation.y = PHONE.turn + 0.12 * Math.sin(phase.current * 0.5)
     // Angle parcouru : φ décroît, la voiture avance selon son +X local
     const travelled = SPEED * phase.current
     const spin = -(ARC.radius * travelled) / WHEEL_RADIUS
@@ -81,6 +96,17 @@ export function Wegir({ slug }: WegirProps) {
 
   return (
     <group ref={anchor} visible={false}>
+      <group ref={phone} position={PHONE.position} scale={PHONE.scale} rotation-y={PHONE.turn}>
+        <Part node={device.Fit_Body} />
+        <Part ref={shownRef} node={device.Fit_Screen} material={materials.shown} />
+        <Part
+          ref={nextRef}
+          node={device.Fit_Screen}
+          material={materials.next}
+          position-z={device.Fit_Screen.position.z + 0.001}
+          visible={false}
+        />
+      </group>
       <group rotation-x={VIEW.tilt}>
         <group rotation-y={VIEW.turn}>
           <group position={offset}>

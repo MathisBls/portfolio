@@ -1,5 +1,5 @@
 // Amortissement commun des effets de pointeur (pointer.ts) : CameraRig (parallaxe), PrismLook,
-// useAnchoredObject (objet survolé), AmbientShapes (dérive). Passe « motion », sans storyboard dédié.
+// useAnchoredObject (objet survolé), ShardField (dérive). Passe « motion », sans storyboard dédié.
 // Valeur 2D amortie par THREE.MathUtils.damp, sans allocation par frame. frameloop="demand" : elle
 // demande une frame tant que l'écart à la cible dépasse EPS, puis se cale sur la cible et s'arrête
 // (aucune boucle au repos).

@@ -145,6 +145,13 @@ export type GameFactoryGLTF = GLTFBase & {
 
 export type PizzaGLTF = GLTFBase & {
   nodes: {
+    Pizza_Browser_Root: THREE.Object3D
+    Pizza_BrowserFrame: THREE.Mesh
+    Pizza_BrowserBar: THREE.Mesh
+    Pizza_Site: THREE.Mesh
+    Pizza_Dot0: THREE.Mesh
+    Pizza_Dot1: THREE.Mesh
+    Pizza_Dot2: THREE.Mesh
     Dough: THREE.Mesh
     Sauce: THREE.Mesh
     Cheese: THREE.Mesh
@@ -158,6 +165,12 @@ export type PizzaGLTF = GLTFBase & {
     Basil12005: THREE.Mesh
   }
   materials: {
+    BrowserFrame: THREE.MeshStandardMaterial
+    BrowserBar: THREE.MeshStandardMaterial
+    BrowserSite: THREE.MeshStandardMaterial
+    BrowserDotR: THREE.MeshStandardMaterial
+    BrowserDotY: THREE.MeshStandardMaterial
+    BrowserDotG: THREE.MeshStandardMaterial
     Crust: THREE.MeshStandardMaterial
     Sauce: THREE.MeshStandardMaterial
     Cheese: THREE.MeshStandardMaterial

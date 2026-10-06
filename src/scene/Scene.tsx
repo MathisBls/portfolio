@@ -3,8 +3,10 @@
 // Storyboard hero (docs/storyboards/hero.md) §3 (Scene.tsx : monte Prism, HeroTitle3D, Effects ;
 // antialias selon composer) et §5 Budget (desktop / mobile / reduced-motion).
 // Storyboard projets (docs/storyboards/projects.md §3) : monte ProjectObjects (objets 3D des cards,
-// desktop hors reduced-motion, quand la section approche). AmbientShapes : formes d'ambiance (demande
-// de Mathis, sans storyboard), derrière les objets (z −9 à −2).
+// desktop hors reduced-motion, quand la section approche).
+// docs/storyboards/story-v2.md, Contrats : ShardField (éclats de verre, z −10 à −1, plus quelques-uns
+// près de la caméra) remplace AmbientShapes (fichier gardé pour l'instant) ; son intro d'assemblage
+// démarre à la première frame rendue après Warmup et révèle le prisme.
 // Passe « motion » (sans storyboard) : PointerBridge branche le pointeur (pointer.ts) sur desktop à
 // pointeur fin hors reduced-motion ; PrismLook oriente le prisme vers lui et le fait réagir au clic.
 import { Canvas, useThree } from '@react-three/fiber'
@@ -13,11 +15,11 @@ import { useMediaQuery } from '../lib/media'
 import { CameraRig } from './CameraRig'
 import { Effects } from './Effects'
 import { Lighting } from './Lighting'
-import { AmbientShapes } from './objects/AmbientShapes'
 import { HeroTitle3D } from './objects/HeroTitle3D'
 import { Prism } from './objects/Prism'
 import { PrismLook } from './objects/PrismLook'
 import { ProjectObjects } from './objects/ProjectObjects'
+import { ShardField } from './objects/ShardField'
 import { FINE_POINTER_QUERY, bindPointer } from './pointer'
 import { setInvalidate, setSceneLive } from './store'
 
@@ -116,7 +118,7 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
         <PrismLook>
           <Prism mobile={mobile} reducedMotion={reducedMotion} />
         </PrismLook>
-        <AmbientShapes mobile={mobile} reducedMotion={reducedMotion} />
+        <ShardField mobile={mobile} reducedMotion={reducedMotion} />
         {composer && <HeroTitle3D reducedMotion={reducedMotion} />}
         {composer && <Effects />}
         <Warmup />

@@ -1,6 +1,6 @@
 // Pointeur de la scène (passe « motion », demande de Mathis, sans storyboard dédié) : parallaxe de la
 // caméra (CameraRig), prisme qui regarde le pointeur et réagit au clic (PrismLook), objet de la card
-// survolée (useAnchoredObject), dérive des formes d'ambiance (AmbientShapes).
+// survolée (useAnchoredObject), dérive des éclats de verre (ShardField).
 // Un seul listener pointermove passif sur window écrit un objet mutable (−1..1, y vers le haut) et
 // demande une frame (frameloop="demand"). La scène le lit dans useFrame, jamais le DOM. Branché par
 // Scene.tsx seulement sur desktop à pointeur fin, hors reduced-motion : sinon il reste à 0.

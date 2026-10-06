@@ -54,8 +54,16 @@ for f in sorted(os.listdir(os.path.join(SRC, 'wegir'))):
         slug = os.path.splitext(f)[0].replace(' ', '-').lower()
         save(px, os.path.join(OUT, 'wegir', slug + '.webp'), width=480)
 
-# Meme Rina : captures du site -> 1280 px de large
+# Meme Rina : captures du site, recadrées au centre en 2:1 (écran du navigateur du modèle pizza),
+# 1280 px de large
 for i, f in enumerate(sorted(os.listdir(os.path.join(SRC, 'memerina')))):
     if f.lower().endswith('.png'):
         px, _ = load(os.path.join(SRC, 'memerina', f))
+        h, w = px.shape[:2]
+        if w > 2 * h:
+            x0 = (w - 2 * h) // 2
+            px = px[:, x0:x0 + 2 * h]
+        else:
+            # Lignes de Blender de bas en haut : on garde le haut de la page
+            px = px[h - w // 2:, :]
         save(px, os.path.join(OUT, 'memerina', f'site-{i + 1}.webp'), width=1280)

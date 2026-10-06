@@ -4,16 +4,28 @@
 // interne relie son extrémité à l'origine du spectre : vue à travers le verre (réfractée sur desktop),
 // elle rattache les rayons au prisme quand le titre derrière lui a disparu. Elle s'arrête sur la face de
 // sortie (exit, calculé par exitPoint), là où naît le spectre : jamais dans le vide.
+// docs/storyboards/story-v2.md : « Contact (arrivée) : le prisme redescend dans le cadre, vide : ni
+// faisceau ni rayons » ; « Contact (envoi réussi) : le faisceau blanc entre dans le prisme » (burstBeam),
+// puis se pose à mi-intensité (burstBeamLevel) : il longe le texte des coordonnées sans l'éblouir.
+// Le relais du hero au Contact se fait pendant Projets (SWITCH), prisme hors cadre.
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Mesh, MeshStandardMaterial } from 'three'
+import { burstBeam, burstBeamLevel, burstInner } from '../../lib/burst'
 import { HERO, beamT } from '../../lib/hero'
-import { range } from '../../lib/math'
+import { lerp, range } from '../../lib/math'
 import { cloneEmissive, setEmissiveIntensity } from '../materials/emissive'
-import { getProgress } from '../store'
+import { getProgress, getTimeline } from '../store'
+import { ideaElapsed } from './prismLoop'
 import { type Point, segment } from './segment'
 
-type BeamProps = { beamIn: Mesh; exit: Point; source: MeshStandardMaterial; bloom: boolean }
+type BeamProps = {
+  beamIn: Mesh
+  exit: Point
+  source: MeshStandardMaterial
+  bloom: boolean
+  reducedMotion: boolean
+}
 
 /** Longueur du faisceau en multiples de BeamIn (2.6) : l'entrée sort du cadre à gauche. */
 const REACH = 2
@@ -21,8 +33,10 @@ const WIDTH = 0.7
 const INTENSITY = 2
 /** Lumière interne : part de l'intensité du faisceau. */
 const INNER = 0.5
+/** Timeline : le faisceau passe de l'état du hero à celui du Contact (éteint avant l'envoi). */
+const SWITCH: readonly [number, number] = [1.5, 2]
 
-export function Beam({ beamIn, exit, source, bloom }: BeamProps) {
+export function Beam({ beamIn, exit, source, bloom, reducedMotion }: BeamProps) {
   const beam = useRef<Mesh>(null)
   const inner = useRef<Mesh>(null)
 
@@ -57,9 +71,12 @@ export function Beam({ beamIn, exit, source, bloom }: BeamProps) {
     if (!be || !inn) return
     const p = getProgress('hero')
     const { s } = data
+    const contact = range(getTimeline(), ...SWITCH)
+    const elapsed = ideaElapsed(reducedMotion)
 
     // Croît depuis son extrémité gauche, jusqu'à la face gauche du prisme
-    const b = beamT(p)
+    const b = lerp(beamT(p), burstBeam(elapsed), contact)
+    setEmissiveIntensity(be, data.beam.peak * lerp(1, burstBeamLevel(elapsed), contact))
     const left = 2 * s.half * REACH
     be.visible = b > 0
     be.scale.y = Math.max(b, 1e-4) * REACH
@@ -70,7 +87,7 @@ export function Beam({ beamIn, exit, source, bloom }: BeamProps) {
     )
 
     // S'allume quand le faisceau touche la face gauche, avant le premier rayon
-    const l = range(p, HERO.beam[1] - 0.03, HERO.rays[0] + 0.04)
+    const l = lerp(range(p, HERO.beam[1] - 0.03, HERO.rays[0] + 0.04), burstInner(elapsed), contact)
     inn.visible = l > 0
     setEmissiveIntensity(inn, data.inner.peak * INNER * l)
   })

@@ -2,15 +2,15 @@
 // pas toucher à sa logique (rayons, visée) : pendant le hero et au contact (prisme au centre, storyboards
 // hero.md §2 et services-contact.md §2 3.0–3.5), le groupe s'oriente doucement vers le pointeur
 // (±LOOK rad, amorti) et un clic dans le vide lui donne une impulsion de rotation (ressort sous-amorti).
-// Pivot : le centre du prisme, qui monte de JOURNEY.riseY pendant Projets (même formule que Prism.tsx).
+// Pivot : le centre du prisme (prismPath.ts, même source que Prism.tsx : levé pendant Projets, il suit
+// la descente de la caméra du storyboard v2 et redescend au Contact).
 // Hors desktop à pointeur fin ou en reduced-motion, le pointeur est débranché : rotation nulle.
 import { useFrame, useThree } from '@react-three/fiber'
 import { type ReactNode, useRef } from 'react'
 import { type Group, Vector3 } from 'three'
-import { JOURNEY, liftT } from '../../lib/journey'
 import { clamp } from '../../lib/math'
 import { getPointer } from '../pointer'
-import { getProgress } from '../store'
+import { prismPresence, prismY } from '../prismPath'
 import { usePointerDamp } from '../usePointerDamp'
 
 /** Orientation maximale vers le pointeur (rad), sur x et y. */
@@ -53,9 +53,8 @@ export function PrismLook({ children }: { children: ReactNode }) {
     const o = outer.current
     const i = inner.current
     if (!o || !i) return
-    const lift = liftT(getProgress('projects'), getProgress('contact'))
-    const presence = 1 - lift
-    const y = JOURNEY.riseY * lift
+    const presence = prismPresence()
+    const y = prismY()
     const d = look.follow(delta, presence)
 
     // Clic dans le vide : impulsion selon sa position par rapport au prisme à l'écran
