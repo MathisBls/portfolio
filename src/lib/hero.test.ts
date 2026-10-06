@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { HERO, RAY_COUNT, beamT, rayT, rayWindow, turnT, wordT, wordWindow } from './hero'
+import {
+  CAPTIONS,
+  HERO,
+  RAY_COUNT,
+  beamT,
+  captionOpacity,
+  rayT,
+  rayWindow,
+  turnT,
+  wordT,
+  wordWindow,
+} from './hero'
 
 describe('fenêtres du hero', () => {
   it('le faisceau est éteint au début et complet à la fin de sa fenêtre', () => {
@@ -32,5 +43,25 @@ describe('fenêtres du hero', () => {
     expect(turnT(0.5)).toBe(0)
     expect(turnT(0.85)).toBe(1)
     expect(turnT(1)).toBe(1)
+  })
+})
+
+describe('captions du hero', () => {
+  it('une seule caption pleinement visible à la fois, dans l’ordre', () => {
+    expect(captionOpacity(0.2, 0)).toBe(1)
+    expect(captionOpacity(0.2, 1)).toBe(0)
+    expect(captionOpacity(0.45, 1)).toBe(1)
+    expect(captionOpacity(0.45, 0)).toBe(0)
+    expect(captionOpacity(0.8, 2)).toBe(1)
+  })
+
+  it('invisibles avant le faisceau et après le pin', () => {
+    expect(captionOpacity(0, 0)).toBe(0)
+    expect(captionOpacity(1, 2)).toBe(0)
+    expect(captionOpacity(0.5, 7)).toBe(0)
+  })
+
+  it('les fenêtres se suivent sans trou', () => {
+    for (let i = 1; i < CAPTIONS.length; i++) expect(CAPTIONS[i]?.[0]).toBe(CAPTIONS[i - 1]?.[1])
   })
 })

@@ -2,29 +2,80 @@
 // Le progress 'services' (scrub, sans pin) pilote la rétractation des rayons dans la scène.
 // Reduced-motion : pas de trigger, la scène affiche son état statique.
 import { useLayoutEffect, useRef } from 'react'
-import type { CSSProperties } from 'react'
-import { services } from '../content/services'
+import { type Service, services } from '../content/services'
 import { site } from '../content/site'
 import { ScrollTrigger } from '../lib/gsap'
+import { stagger } from '../lib/stagger'
 import { useReducedMotion } from '../lib/useReducedMotion'
+import { useTilt } from '../lib/useTilt'
 import { setProgress } from '../scene/store'
 import { Button } from '../ui/Button'
+import { RevealTitle } from '../ui/RevealTitle'
+import { SectionLabel } from '../ui/SectionLabel'
 import styles from './Services.module.css'
 
-/** Stagger des [data-reveal] (global.css : delay = --reveal-i x 60 ms). */
-const reveal = (i: number): CSSProperties & { '--reveal-i': number } => ({ '--reveal-i': i })
+/** Inclinaison maximale d'une carte au survol, en degrés. */
+const TILT_MAX = 3
 
-/** 'à partir de 900 €' -> petit label + montant en grand. 'sur devis' reste entier. */
-function splitPrice(from: string): { lead: string | undefined; value: string } {
-  const match = /^(à partir de)\s+(.+)$/i.exec(from)
-  return match?.[1] && match[2]
-    ? { lead: match[1], value: match[2] }
-    : { lead: undefined, value: from }
+/** Prix : « from » en petit devant le montant (priceFrom), sinon le montant seul (« Custom quote »). */
+function splitPrice(service: Service): { lead: string | undefined; value: string } {
+  return { lead: service.priceFrom ? site.services.fromLabel : undefined, value: service.price }
+}
+
+type ItemProps = { service: Service; index: number; sectionId: string }
+
+function ServiceItem({ service, index, sectionId }: ItemProps) {
+  const { forLabel, includesLabel } = site.services
+  const { lead, value } = splitPrice(service)
+  const titleId = `${sectionId}-${service.id}`
+  const itemRef = useRef<HTMLLIElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
+  // Le pointeur est écouté sur le <li> (qui ne s'incline pas), l'inclinaison s'applique à la carte
+  useTilt(cardRef, { max: TILT_MAX, host: itemRef })
+
+  return (
+    <li ref={itemRef} className={styles.item} data-reveal style={stagger(index)}>
+      <article ref={cardRef} className={styles.card} aria-labelledby={titleId}>
+        <div className={styles.head}>
+          <p className={styles.index} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </p>
+          <h3 id={titleId} className={styles.name}>
+            {service.title}
+          </h3>
+        </div>
+
+        <p className={styles.price}>
+          {lead && <span className={styles.priceLead}>{lead}</span>}
+          {lead && ' '}
+          <span className={styles.priceValue}>{value}</span>
+        </p>
+
+        <div className={styles.for}>
+          <p className={styles.blockLabel}>{forLabel}</p>
+          <p className={styles.forText}>{service.for}</p>
+        </div>
+
+        <div className={styles.includes}>
+          <p id={`${titleId}-inclus`} className={styles.blockLabel}>
+            {includesLabel}
+          </p>
+          <ul className={styles.includesList} aria-labelledby={`${titleId}-inclus`}>
+            {service.includes.map((item, i) => (
+              <li key={item} data-reveal style={stagger(i + 1)}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
+    </li>
+  )
 }
 
 export function Services() {
   const { id, label, title } = site.sections.services
-  const { intro, forLabel, includesLabel, cta } = site.services
+  const { intro, cta } = site.services
   const reduced = useReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -48,58 +99,19 @@ export function Services() {
 
   return (
     <section id={id} ref={sectionRef} aria-labelledby={`${id}-titre`} className={styles.section}>
-      <p className={styles.label} aria-hidden="true">
-        {label}
-      </p>
-      <h2 id={`${id}-titre`} className={styles.title}>
+      <SectionLabel>{label}</SectionLabel>
+      <RevealTitle id={`${id}-titre`} className={styles.title}>
         {title}
-      </h2>
+      </RevealTitle>
       <p className={styles.intro}>{intro}</p>
 
       <ul className={styles.list}>
-        {services.map((service, i) => {
-          const { lead, value } = splitPrice(service.from)
-          const titleId = `${id}-${service.id}`
-          return (
-            <li key={service.id} className={styles.item} data-reveal style={reveal(i)}>
-              <article className={styles.card} aria-labelledby={titleId}>
-                <div className={styles.head}>
-                  <p className={styles.index} aria-hidden="true">
-                    {String(i + 1).padStart(2, '0')}
-                  </p>
-                  <h3 id={titleId} className={styles.name}>
-                    {service.title}
-                  </h3>
-                </div>
-
-                <p className={styles.price}>
-                  {lead && <span className={styles.priceLead}>{lead}</span>}
-                  {lead && ' '}
-                  <span className={styles.priceValue}>{value}</span>
-                </p>
-
-                <div className={styles.for}>
-                  <p className={styles.blockLabel}>{forLabel}</p>
-                  <p className={styles.forText}>{service.for}</p>
-                </div>
-
-                <div className={styles.includes}>
-                  <p id={`${titleId}-inclus`} className={styles.blockLabel}>
-                    {includesLabel}
-                  </p>
-                  <ul className={styles.includesList} aria-labelledby={`${titleId}-inclus`}>
-                    {service.includes.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            </li>
-          )
-        })}
+        {services.map((service, i) => (
+          <ServiceItem key={service.id} service={service} index={i} sectionId={id} />
+        ))}
       </ul>
 
-      <div className={styles.cta} data-reveal style={reveal(0)}>
+      <div className={styles.cta} data-reveal>
         <Button href={cta.href}>{cta.label}</Button>
       </div>
     </section>

@@ -63,6 +63,6 @@ Tous les textes vivent dans `src/content/`. Une valeur commençant par `TODO:` r
 ### alwaysdata
 
 1. `npm run build` en local ou en CI, puis envoyer `dist/` à la racine du site (SFTP ou rsync).
-2. Le site est statique : chaque page est un vrai fichier (`index.html`, `mentions-legales/index.html`).
+2. Le site est statique : chaque page est un vrai fichier (`index.html`, `legal/index.html`).
 3. Netlify Forms ne fonctionne pas hors de Netlify : remplacer l'envoi du formulaire par un service comme Formspree (URL d'action dans `src/lib/form.ts`), et mettre à jour l'hébergeur dans `identity.host` (`src/content/services.ts`).
 4. Reporter les en-têtes de `netlify.toml` dans un `.htaccess` (Apache).

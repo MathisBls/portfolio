@@ -1,3 +1,4 @@
+// Contenu des projets, en anglais (CLAUDE.md règle 4).
 export type Project = {
   slug: string
   name: string
@@ -14,9 +15,9 @@ export const projects: Project[] = [
   {
     slug: 'zephyr',
     name: 'Zephyr',
-    tagline: 'Gestionnaire de mods open source',
+    tagline: 'Open-source mod manager',
     description:
-      'Application desktop pour installer et gérer des mods depuis Thunderstore, NexusMods, CurseForge et GitHub. Profils partageables, éditeur de config intégré, module randomizer.',
+      'Desktop app to install and manage mods from Thunderstore, NexusMods, CurseForge and GitHub. Shareable profiles, built-in config editor, randomizer module.',
     stack: ['Tauri 2', 'Svelte 5', 'Rust'],
     links: { github: 'https://github.com/prismo-studio/zephyr' },
     model: 'zephyr',
@@ -26,11 +27,11 @@ export const projects: Project[] = [
   {
     slug: 'wegir',
     name: 'Wegir',
-    tagline: 'Navigation GPS en convoi',
+    tagline: 'GPS navigation for convoys',
     description:
-      'Application mobile et web pour rouler à plusieurs sans se perdre : itinéraire commun, positions en temps réel, push-to-talk, alertes. Publiée sur l’App Store.',
+      'Mobile and web app to drive as a group without getting lost: shared route, live positions, push-to-talk, alerts. Live on the App Store.',
     stack: ['React Native', 'Expo', 'MapLibre', 'Node', 'Prisma', 'Stripe'],
-    links: { site: 'https://wegir.com', store: 'https://apps.apple.com/fr/app/wegir/id6789985288' },
+    links: { site: 'https://wegir.com', store: 'https://apps.apple.com/app/wegir/id6789985288' },
     model: 'wegir',
     accent: '#ffb020',
     year: '2026',
@@ -38,9 +39,9 @@ export const projects: Project[] = [
   {
     slug: 'quorin',
     name: 'QuorinOS',
-    tagline: 'Un téléphone, plusieurs visages',
+    tagline: 'One phone, many faces',
     description:
-      'ROM Android basée sur LineageOS avec un système de profils multiples par appareil. Overlays RRO, launcher et SystemUI personnalisés.',
+      'Android ROM based on LineageOS with multiple profiles per device. RRO overlays, custom launcher and SystemUI.',
     stack: ['Android', 'LineageOS', 'AOSP'],
     links: { github: 'https://github.com/Prismo-Studio/QuorinOS' },
     model: 'quorin',
@@ -50,9 +51,9 @@ export const projects: Project[] = [
   {
     slug: 'game-factory',
     name: 'Game Factory',
-    tagline: 'Des jeux produits par des agents',
+    tagline: 'Games built by agents',
     description:
-      'Chaîne de pipelines IA qui transforme un concept en jeu mobile Godot : tickets, code, pull requests et revues générés automatiquement sur GitHub.',
+      'A chain of AI pipelines that turns a concept into a Godot mobile game: tickets, code, pull requests and reviews generated automatically on GitHub.',
     stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
     links: { github: 'https://github.com/Prismo-Studio/game-factory' },
     model: 'gamefactory',
@@ -62,10 +63,10 @@ export const projects: Project[] = [
   {
     slug: 'meme-rina',
     name: 'Meme Rina',
-    tagline: 'Site vitrine pour une pizzeria',
+    tagline: 'Website for a pizzeria',
     // Description rédigée d'après le site en ligne (oct. 2026), à valider par Mathis
     description:
-      'Site vitrine d’une pizzeria de quartier à Chatou. Carte complète, réservation de table, commande en livraison et avis Google, accessibles dès la page d’accueil.',
+      'Website for a neighborhood pizzeria in Chatou, near Paris. Full menu, table booking, delivery ordering and Google reviews, all one tap from the home page.',
     stack: ['Next.js', 'React', 'Netlify'],
     links: { site: 'https://www.memerina.fr/' },
     model: 'pizza',

@@ -13,6 +13,7 @@ import { CONTACT_FORM_NAME, encodeForm, validateContact } from '../lib/form'
 import type { ContactErrors, ContactFields } from '../lib/form'
 import { ScrollTrigger } from '../lib/gsap'
 import { useReducedMotion } from '../lib/useReducedMotion'
+import { useScene } from '../scene/store'
 import styles from './ContactForm.module.css'
 import { SubmitButton } from './SubmitButton'
 
@@ -149,6 +150,8 @@ export function ContactForm() {
         body: encodeForm({ ...fields, [HONEYPOT]: honeypot }),
       })
       setStatus(response.ok ? 'success' : 'error')
+      // La scène joue « l'idée traverse le prisme » (store sans three : rien de 3D importé ici)
+      if (response.ok) useScene.getState().setIdeaSent()
     } catch {
       setStatus('error')
     }
@@ -273,7 +276,7 @@ export function ContactForm() {
 
               <p className={styles.privacy}>
                 {form.privacy}{' '}
-                <a href="/mentions-legales/" className={styles.link}>
+                <a href={site.legalPath} className={styles.link}>
                   {form.privacyLink}
                 </a>
               </p>

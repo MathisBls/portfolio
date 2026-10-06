@@ -1,13 +1,16 @@
 // Section Projets (docs/storyboards/projects.md) : DOM seulement. Les ScrollTriggers écrivent les progress
 // lus par la scène : 'projects' (section, caméra et prisme) et, dans ProjectCard, 'project:<slug>' (un par card).
 // Reduced-motion : aucun trigger, posters seulement (les objets 3D ne sont jamais montés).
-import { type CSSProperties, useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { projects } from '../content/projects'
 import { site } from '../content/site'
 import { ScrollTrigger, gsap } from '../lib/gsap'
+import { stagger } from '../lib/stagger'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import { setProgress, useScene } from '../scene/store'
 import { ProjectCard } from '../ui/ProjectCard'
+import { RevealTitle } from '../ui/RevealTitle'
+import { SectionLabel } from '../ui/SectionLabel'
 import styles from './Projects.module.css'
 
 export function Projects() {
@@ -51,13 +54,11 @@ export function Projects() {
   return (
     <section id={id} ref={sectionRef} aria-labelledby={`${id}-titre`} className={styles.section}>
       <div className={styles.head}>
-        <p className={styles.label} aria-hidden="true">
-          {label}
-        </p>
-        <h2 id={`${id}-titre`} className={styles.title} data-reveal>
+        <SectionLabel>{label}</SectionLabel>
+        <RevealTitle id={`${id}-titre`} className={styles.title}>
           {title}
-        </h2>
-        <p className={styles.intro} data-reveal style={{ '--reveal-i': 1 } as CSSProperties}>
+        </RevealTitle>
+        <p className={styles.intro} data-reveal style={stagger(1)}>
           {intro}
         </p>
       </div>

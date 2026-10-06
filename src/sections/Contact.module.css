@@ -8,14 +8,6 @@
   padding: var(--space-5) var(--gutter);
 }
 
-.label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--fg-2);
-}
-
 /* Halo --bg : le texte reste lisible quand la lumière de la scène passe derrière */
 .title,
 .intro,

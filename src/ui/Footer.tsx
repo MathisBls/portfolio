@@ -6,7 +6,7 @@ export function Footer({ isLegalPage = false }: { isLegalPage?: boolean }) {
   return (
     <footer className={styles.footer}>
       <p>{identity.name}</p>
-      <a href="/mentions-legales/" aria-current={isLegalPage ? 'page' : undefined}>
+      <a href={site.legalPath} aria-current={isLegalPage ? 'page' : undefined}>
         {site.footer.legal}
       </a>
     </footer>

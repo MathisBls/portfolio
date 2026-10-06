@@ -48,21 +48,9 @@ html:global(.has-project-objects) .poster {
     box-shadow 0.5s var(--ease);
 }
 
-/* Le transform du corps compose trois choses : la perspective, l'inclinaison au survol (--tilt-x/y, écrits
-   par lib/useTilt.ts, 0 au repos) et le lift (--lift). Le CSS lisse tout avec la transition ci-dessus.
-   Absent en reduced-motion : ni lift ni inclinaison, la lueur reste. */
-@media (prefers-reduced-motion: no-preference) {
-  .body {
-    transform: perspective(1000px) rotateX(calc(var(--tilt-x) * 1deg))
-      rotateY(calc(var(--tilt-y) * 1deg)) translateY(var(--lift, 0px));
-  }
-}
-
 /* Survol (pointeur fin) et focus clavier : lueur 1 px de l'accent du projet, léger lift du corps seulement.
    Jamais de lift sur l'emplacement : l'objet 3D y est ancré. */
 .card:has(:focus-visible) .body {
-  --lift: -0.25rem;
-
   border-color: var(--card-accent);
   box-shadow:
     0 0 0 1px var(--card-accent),
@@ -71,12 +59,28 @@ html:global(.has-project-objects) .poster {
 
 @media (hover: hover) {
   .card:hover .body {
-    --lift: -0.25rem;
-
     border-color: var(--card-accent);
     box-shadow:
       0 0 0 1px var(--card-accent),
       0 0 2rem -0.25rem color-mix(in srgb, var(--card-accent) 45%, transparent);
+  }
+}
+
+/* Le transform du corps n'existe que pendant le survol ou le focus (pas de calque 3D au repos). Il compose
+   la perspective, l'inclinaison (--tilt-x/y en degrés, écrits par lib/useTilt.ts, 0 sinon) et le lift.
+   La transition de .body lisse l'entrée, le suivi du pointeur et le retour à plat.
+   Rien en reduced-motion : ni lift ni inclinaison, la lueur reste. */
+@media (prefers-reduced-motion: no-preference) {
+  .card:has(:focus-visible) .body {
+    transform: perspective(1000px) rotateX(calc(var(--tilt-x) * 1deg))
+      rotateY(calc(var(--tilt-y) * 1deg)) translateY(-0.25rem);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card:hover .body {
+    transform: perspective(1000px) rotateX(calc(var(--tilt-x) * 1deg))
+      rotateY(calc(var(--tilt-y) * 1deg)) translateY(-0.25rem);
   }
 }
 

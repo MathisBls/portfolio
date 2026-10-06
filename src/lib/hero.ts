@@ -56,3 +56,24 @@ export function wordWindow(i: number, n: number): [number, number] {
 }
 
 export const wordT = (p: number, i: number, n: number) => inWindow(p, wordWindow(i, n))
+
+/**
+ * Captions du hero (docs/storyboards/story-v2.md) : une phrase par étape (faisceau, rayons, quart de
+ * tour). Chaque caption monte sur CAPTION_FADE au début de sa fenêtre et s'efface sur CAPTION_FADE à la
+ * fin. La dernière reste jusqu'à la fin du pin pour passer le relais aux projets.
+ */
+export const CAPTIONS: readonly (readonly [number, number])[] = [
+  [0.1, 0.3],
+  [0.3, 0.55],
+  [0.55, 0.98],
+]
+
+export const CAPTION_FADE = 0.04
+
+/** Opacité (0..1) de la caption i au progress p. */
+export function captionOpacity(p: number, i: number): number {
+  const w = CAPTIONS[i]
+  if (!w) return 0
+  const [a, b] = w
+  return Math.min(range(p, a, a + CAPTION_FADE), 1 - range(p, b - CAPTION_FADE, b))
+}

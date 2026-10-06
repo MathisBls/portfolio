@@ -4,7 +4,7 @@ import { Fragment, useLayoutEffect, useRef } from 'react'
 import { identity } from '../content/services'
 import { site } from '../content/site'
 import { gsap, ScrollTrigger } from '../lib/gsap'
-import { HERO, wordWindow } from '../lib/hero'
+import { CAPTIONS, CAPTION_FADE, HERO, wordWindow } from '../lib/hero'
 import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
 import { registerAnchor, setProgress } from '../scene/store'
 import { Button } from '../ui/Button'
@@ -13,7 +13,7 @@ import styles from './Hero.module.css'
 
 export function Hero() {
   const { id } = site.sections.hero
-  const { availability, ctaPrimary, ctaSecondary, scrollHint } = site.hero
+  const { availability, ctaPrimary, ctaSecondary, scrollHint, captions } = site.hero
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
@@ -59,6 +59,7 @@ export function Hero() {
       const intro = section.querySelectorAll<HTMLElement>('[data-intro]')
       const role = section.querySelectorAll<HTMLElement>('[data-role]')
       const wordEls = section.querySelectorAll<HTMLElement>('[data-word]')
+      const captionEls = section.querySelectorAll<HTMLElement>('[data-caption]')
 
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
@@ -82,6 +83,19 @@ export function Hero() {
         // Opacité seule : pas de flou animé (repaint de mots de 144 px sur mobile) ni de décalage y
         // (HeroTitle3D mesure les spans : un y non nul décalerait le titre 3D au resize)
         tl.to(el, { opacity: 0, duration: end - start }, start)
+      })
+      // Captions (story-v2) : une phrase par étape, qui monte puis s'efface dans sa fenêtre
+      captionEls.forEach((el, i) => {
+        const w = CAPTIONS[i]
+        if (!w) return
+        const [a, b] = w
+        tl.fromTo(
+          el,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: CAPTION_FADE, immediateRender: false },
+          a,
+        )
+        tl.to(el, { opacity: 0, y: -16, duration: CAPTION_FADE }, b - CAPTION_FADE)
       })
       // Durée totale exactement 1 : le progress de la timeline est le progress 'hero'
       tl.set({}, {}, 1)
@@ -127,6 +141,16 @@ export function Hero() {
           </Button>
         </div>
       </div>
+
+      {/* Récit du pin (story-v2) : visibles une à une au scroll ; lues dans l'ordre par les lecteurs
+          d'écran ; sans animation (sans JS, reduced-motion), elles restent dans le DOM mais hors écran */}
+      <ol className={styles.captions}>
+        {captions.map((caption) => (
+          <li key={caption} className={styles.caption} data-caption>
+            {caption}
+          </li>
+        ))}
+      </ol>
 
       <p className={styles.hint} data-intro>
         {scrollHint}

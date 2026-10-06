@@ -8,14 +8,6 @@
   padding: var(--space-6) var(--gutter);
 }
 
-.label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--fg-2);
-}
-
 .title {
   margin-top: var(--space-3);
   font-size: var(--text-xl);

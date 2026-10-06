@@ -14,7 +14,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: resolve(root, 'index.html'),
-        mentions: resolve(root, 'mentions-legales/index.html'),
+        legal: resolve(root, 'legal/index.html'),
       },
     },
   },

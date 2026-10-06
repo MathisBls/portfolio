@@ -114,18 +114,29 @@ type SceneState = {
   hovered: Project['slug'] | null
   /** true quand la section Projets est à moins d'un écran : la scène précharge et monte les objets. */
   projectsNear: boolean
+  /**
+   * Horodatage (performance.now) de l'envoi réussi du formulaire, null avant (docs/storyboards/
+   * story-v2.md, Contact) : la scène joue une fois la rafale « l'idée traverse le prisme ».
+   */
+  ideaSentAt: number | null
   setHovered: (slug: Project['slug'] | null) => void
   setProjectsNear: (near: boolean) => void
+  setIdeaSent: () => void
 }
 
 export const useScene = create<SceneState>((set) => ({
   hovered: null,
   projectsNear: false,
+  ideaSentAt: null,
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
   },
   setProjectsNear: (near) => {
     set({ projectsNear: near })
+  },
+  setIdeaSent: () => {
+    set({ ideaSentAt: performance.now() })
+    invalidate()
   },
 }))

@@ -1,64 +1,78 @@
-export type Service = { id: string; title: string; from: string; for: string; includes: string[] }
+// Services et identité, en anglais (CLAUDE.md règle 4).
+
+export type Service = {
+  id: string
+  title: string
+  /** Montant affiché ; précédé de site.services.fromLabel quand priceFrom est vrai. */
+  price: string
+  priceFrom: boolean
+  for: string
+  includes: string[]
+}
 
 export const services: Service[] = [
   {
-    id: 'vitrine',
-    title: 'Site vitrine',
-    from: 'à partir de 900 €',
-    for: 'Artisans, commerces, indépendants qui veulent être trouvés et appelés.',
+    id: 'website',
+    title: 'Business website',
+    price: '€900',
+    priceFrom: true,
+    for: 'Craftspeople, shops and independents who want to be found and called.',
     includes: [
-      'Design sur mesure, pas de template',
-      'Rapide et lisible sur mobile',
-      'Référencement local (Google Business, pages métier/ville)',
-      'Formulaire et prise de contact',
-      'Mise en ligne, nom de domaine, mails',
+      'Custom design, no template',
+      'Fast and easy to read on mobile',
+      'Local SEO (Google Business, service and city pages)',
+      'Contact form and booking',
+      'Launch, domain name and email setup',
     ],
   },
   {
     id: 'app',
-    title: 'Application web ou mobile',
-    from: 'sur devis',
-    for: 'Un outil métier, une appli client, un MVP à sortir vite et proprement.',
+    title: 'Web or mobile app',
+    price: 'Custom quote',
+    priceFrom: false,
+    for: 'A business tool, a customer app, an MVP to ship fast and clean.',
     includes: [
-      'Cadrage et maquettes',
-      'React / React Native, API Node',
-      'Paiement, comptes, notifications',
-      'Publication sur les stores',
-      'Code livré, documenté, à vous',
+      'Scoping and wireframes',
+      'React / React Native, Node API',
+      'Payments, accounts, notifications',
+      'App Store and Play Store release',
+      'Documented code that you own',
     ],
   },
   {
     id: 'maintenance',
-    title: 'Refonte et maintenance',
-    from: 'à partir de 60 €/mois',
-    for: 'Un site existant trop lent, daté, ou que plus personne ne sait modifier.',
+    title: 'Redesign and maintenance',
+    price: '€60/month',
+    priceFrom: true,
+    for: 'An existing site that is slow, dated, or that nobody knows how to edit anymore.',
     includes: [
-      'Audit vitesse, mobile, SEO',
-      'Refonte ou corrections ciblées',
-      'Mises à jour, sauvegardes, surveillance',
-      'Un interlocuteur, réponse sous 24 h',
+      'Speed, mobile and SEO audit',
+      'Full redesign or targeted fixes',
+      'Updates, backups, monitoring',
+      'One contact, reply within 24 hours',
     ],
   },
 ]
 
 export const identity = {
   name: 'Mathis Boulais',
-  role: 'Développeur full stack',
-  location: 'Choisy-le-Roi, Île-de-France',
+  role: 'Full-stack developer',
+  location: 'Choisy-le-Roi, near Paris, France',
+  // Email à confirmer par Mathis (contact@mathisboulais.com ?) : ne changer que si l'adresse existe
   email: 'mathis.bls@pm.me',
-  phone: '07 82 07 17 88',
+  phone: '+33 7 82 07 17 88',
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
-  status: 'Entrepreneur individuel (micro-entreprise)',
+  status: 'Sole proprietorship (French micro-entreprise)',
   // ADRESSE FICTIVE (provisoire, demandée par Mathis) : à remplacer par une vraie adresse pro
   // (domiciliation) avant la mise en production. Obligatoire dans les mentions légales (LCEN art. 6).
-  address: '12 rue de l’Exemple, 94600 Choisy-le-Roi',
+  address: '12 rue de l’Exemple, 94600 Choisy-le-Roi, France',
   // Adresse relevée dans le pied de page des emails officiels de Netlify (oct. 2026), à revérifier
   host: {
     name: 'Netlify, Inc.',
-    address: '512 2nd Street, Fl 2, San Francisco, CA 94107, États-Unis',
+    address: '512 2nd Street, Fl 2, San Francisco, CA 94107, USA',
     url: 'https://www.netlify.com',
   },
   pitch:
-    'Je conçois et développe des sites et des applications pour des indépendants, des commerces et des projets qui démarrent. Du design au déploiement, un seul interlocuteur.',
+    'I design and build websites and apps for independents, small businesses and new ventures. From design to launch, one person to talk to.',
 }

@@ -9,7 +9,7 @@ const { render } = await import(pathToFileURL(join(root, 'dist-server/entry-serv
 
 const pages = [
   { url: '/', file: 'dist/index.html' },
-  { url: '/mentions-legales/', file: 'dist/mentions-legales/index.html' },
+  { url: '/legal/', file: 'dist/legal/index.html' },
 ]
 
 for (const { url, file } of pages) {

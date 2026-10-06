@@ -10,7 +10,7 @@ const BUDGET_KB = 350
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 const gz = (file) => gzipSync(readFileSync(join(dist, file))).length / 1024
 
-const pages = ['index.html', 'mentions-legales/index.html']
+const pages = ['index.html', 'legal/index.html']
 const initial = new Set()
 for (const page of pages) {
   const html = readFileSync(join(dist, page), 'utf8')

@@ -195,10 +195,51 @@ html:global(.has-3d-title) .word {
   }
 }
 
+/* Captions du récit (story-v2) : superposées, révélées une à une par la timeline GSAP.
+   Opacité 0 par défaut : sans JS elles restent dans le DOM (lecteurs d'écran) sans chevaucher le pitch. */
+.captions {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(5rem, 18svh, 10rem);
+  width: min(100% - 2 * var(--gutter), 44rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 1.1rem + 2.2vw, 2.9rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--fg);
+  /* Halo couleur fond : lisible même quand un rayon passe derrière */
+  text-shadow:
+    0 0 24px var(--bg),
+    0 0 48px var(--bg);
+  opacity: 0;
+}
+
 /* Sans mouvement : pas de pin, donc plus rien à indiquer */
 @media (prefers-reduced-motion: reduce) {
   .hint {
     display: none;
+  }
+
+  /* Pas de timeline : les captions décriraient une scène qui ne bouge pas. Gardées pour les lecteurs
+     d'écran, retirées de l'affichage. */
+  .captions {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
   .poster,

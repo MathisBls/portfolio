@@ -30,7 +30,7 @@ Site vitrine personnel + portfolio 3D. Objectif business : décrocher des missio
 ## Structure cible
 ```
 src/
-  app/            App.tsx, routes (une seule page + /mentions-legales)
+  app/            App.tsx, routes (une seule page + /legal/, mentions légales)
   scene/          Canvas global, caméra, lights, postprocessing, ScrollRig
   scene/objects/  Prism.tsx, Zephyr.tsx, Wegir.tsx, Quorin.tsx, Factory.tsx, Pizza.tsx
   sections/       Hero, Projects, Services, About, Contact
