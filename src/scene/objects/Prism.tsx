@@ -138,8 +138,8 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
 
     // Rayons : croissance, dispersion (hero) ; seul le rayon actif, jusqu'à son objet (projets) ;
     // rétractation (services). La couleur tend vers l'accent dès que l'éventail laisse place au rayon actif.
+    beginAim(ti, exit)
     updateRayFocus(focus.current, state, delta)
-    beginAim(ti)
     const mode = fanOutT(getProgress('projects'))
     const s = easeInOut(spreadT(p))
     const spread = lerp(1, SPREAD.length, s)

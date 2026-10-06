@@ -2,16 +2,39 @@
 // s'allonge jusqu'à lui »). Retour de Mathis : le rayon va du prisme jusqu'au bord de l'objet, sans le
 // traverser (reachToEdge), et ne croise jamais une card : tant que la card précédente, qui sort par le
 // haut du même côté que l'objet visé, est sur son chemin à l'écran, il reste éteint (crossesPreviousCard).
-// Aucune allocation par frame.
+// Les cards sont mesurées au refresh de ScrollTrigger (measureCards), jamais dans useFrame. Aucune
+// allocation par frame.
 import type { RootState } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { projects } from '../../content/projects'
 import { slotCenterY } from '../../lib/projects'
-import { getAnchorMetrics, getProgress } from '../store'
+import { getAnchor, getAnchorMetrics, getProgress } from '../store'
 import type { AnchoredTarget } from './useAnchoredObject'
 
-/** Hauteur de la card rapportée à son emplacement (centrée dessus ; 1.22 mesuré à 1024 px), avec marge. */
-const CARD_HEIGHT = 1.3
+/**
+ * Corps de chaque card (texte, liens), relevé au refresh : bords gauche et droit (px, viewport), haut et
+ * bas en décalage depuis le haut de son emplacement (invariants au scroll, la card et l'emplacement
+ * défilent ensemble).
+ */
+type CardBox = { left: number; right: number; top: number; bottom: number }
+const cards = new Map<string, CardBox>()
+
+/** Relève le corps des cards : le frère de l'emplacement [data-slot] dans son <article>. */
+export function measureCards() {
+  for (const { slug } of projects) {
+    const slot = getAnchor(`project:${slug}`)
+    const body = slot?.parentElement
+      ? Array.from(slot.parentElement.children).find((el) => el !== slot)
+      : undefined
+    if (!slot || !body) {
+      cards.delete(slug)
+      continue
+    }
+    const s = slot.getBoundingClientRect()
+    const b = body.getBoundingClientRect()
+    cards.set(slug, { left: b.left, right: b.right, top: b.top - s.top, bottom: b.bottom - s.top })
+  }
+}
 
 const slab = { enter: 0, leave: 1 }
 
@@ -54,9 +77,9 @@ function toScreen(state: RootState, out: Vector3) {
 }
 
 /**
- * true si le rayon du projet j (de `start` au bord de son objet) passe, à l'écran, sur la card du projet
- * précédent. Cette card est centrée sur son propre emplacement, du côté opposé (mise en page alternée) :
- * son rectangle se déduit des mesures de l'emplacement (getAnchorMetrics), sans lire le DOM.
+ * true si le rayon du projet j (de `start` au bord de son objet) passe, à l'écran, sur le corps de la
+ * card du projet précédent (mise en page alternée : même côté que l'objet visé, juste au-dessus). Sa
+ * position suit celle de son emplacement (slotCenterY), sans lire le DOM.
  */
 export function crossesPreviousCard(
   j: number,
@@ -68,8 +91,9 @@ export function crossesPreviousCard(
   if (!previous) return false
   const id = `project:${previous.slug}` as const
   const m = getAnchorMetrics(id)
+  const card = cards.get(previous.slug)
   const p = getProgress(id)
-  if (!m || p <= 0 || p >= 1) return false
+  if (!m || !card || p <= 0 || p >= 1) return false
 
   const dx = target.position.x - start.x
   const dy = target.position.y - start.y
@@ -77,14 +101,11 @@ export function crossesPreviousCard(
   toScreen(state, from.copy(start))
   toScreen(state, to.copy(start).lerp(target.position, k))
 
-  const { width } = state.size
-  const right = m.left + m.width
-  const onLeft = m.left < width - right
-  const x0 = onLeft ? right : width - right
-  const x1 = onLeft ? width - m.left : m.left
-  const cy = slotCenterY(p, m)
-  const half = (m.height * CARD_HEIGHT) / 2
+  const top = slotCenterY(p, m) - m.height / 2
   slab.enter = 0
   slab.leave = 1
-  return clip(to.x - from.x, from.x, x0, x1) && clip(to.y - from.y, from.y, cy - half, cy + half)
+  return (
+    clip(to.x - from.x, from.x, card.left, card.right) &&
+    clip(to.y - from.y, from.y, top + card.top, top + card.bottom)
+  )
 }

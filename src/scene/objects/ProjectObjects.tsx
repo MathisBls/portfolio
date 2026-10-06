@@ -2,6 +2,7 @@
 // (Suspense chacun) quand projectsNear, desktop non reduced seulement ». §4 : « Montage : projects-near →
 // la scène précharge et monte les objets » et « Drapeau has-project-objects : posé par ProjectObjects
 // quand les 5 objets sont prêts » (les posters s'effacent). §2 « Mobile, reduced-motion » : posters seuls.
+// Retour de Mathis (rayons) : mesure des cards au refresh pour le chemin du rayon actif (rayPath).
 import { useThree } from '@react-three/fiber'
 import { type ComponentType, Suspense, useCallback, useEffect, useRef } from 'react'
 import { type Project, projects } from '../../content/projects'
@@ -11,6 +12,7 @@ import { preloadModel } from '../useModel'
 import { Factory } from './Factory'
 import { Pizza } from './Pizza'
 import { Quorin } from './Quorin'
+import { measureCards } from './rayPath'
 import { Wegir } from './Wegir'
 import { Zephyr } from './Zephyr'
 
@@ -62,6 +64,16 @@ function Objects() {
     },
     [],
   )
+
+  // Corps des cards, pour que le rayon actif ne passe pas dessus (rayPath) : au montage et à chaque
+  // refresh de ScrollTrigger (resize, polices, posters), jamais dans useFrame
+  useEffect(() => {
+    measureCards()
+    ScrollTrigger.addEventListener('refresh', measureCards)
+    return () => {
+      ScrollTrigger.removeEventListener('refresh', measureCards)
+    }
+  }, [])
 
   return ITEMS.map(({ slug, Component }) => (
     <Suspense key={slug} fallback={null}>

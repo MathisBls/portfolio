@@ -15,6 +15,7 @@ import { cloneEmissive, emissivePeak } from '../materials/emissive'
 import { getProgress } from '../store'
 import type { PrismGLTF } from './types'
 import { exitPoint, segment } from './segment'
+import { crossesPreviousCard, reachToEdge } from './rayPath'
 import { type AnchoredTarget, measureTarget } from './useAnchoredObject'
 
 const RAY_OF_PROJECT = assignRays(projects.map((p) => p.accent))
@@ -79,7 +80,11 @@ export const createRayFocus = (): RayFocus => ({
 const progresses = projects.map(() => 0)
 const weights = projects.map(() => 0)
 
-/** Présence de chaque rayon : projet actif (lissé), entrée et sortie de sa card (scroll). */
+/**
+ * Présence de chaque rayon : projet actif (lissé), entrée et sortie de sa card (scroll). Le projet actif
+ * n'est retenu que si son rayon ne croise pas la card précédente : sinon aucun rayon, puis fondu à
+ * l'entrée dès que le chemin est libre. Appeler après beginAim (départ du rayon pour la frame).
+ */
 export function updateRayFocus(focus: RayFocus, state: RootState, delta: number) {
   for (let j = 0; j < IDS.length; j++) {
     const id = IDS[j]
@@ -90,7 +95,9 @@ export function updateRayFocus(focus: RayFocus, state: RootState, delta: number)
   for (let j = 0; j < projects.length; j++) {
     const project = projects[j]
     const target = project ? measureTarget(project.slug, state) : undefined
-    const selection = lerp(focus.selection[j] ?? 0, j === active ? 1 : 0, k)
+    const chosen =
+      j === active && target?.visible === true && !crossesPreviousCard(j, start, target, state)
+    const selection = lerp(focus.selection[j] ?? 0, chosen ? 1 : 0, k)
     focus.selection[j] = selection
     focus.targets[j] = target
     weights[j] = target?.visible ? selection * focusPresence(progresses[j] ?? 0) : 0
@@ -101,14 +108,21 @@ export function updateRayFocus(focus: RayFocus, state: RootState, delta: number)
 }
 
 const inverse = new Matrix4()
+const world = new Matrix4()
 const local = new Vector3()
+const start = new Vector3()
 let parentScale = 1
 
-/** Repère des rayons (parent des pivots, déjà posé pour la frame) : conversion monde → local. */
-export function beginAim(parent: Object3D) {
+/**
+ * Repère des rayons (parent des pivots, déjà posé pour la frame) : conversions monde ↔ local, et
+ * départ commun des rayons (`origin`, point de sortie sur la face du prisme) en monde.
+ */
+export function beginAim(parent: Object3D, origin: { x: number; y: number }) {
   parent.updateWorldMatrix(true, false)
-  inverse.copy(parent.matrixWorld).invert()
-  parentScale = parent.matrixWorld.getMaxScaleOnAxis()
+  world.copy(parent.matrixWorld)
+  inverse.copy(world).invert()
+  parentScale = world.getMaxScaleOnAxis()
+  start.set(origin.x, origin.y, 0).applyMatrix4(world)
 }
 
 const pose = { rotation: 0, length: 0, show: 1 }
@@ -117,9 +131,8 @@ const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 /**
  * Pose du rayon r (rotation Z du pivot, longueur en multiples du rayon du GLB, présence). `mode` 0
  * (hero) : éventail au repos (`rest`, `length`). `mode` 1 (projets) : vers son objet, du prisme
- * jusqu'au bord de l'objet à proportion de show[r] ; sans cible, il garde son orientation (`current`)
- * en se rétractant. Bord : demi-taille de l'objet (petit côté, à l'échelle) divisée par la composante
- * dominante de la direction, donc jamais à l'intérieur de sa boîte. Objet partagé, à lire tout de suite.
+ * jusqu'au bord de l'objet (reachToEdge) à proportion de show[r] ; sans cible, il garde son
+ * orientation (`current`) en se rétractant. Objet partagé, à lire tout de suite.
  */
 export function aimRay(
   focus: RayFocus,
@@ -140,13 +153,8 @@ export function aimRay(
   let reach = 0
   if (target?.visible) {
     local.copy(target.position).applyMatrix4(inverse)
-    const dx = local.x - ray.x0
-    const dy = local.y - ray.y0
-    const distance = Math.hypot(dx, dy)
-    const edge =
-      ((target.radius / parentScale) * distance) / Math.max(Math.abs(dx), Math.abs(dy), 1e-6)
-    aimed = Math.atan2(dy, dx) - Math.PI / 2
-    reach = Math.max(distance - edge, 0)
+    aimed = Math.atan2(local.y - ray.y0, local.x - ray.x0) - Math.PI / 2
+    reach = reachToEdge(start, target) / parentScale
   }
   pose.rotation = rest + wrapAngle(aimed - rest) * mode
   pose.length = lerp(length, (reach / (2 * ray.half)) * show, mode)

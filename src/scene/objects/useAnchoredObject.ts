@@ -8,7 +8,7 @@
 // (±HOVER_LOOK rad, amorti, desktop à pointeur fin seulement : pointer.ts).
 import { type RootState, useFrame } from '@react-three/fiber'
 import { type RefObject, useEffect, useRef } from 'react'
-import { type Camera, type Group, Vector3 } from 'three'
+import { Box3, type Camera, type Group, Vector3 } from 'three'
 import { type Vec3, clamp, easeInOut, lerp, range } from '../../lib/math'
 import { slotCenterY } from '../../lib/projects'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
@@ -59,11 +59,12 @@ export type AnchoredObject = {
 
 /**
  * Cible des rayons du prisme, une par objet monté : centre de l'emplacement sur le plan z = 0 (monde),
- * demi-taille de l'objet à l'écran (petit côté, écrite par l'objet), taille de l'emplacement (monde).
+ * boîte monde de l'objet tel qu'il est dessiné (géométries transformées, animation comprise ; vide hors
+ * écran : le rayon s'arrête sur son bord), taille de l'emplacement (monde).
  */
 export type AnchoredTarget = {
   position: Vector3
-  radius: number
+  bounds: Box3
   visible: boolean
   slotWidth: number
   slotHeight: number
@@ -96,7 +97,7 @@ export function measureTarget(
   return measure(slug, state)
 }
 
-/** measureTarget, cible modifiable : l'objet y écrit sa demi-taille à l'écran (radius). */
+/** measureTarget, cible modifiable : l'objet y écrit sa boîte (bounds). */
 function measure(slug: string, state: RootState): AnchoredTarget | undefined {
   const target = targets.get(slug)
   if (!target) return undefined
@@ -145,7 +146,7 @@ export function useAnchoredObject({
   useEffect(() => {
     targets.set(slug, {
       position: new Vector3(),
-      radius: 0,
+      bounds: new Box3(),
       visible: false,
       slotWidth: 0,
       slotHeight: 0,
@@ -162,7 +163,7 @@ export function useAnchoredObject({
     const p = getProgress(id)
     progress.current = p
     visibleRef.current = target.visible
-    target.radius = 0
+    target.bounds.makeEmpty()
     group.visible = target.visible
     if (!target.visible) return
 
@@ -177,7 +178,6 @@ export function useAnchoredObject({
     const scale = fit * enter * lerp(1, EXIT_SCALE, exit)
     group.position.copy(target.position)
     group.scale.setScalar(Math.max(scale, 1e-4))
-    target.radius = (Math.min(width, height ?? width) * scale) / 2
 
     const dt = Math.min(delta, MAX_DT)
     const hovered = useScene.getState().hovered === slug ? 1 : 0
@@ -190,6 +190,8 @@ export function useAnchoredObject({
     const local = m ? pointerInRect(m.left, slotCenterY(p, m), m.width, m.height, state.size) : null
     const d = look.to((local?.x ?? 0) * h, (local?.y ?? 0) * h, delta)
     group.rotation.set(-HOVER_LOOK * d.y, ENTER_ROTATION * (1 - enter) + HOVER_LOOK * d.x, 0)
+    // Bord visé par le rayon : boîtes des géométries, transforms de la frame (enfants : la précédente)
+    target.bounds.setFromObject(group)
   })
 
   return { ref, offset, progress, hover, phase, visibleRef }
