@@ -14,7 +14,7 @@ Site vitrine personnel + portfolio 3D. Objectif business : décrocher des missio
 - CSS : vanilla CSS modules + custom properties. Pas de Tailwind.
 - Fonts : une display (ex. "Instrument Serif" ou "Clash Display") + une mono pour les labels. Self-hosted, woff2.
 - Lint/format : eslint + prettier. Tests : vitest pour la logique, pas de tests sur la 3D.
-- Déploiement : build statique (`dist/`), hébergé sur Netlify ou alwaysdata. Domaine : mathisboulais.com.
+- Déploiement : build statique (`dist/`) + `contact.php`, hébergé sur alwaysdata (Apache/PHP). Domaine : mathisboulais.com. Voir `docs/deploy-alwaysdata.md`.
 
 ## Assets 3D
 - Source : `blender/portfolio_models.blend` (6 collections). Exports : `public/models/*.glb` (Draco).

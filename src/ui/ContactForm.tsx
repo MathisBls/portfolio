@@ -1,7 +1,8 @@
-// Formulaire de contact (docs/storyboards/services-contact.md §4). Netlify Forms : il est dans le HTML
-// prérendu, donc détecté au déploiement. Sans JS : POST natif (validation native du navigateur).
-// Avec JS : validation maison (lib/form.ts), envoi en fetch, statuts annoncés en aria-live, motion pour
-// les transitions (coupées en reduced-motion).
+// Formulaire de contact (docs/storyboards/services-contact.md §4). Envoi vers public/contact.php (PHP chez
+// alwaysdata). Sans JS : POST natif vers contact.php (validation native du navigateur), qui répond par une
+// page minimale. Avec JS : validation maison (lib/form.ts), envoi en fetch avec réponse JSON, statuts
+// annoncés en aria-live, motion pour les transitions (coupées en reduced-motion). En dev, Vite ne sert
+// pas le PHP : l'envoi aboutit à l'état d'erreur et à son lien email de secours.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { SubmitEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
@@ -9,7 +10,14 @@ import * as m from 'motion/react-m'
 import { isFilled } from '../lib/content'
 import { identity } from '../content/services'
 import { site } from '../content/site'
-import { CONTACT_FORM_NAME, encodeForm, validateContact } from '../lib/form'
+import {
+  CONTACT_ENDPOINT,
+  CONTACT_FORM_NAME,
+  CONTACT_MAX,
+  HONEYPOT_FIELD,
+  sendContact,
+  validateContact,
+} from '../lib/form'
 import type { ContactErrors, ContactFields } from '../lib/form'
 import { ScrollTrigger } from '../lib/gsap'
 import { useReducedMotion } from '../lib/useReducedMotion'
@@ -19,7 +27,6 @@ import { SubmitButton } from './SubmitButton'
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const FIELD_ORDER = ['name', 'email', 'message'] as const satisfies readonly (keyof ContactFields)[]
-const HONEYPOT = 'bot-field'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -65,6 +72,7 @@ function Field({
     id,
     name,
     required: true,
+    maxLength: CONTACT_MAX[name],
     className: styles.control,
     'aria-invalid': error !== undefined,
     'aria-describedby': errorId,
@@ -143,18 +151,11 @@ export function ContactForm() {
 
   const send = async (fields: ContactFields, honeypot: string) => {
     setStatus('sending')
-    try {
-      const response = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: encodeForm({ ...fields, [HONEYPOT]: honeypot }),
-      })
-      setStatus(response.ok ? 'success' : 'error')
-      // La scène joue « l'idée traverse le prisme » (store sans three : rien de 3D importé ici)
-      if (response.ok) useScene.getState().setIdeaSent()
-    } catch {
-      setStatus('error')
-    }
+    // sendContact ne lève jamais : réseau coupé, 404 ou HTML (dev) donnent { ok: false }
+    const result = await sendContact({ ...fields, [HONEYPOT_FIELD]: honeypot })
+    setStatus(result.ok ? 'success' : 'error')
+    // La scène joue « l'idée traverse le prisme » (store sans three : rien de 3D importé ici)
+    if (result.ok) useScene.getState().setIdeaSent()
   }
 
   const onSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -175,7 +176,7 @@ export function ContactForm() {
       if (control instanceof HTMLElement) control.focus()
       return
     }
-    void send(fields, readField(data, HONEYPOT))
+    void send(fields, readField(data, HONEYPOT_FIELD))
   }
 
   return (
@@ -196,8 +197,7 @@ export function ContactForm() {
               key="form"
               name={CONTACT_FORM_NAME}
               method="POST"
-              data-netlify="true"
-              netlify-honeypot={HONEYPOT}
+              action={CONTACT_ENDPOINT}
               aria-label={form.label}
               noValidate={hydrated}
               onSubmit={onSubmit}
@@ -205,11 +205,10 @@ export function ContactForm() {
               exit={leave}
               transition={transition}
             >
-              <input type="hidden" name="form-name" value={CONTACT_FORM_NAME} />
               <p className="sr-only">
                 <label>
                   {form.honeypot}
-                  <input name={HONEYPOT} tabIndex={-1} autoComplete="off" />
+                  <input name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
                 </label>
               </p>
 

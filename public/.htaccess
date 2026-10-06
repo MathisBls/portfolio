@@ -1,0 +1,78 @@
+# Apache chez alwaysdata (docs/deploy-alwaysdata.md). Copié tel quel de public/ vers dist/ au build,
+# déposé à la racine du site. Reprend les en-têtes de l'ancien netlify.toml.
+
+# Pages prérendues : / -> index.html, /legal/ -> legal/index.html (/legal redirigé vers /legal/ par mod_dir)
+DirectoryIndex index.html
+Options -Indexes
+AddDefaultCharset utf-8
+
+# --- Types MIME -------------------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType text/javascript .js .mjs
+  AddType model/gltf-binary .glb
+  AddType application/wasm .wasm
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  AddType video/mp4 .mp4
+  AddType audio/mpeg .mp3
+  AddType font/woff2 .woff2
+  AddCharset utf-8 .html .css .js .mjs .json .svg .txt .xml
+</IfModule>
+
+# --- Redirections : https et sans www, en un seul saut ---------------------------------------------
+# alwaysdata termine TLS sur son proxy : %{HTTPS} peut rester à off, X-Forwarded-Proto fait foi.
+# Cocher aussi « Forcer HTTPS » dans l'admin (Web > Sites > SSL) : redirection au niveau du proxy.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# --- Compression -----------------------------------------------------------------------------------
+# GLB (Draco), WebP, MP4, MP3 et woff2 sont déjà compressés : pas de deflate.
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml
+    AddOutputFilterByType DEFLATE text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml application/wasm
+  </IfModule>
+</IfModule>
+
+<IfModule mod_headers.c>
+  # --- Cache ---------------------------------------------------------------------------------------
+  # contact.php envoie son propre Cache-Control (no-store).
+  <If "%{REQUEST_URI} =~ m#^/(assets|fonts)/#">
+    # /assets/ : noms hashés par Vite, jamais modifiés. /fonts/ : noms stables qui ne changent pas.
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  <ElseIf "%{REQUEST_URI} =~ m#^/(models|textures|audio|posters|draco)/#">
+    # Modèles, textures, vidéos, audio, posters, décodeur Draco : noms stables, une semaine
+    Header set Cache-Control "public, max-age=604800"
+  </ElseIf>
+  <ElseIf "%{REQUEST_URI} =~ m#(\.html|/)$#">
+    # Pages HTML (et URL de dossier) : cache court, revalidé à chaque visite (304 si inchangé), pour
+    # qu'un déploiement soit vu tout de suite et ne pointe jamais vers des assets supprimés
+    Header set Cache-Control "no-cache"
+  </ElseIf>
+
+  # --- Sécurité ------------------------------------------------------------------------------------
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "DENY"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+
+  # HSTS : à activer une fois le certificat Let's Encrypt en place pour mathisboulais.com et www
+  # (sinon le site devient inaccessible pendant max-age si le certificat tombe).
+  # Header always set Strict-Transport-Security "max-age=31536000"
+
+  # CSP permissive, NON activée : à tester sur toute la page et l'easter egg avant de décommenter.
+  # three et le décodeur Draco ont besoin de 'wasm-unsafe-eval', de workers et d'images en blob:,
+  # les VideoTexture de media-src blob:, les styles inline (motion, R3F) de 'unsafe-inline'.
+  # Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+</IfModule>

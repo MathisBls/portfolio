@@ -16,6 +16,7 @@ Vite + React 19 + TypeScript strict · React Three Fiber (drei, postprocessing) 
 | `npm run lint`      | ESLint (0 warning toléré)                                            |
 | `npm run test`      | Tests vitest de la logique (`src/lib/*.test.ts`)                     |
 | `npm run size`      | JS initial en gzip (budget 350 Ko), chunks > 100 Ko                  |
+| `npm run deploy`    | Vérifie `dist/` et affiche les commandes d'envoi vers alwaysdata     |
 | `npm run format`    | Prettier                                                             |
 
 Avant toute PR : `npm run typecheck && npm run lint && npm run build`.
@@ -54,15 +55,10 @@ Tous les textes vivent dans `src/content/`. Une valeur commençant par `TODO:` r
   ```
   Le premier rend des PNG 800×800 sur fond transparent (non versionnés), le second les convertit en WebP de moins de 60 Ko dans `public/posters/`.
 
-## Déploiement
+## Déploiement (alwaysdata)
 
-### Netlify (recommandé)
+Build statique (`dist/`) + `contact.php`, servis par Apache/PHP chez alwaysdata. `public/.htaccess` (MIME, compression, cache, https sans www, en-têtes de sécurité) et `public/contact.php` (formulaire de contact, envoi par `mail()`) sont copiés dans `dist/` au build. Chaque page est un vrai fichier (`index.html`, `legal/index.html`).
 
-`netlify.toml` est prêt : build `npm run build`, publication de `dist/`, en-têtes de cache et de sécurité. Le formulaire de contact utilise Netlify Forms : il est présent dans le HTML prérendu, donc détecté au déploiement. Aucune variable d'environnement n'est nécessaire. Brancher le dépôt sur Netlify, puis le domaine.
+Procédure complète et checklist avant mise en ligne : [`docs/deploy-alwaysdata.md`](docs/deploy-alwaysdata.md). `npm run deploy` vérifie `dist/` et affiche les commandes d'envoi (rien n'est envoyé).
 
-### alwaysdata
-
-1. `npm run build` en local ou en CI, puis envoyer `dist/` à la racine du site (SFTP ou rsync).
-2. Le site est statique : chaque page est un vrai fichier (`index.html`, `legal/index.html`).
-3. Netlify Forms ne fonctionne pas hors de Netlify : remplacer l'envoi du formulaire par un service comme Formspree (URL d'action dans `src/lib/form.ts`), et mettre à jour l'hébergeur dans `identity.host` (`src/content/services.ts`).
-4. Reporter les en-têtes de `netlify.toml` dans un `.htaccess` (Apache).
+En dev, Vite n'exécute pas le PHP : l'envoi du formulaire tombe sur l'état d'erreur, avec le lien email de secours.

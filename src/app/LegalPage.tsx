@@ -122,6 +122,9 @@ export function LegalPage() {
             <Row label={legal.labels.address}>
               <Value value={host.address} />
             </Row>
+            <Row label={legal.labels.phone}>
+              <Value value={host.phone} href={telHref(host.phone)} />
+            </Row>
             <Row label={legal.labels.website}>
               <Value value={host.url} href={host.url} />
             </Row>

@@ -114,8 +114,9 @@ export const site = {
       title: 'Personal data',
       text: [
         'The contact form collects your name, email address and message. This data is only used to reply to you and is never sold or shared.',
-        'It is stored by the hosting provider (Netlify Forms).',
-        'Retention period: TODO: to be confirmed (suggested: 12 months after the last exchange).',
+        'Your message is sent to me by email. It is not stored on the web server (hosted by alwaysdata).',
+        'To prevent abuse, the server temporarily keeps a hashed form of your IP address (about 10 minutes). It is used for nothing else.',
+        'Retention period of messages in my mailbox: TODO: to be confirmed (suggested: 12 months after the last exchange, then deleted).',
         'You can request access to, correction or deletion of your data by writing to the email address above. You can also contact the French data protection authority, the CNIL (cnil.fr).',
       ],
     },

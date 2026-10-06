@@ -23,3 +23,6 @@ public/posters/*.png
 
 # Worktrees des agents Claude Code
 .claude/worktrees
+
+# Compteur de débit de contact.php quand il tourne en local (php -S ... -t dist)
+.contact-rate

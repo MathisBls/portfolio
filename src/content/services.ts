@@ -67,11 +67,14 @@ export const identity = {
   // ADRESSE FICTIVE (provisoire, demandée par Mathis) : à remplacer par une vraie adresse pro
   // (domiciliation) avant la mise en production. Obligatoire dans les mentions légales (LCEN art. 6).
   address: '12 rue de l’Exemple, 94600 Choisy-le-Roi, France',
-  // Adresse relevée dans le pied de page des emails officiels de Netlify (oct. 2026), à revérifier
+  // Hébergeur (décision du 2026-10-06), relevé le 2026-10-06 : raison sociale et siège depuis les
+  // mentions légales officielles (alwaysdata.com/fr/mentions-legales/ : « ALWAYSDATA, SARL au capital
+  // de 200.000 €, RCS Paris 492 893 490 »), téléphone depuis alwaysdata.com/fr/contact/.
   host: {
-    name: 'Netlify, Inc.',
-    address: '512 2nd Street, Fl 2, San Francisco, CA 94107, USA',
-    url: 'https://www.netlify.com',
+    name: 'ALWAYSDATA SARL',
+    address: '91 rue du Faubourg Saint Honoré, 75008 Paris, France',
+    phone: '+33 1 84 16 23 40',
+    url: 'https://www.alwaysdata.com',
   },
   pitch:
     'I design and build websites and apps for independents, small businesses and new ventures. From design to launch, one person to talk to.',
