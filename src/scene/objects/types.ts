@@ -165,3 +165,29 @@ export type PizzaGLTF = GLTFBase & {
     Basil: THREE.MeshStandardMaterial
   }
 }
+
+export type FitnessGLTF = GLTFBase & {
+  nodes: {
+    Fit_Dumbbell_Root: THREE.Object3D
+    Fit_Bar: THREE.Mesh
+    Fit_PlateL0: THREE.Mesh
+    Fit_PlateL1: THREE.Mesh
+    Fit_PlateR0: THREE.Mesh
+    Fit_PlateR1: THREE.Mesh
+    Fit_Body: THREE.Mesh
+    Fit_Screen: THREE.Mesh
+    Fit_Card1: THREE.Mesh
+    Fit_Card2: THREE.Mesh
+    Fit_RingTrack: THREE.Mesh
+    Fit_RingArc: THREE.Mesh
+  }
+  materials: {
+    FitSteel: THREE.MeshStandardMaterial
+    FitDark: THREE.MeshStandardMaterial
+    FitCyan: THREE.MeshStandardMaterial
+    FitScreen: THREE.MeshStandardMaterial
+    FitCard1: THREE.MeshStandardMaterial
+    FitCard2: THREE.MeshStandardMaterial
+    FitTrack: THREE.MeshStandardMaterial
+  }
+}

@@ -29,7 +29,8 @@ describe('assignRays', () => {
     expect(bySlug['game-factory']).toBe(0) // rouge
     expect(bySlug['meme-rina']).toBe(1) // orange
     expect(bySlug.wegir).toBe(2) // jaune
-    expect(bySlug.zephyr).toBe(4) // bleu
+    // Deux accents cyan (Zephyr, Fitness Kass) : ils se partagent le vert et le bleu
+    expect([bySlug.zephyr, bySlug['fitness-kass']].sort()).toEqual([3, 4])
     expect(bySlug.quorin).toBe(5) // indigo
   })
 })

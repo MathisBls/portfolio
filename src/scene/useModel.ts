@@ -3,6 +3,7 @@
 import { useGLTF } from '@react-three/drei'
 import type { Project } from '../content/projects'
 import type {
+  FitnessGLTF,
   GameFactoryGLTF,
   PizzaGLTF,
   PrismGLTF,
@@ -18,6 +19,7 @@ type ModelMap = {
   quorin: QuorinGLTF
   gamefactory: GameFactoryGLTF
   pizza: PizzaGLTF
+  fitness: FitnessGLTF
 }
 
 export type ModelName = keyof ModelMap & Project['model']

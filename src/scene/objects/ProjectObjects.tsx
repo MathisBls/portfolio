@@ -10,6 +10,7 @@ import { ScrollTrigger } from '../../lib/gsap'
 import { setSceneFlag, useScene } from '../store'
 import { preloadModel } from '../useModel'
 import { Factory } from './Factory'
+import { Fitness } from './Fitness'
 import { Pizza } from './Pizza'
 import { Quorin } from './Quorin'
 import { measureCards } from './rayPath'
@@ -25,6 +26,7 @@ const OBJECTS: Record<ObjectModel, ComponentType<{ slug: string }>> = {
   quorin: Quorin,
   gamefactory: Factory,
   pizza: Pizza,
+  fitness: Fitness,
 }
 
 const isObjectModel = (model: Project['model']): model is ObjectModel => model !== 'prism'

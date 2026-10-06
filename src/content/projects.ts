@@ -6,7 +6,7 @@ export type Project = {
   description: string
   stack: string[]
   links: { site?: string; github?: string; store?: string }
-  model: 'prism' | 'zephyr' | 'wegir' | 'quorin' | 'gamefactory' | 'pizza'
+  model: 'prism' | 'zephyr' | 'wegir' | 'quorin' | 'gamefactory' | 'pizza' | 'fitness'
   accent: string
   year: string
 }
@@ -35,6 +35,20 @@ export const projects: Project[] = [
     model: 'wegir',
     accent: '#ffb020',
     year: '2026',
+  },
+  {
+    slug: 'fitness-kass',
+    // Ajouté le 2026-10-06 depuis les captures de Mathis. Nom déduit du domaine vu dans l'app
+    // (fitnesskass.app) : à confirmer. Description d'après les écrans, aucun fait ajouté.
+    name: 'Fitness Kass',
+    tagline: 'Coaching, training and nutrition in one app',
+    description:
+      'Mobile fitness app: training programs from free to personal coaching, nutrition tracking with macros, and progress charts with body measurements and photos. Premium subscription through the App Store and Google Play.',
+    stack: ['TODO: stack (React Native, Expo ?)'],
+    links: { store: 'TODO: lien App Store / Google Play' },
+    model: 'fitness',
+    accent: '#13c6d3',
+    year: 'TODO: année',
   },
   {
     slug: 'quorin',
