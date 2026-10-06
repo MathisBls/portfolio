@@ -107,9 +107,44 @@
   color: var(--fg-2);
 }
 
+/* Message de la route (EasterMessage.tsx), façon jeu vidéo : mono, halo rouge, caret plein. */
+.message {
+  position: absolute;
+  top: 58%;
+  right: var(--gutter);
+  left: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: clamp(1.05rem, 2.3vw, 1.9rem);
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: #fff4f2;
+  text-shadow:
+    0 0 10px rgba(255, 90, 100, 0.85),
+    0 0 28px rgba(255, 40, 60, 0.55);
+}
+
+/* Caret : clignotement lent (0.9 Hz), sous la limite de 3 par seconde */
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.12em;
+  vertical-align: -0.15em;
+  background: currentColor;
+  box-shadow: 0 0 12px rgba(255, 80, 90, 0.9);
+  animation: caret 1.1s steps(1) infinite;
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
-  .highlight {
+  .highlight,
+  .caret {
     animation: none;
   }
 }

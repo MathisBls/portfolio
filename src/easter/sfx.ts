@@ -99,9 +99,17 @@ export function chime(
 export function playCue(ctx: AudioContext, out: AudioNode, name: TensionCue) {
   const now = ctx.currentTime + 0.01
   if (name === 'shatter') {
-    noise(ctx, out, now, 0.5, { from: 6000, to: 2500, length: 0.5, q: 0.7, type: 'highpass' })
-    chime(ctx, out, now, [2637, 3520, 4186, 3136], { peak: 0.035, gap: 0.03, length: 0.6 })
-    kick(ctx, out, now, 0.5, { from: 90, to: 35, drop: 0.3, length: 0.7 })
+    // Verre qui vole en éclats : souffle aigu, craquement large, éclats tintants, coup grave
+    noise(ctx, out, now, 0.7, { from: 7000, to: 2200, length: 0.8, q: 0.7, type: 'highpass' })
+    noise(ctx, out, now, 0.55, { from: 2600, to: 180, length: 0.9, q: 0.4, type: 'lowpass' })
+    chime(ctx, out, now, [2637, 3520, 4186, 3136, 4699, 2349, 3951], {
+      peak: 0.035,
+      gap: 0.035,
+      length: 0.7,
+    })
+    kick(ctx, out, now, 0.95, { from: 120, to: 28, drop: 0.5, length: 1.5 })
+  } else if (name === 'type') {
+    chime(ctx, out, now, [1760], { peak: 0.016, length: 0.045 })
   } else if (name === 'deal') {
     noise(ctx, out, now, 0.12, { from: 700, to: 3200, length: 0.28 })
   } else if (name === 'flip') {

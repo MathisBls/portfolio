@@ -9,6 +9,7 @@ import { site } from '../content/site'
 import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from '../scene/store'
 import { isMuted, setMuted } from './audio'
+import { EasterMessage } from './EasterMessage'
 import styles from './EasterOverlay.module.css'
 import { useKonami } from './konami'
 import { beginEaster, endEaster, lockPage, setPageHidden } from './session'
@@ -51,6 +52,8 @@ function Dialog() {
   const stage = useScene((s) => s.easterStage)
   const [webgl] = useState(hasWebGL2)
   const [soundOn, setSoundOn] = useState(() => !isMuted())
+  // Dernière ligne complète du message de la route, annoncée une fois (aria-live)
+  const [announced, setAnnounced] = useState('')
   const root = useRef<HTMLDivElement>(null)
   const exit = useRef<HTMLButtonElement>(null)
   const titleId = useId()
@@ -127,6 +130,10 @@ function Dialog() {
       </div>
       <p id={descId} className="sr-only">
         {text.description}
+      </p>
+      <EasterMessage onLine={setAnnounced} />
+      <p className="sr-only" aria-live="polite">
+        {announced}
       </p>
       {status && (
         <p className={styles.status} role="status">

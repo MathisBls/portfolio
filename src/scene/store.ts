@@ -152,6 +152,8 @@ type SceneState = {
   ideaSentAt: number | null
   easter: EasterMode
   easterStage: EasterStage
+  /** Ligne du message affichée sur la route (site.easter.lines), −1 : aucune. */
+  easterLine: number
   setHovered: (slug: Project['slug'] | null) => void
   setProjectsNear: (near: boolean) => void
   setIdeaSent: () => void
@@ -159,6 +161,7 @@ type SceneState = {
   startEaster: () => void
   exitEaster: () => void
   setEasterStage: (stage: EasterStage) => void
+  setEasterLine: (line: number) => void
 }
 
 export const useScene = create<SceneState>((set) => ({
@@ -167,6 +170,7 @@ export const useScene = create<SceneState>((set) => ({
   ideaSentAt: null,
   easter: 'idle',
   easterStage: 'loading',
+  easterLine: -1,
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
@@ -179,13 +183,16 @@ export const useScene = create<SceneState>((set) => ({
     invalidate()
   },
   startEaster: () => {
-    set({ easter: 'playing', easterStage: 'loading', hovered: null })
+    set({ easter: 'playing', easterStage: 'loading', easterLine: -1, hovered: null })
   },
   exitEaster: () => {
-    set({ easter: 'idle', easterStage: 'loading' })
+    set({ easter: 'idle', easterStage: 'loading', easterLine: -1 })
     invalidate()
   },
   setEasterStage: (stage) => {
     set({ easterStage: stage })
+  },
+  setEasterLine: (line) => {
+    set({ easterLine: line })
   },
 }))

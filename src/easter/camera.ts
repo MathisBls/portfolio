@@ -1,33 +1,36 @@
 // Easter egg : pose de la caméra selon l'état de la séquence (E, state.ts). C'est la séquence qui pilote
-// la caméra (CameraRig est démonté). Sans allocation par frame.
-// - Ciel (beat 1) : face au prisme, secousse pendant le tremblement.
+// la caméra (CameraRig est démonté) ; application et tremblement : EasterCamera.tsx. Sans allocation.
+// - Ciel (beat 1) : zoom lent vers le prisme intact (E.zoom, 0–5 s), recul bref à l'éclatement.
 // - Arène (beats 2–3) : descente du ciel vers la table, puis suit la distribution et les retournements
 //   (clés sur le temps, spline Catmull-Rom). Reduced-motion : plan fixe.
-// - Beat 4 : rapprochement du dos de la légendaire puis plongée, dans le repère du B de la carte.
-// - Beat 5 : vol le long du B géant (flight.ts), même repère local mis à l'échelle : la bascule de la
-//   carte au B géant ne se voit pas. Inclinaison dans les virages, FOV qui s'élargit, tremblement.
+// - Beat 4 : rapprochement du dos de la légendaire puis plongée sur le B (repère du B de la carte,
+//   LOGO_FRAME) jusqu'à ce que son rose remplisse l'écran.
+// - Beat 5 : la route, caméra fixe dans une voie (c'est la route qui défile), légère dérive, FOV qui
+//   s'élargit avec la vitesse.
 // - Beat 6 : le B entier, de face, secousse unique à l'impact.
 import { CatmullRomCurve3, Vector3 } from 'three'
-import { clamp, easeInOut, lerp, range } from '../lib/math'
-import { FACE_Z, FLIGHT_START, flightPoint, flightTangent } from './flight'
-import { FINALE_CAMERA, GIANT_FRAME, LOGO_FRAME, SKY_CAMERA, SKY_Y } from './layout'
+import { clamp, lerp, range } from '../lib/math'
+import { FINALE_CAMERA, LOGO_FRAME, SKY_CAMERA, SKY_Y } from './layout'
+import { CAMERA_Z } from './roadPath'
 import { type EasterState, SHOT } from './state'
+import { T } from './times'
 
 export type CameraPose = { position: Vector3; look: Vector3; up: Vector3; fov: number }
 
 type Key = { at: number; position: readonly number[]; look: readonly number[] }
 
+const A = T.arena
 const ARENA_KEYS: readonly Key[] = [
-  { at: 1.5, position: [0, 32, 6], look: [0, 0, -1] },
-  { at: 3, position: [-10, 20, 12], look: [0, 0.4, 0] },
-  { at: 4.8, position: [-8, 11, 16], look: [0.5, 0.4, 0] },
-  { at: 6.4, position: [2, 11, 15], look: [3, 0.6, 0.8] },
-  { at: 7.6, position: [5.5, 11, 12.5], look: [5.5, 0.6, 1.2] },
-  { at: 9, position: [0.5, 11.5, 10], look: [0, 0.4, 0.4] },
-  { at: 10.6, position: [-1, 10, 8.6], look: [-0.6, 0.4, 0.5] },
-  { at: 12, position: [2.2, 8.8, 8], look: [2.6, 0.5, 0.5] },
-  { at: 13.3, position: [3.5, 7.4, 7], look: [3.5, 0.8, 0.5] },
-  { at: 14.4, position: [3.6, 5.6, 8.8], look: [3.5, 2.8, 1] },
+  { at: A, position: [0, 32, 6], look: [0, 0, -1] },
+  { at: A + 1.5, position: [-10, 20, 12], look: [0, 0.4, 0] },
+  { at: A + 3.3, position: [-8, 11, 16], look: [0.5, 0.4, 0] },
+  { at: A + 4.9, position: [2, 11, 15], look: [3, 0.6, 0.8] },
+  { at: A + 6.1, position: [5.5, 11, 12.5], look: [5.5, 0.6, 1.2] },
+  { at: A + 7.5, position: [0.5, 11.5, 10], look: [0, 0.4, 0.4] },
+  { at: A + 9.1, position: [-1, 10, 8.6], look: [-0.6, 0.4, 0.5] },
+  { at: A + 10.5, position: [2.2, 8.8, 8], look: [2.6, 0.5, 0.5] },
+  { at: A + 11.8, position: [3.5, 7.4, 7], look: [3.5, 0.8, 0.5] },
+  { at: A + 12.9, position: [3.6, 5.6, 8.8], look: [3.5, 2.8, 1] },
 ]
 const STILL: Key = { at: 0, position: [0, 11, 9.5], look: [0, 0.4, 0.2] }
 
@@ -51,52 +54,19 @@ function keyParam(t: number): number {
   return 1
 }
 
-/** Approche (logo-local) : B entier à l'écran, puis plongée au-dessus du départ du vol. */
+/** Zoom du ciel : distance au prisme au départ et à l'arrivée, FOV qui se resserre un peu. */
+const ZOOM = { from: SKY_CAMERA[2], to: 3.7, narrow: 6 }
+/** Face lisible du B (−Z, b_logo.glb 0.05 d'épaisseur) et point visé par la plongée (croissant rose). */
+const FACE_Z = -0.025
+const DIVE = { x: -0.39, y: 0.43, height: 0.08 }
+/** Approche (repère du B) : B entier à l'écran. */
 const APPROACH = { y: 0.05, z: -5 }
-/** Hauteur de vol au-dessus de la face (unités locales) : lente, puis rasante. */
-const HEIGHT = { dive: 0.1, slow: 0.24, fast: 0.09 }
-const AHEAD = { slow: 0.06, fast: 0.1 }
+/** Route : caméra dans la voie de droite, regard vers l'horizon. */
+const ROAD = { x: 2.1, y: 1.55, look: { y: 1.05, z: -90 }, drift: 0.35 }
 
-const local = { position: new Vector3(), look: new Vector3(), up: new Vector3() }
-const scratch = { a: new Vector3(), b: new Vector3(), bank: new Vector3() }
+const local = { position: new Vector3(), look: new Vector3() }
+const scratch = new Vector3()
 const UP_Y = new Vector3(0, 1, 0)
-const UP_FACE = new Vector3(0, 0, -1)
-
-/** Pose locale (repère du B) pendant la plongée (shot arène) ou le vol (shot vol). */
-function localPose(e: EasterState): void {
-  const { position, look, up } = local
-  if (e.shot < SHOT.flight) {
-    const d = e.dive
-    position.set(
-      lerp(0, FLIGHT_START.x, d),
-      lerp(APPROACH.y, FLIGHT_START.y, d),
-      lerp(APPROACH.z, FACE_Z - HEIGHT.dive, d),
-    )
-    look.set(position.x, position.y, FACE_Z)
-    up.copy(UP_Y)
-    return
-  }
-  const u = e.flight
-  const k = easeInOut(range(u, 0, 0.07))
-  flightPoint(u, position)
-  // Après la plongée, la caméra reprend de la hauteur pour lire la courbe, puis rase la surface
-  const cruise = lerp(HEIGHT.slow, HEIGHT.fast, Math.sqrt(e.speed))
-  position.z = FACE_Z - lerp(HEIGHT.dive, cruise, easeInOut(range(u, 0, 0.05)))
-  flightPoint(u + lerp(AHEAD.slow, AHEAD.fast, e.speed), scratch.a)
-  flightPoint(u, look).lerp(scratch.a, k)
-  // Visée au-dessus de la surface : on voit loin devant (l'horizon, les traînées), pas ses pieds
-  look.z = FACE_Z - 0.6 * k * (FACE_Z - position.z)
-  // Inclinaison vers l'intérieur du virage (courbure), plafonnée
-  flightTangent(u, scratch.a)
-  flightTangent(u + 0.02, scratch.bank).sub(scratch.a)
-  const bend = scratch.bank.length()
-  if (bend > 0.35) scratch.bank.multiplyScalar(0.35 / bend)
-  up.copy(UP_Y)
-    .lerp(UP_FACE, k)
-    .normalize()
-    .addScaledVector(scratch.bank, 1.5 * k)
-    .normalize()
-}
 
 /** FOV vertical de base : 35°, élargi en portrait pour garder la table en largeur (plafonné). */
 function baseFov(aspect: number): number {
@@ -117,18 +87,23 @@ function arenaPose(e: EasterState, pose: CameraPose, aspect: number, fov: number
     pose.position.fromArray(STILL.position)
     pose.look.fromArray(STILL.look)
   } else {
-    const p = keyParam(Math.max(e.t, 1.5))
+    const p = keyParam(Math.max(e.t, T.arena))
     arenaPosition.getPoint(p, pose.position)
     arenaLook.getPoint(p, pose.look)
   }
   const pull = pullBack(aspect, fov)
   pose.position.sub(pose.look).multiplyScalar(pull).add(pose.look)
-  pose.up.copy(UP_Y)
   if (e.approach <= 0) return
-  localPose(e)
-  const w = e.approach
-  pose.position.lerp(scratch.a.copy(local.position).applyMatrix4(LOGO_FRAME), w)
-  pose.look.lerp(scratch.b.copy(local.look).applyMatrix4(LOGO_FRAME), w)
+  // Plongée dans le repère du B de la carte : du B entier à son rose qui remplit l'écran
+  const d = e.dive
+  local.position.set(
+    lerp(0, DIVE.x, d),
+    lerp(APPROACH.y, DIVE.y, d),
+    lerp(APPROACH.z, FACE_Z - DIVE.height, d),
+  )
+  local.look.set(local.position.x, local.position.y, FACE_Z)
+  pose.position.lerp(scratch.copy(local.position).applyMatrix4(LOGO_FRAME), e.approach)
+  pose.look.lerp(scratch.copy(local.look).applyMatrix4(LOGO_FRAME), e.approach)
 }
 
 export function solveCamera(e: EasterState, aspect: number, pose: CameraPose): void {
@@ -136,17 +111,16 @@ export function solveCamera(e: EasterState, aspect: number, pose: CameraPose): v
   pose.fov = fov
   pose.up.copy(UP_Y)
   if (e.shot === SHOT.sky) {
-    pose.position.fromArray(SKY_CAMERA)
-    pose.position.z += 0.4 * e.flash
+    pose.position.set(0, SKY_Y, lerp(ZOOM.from, ZOOM.to, e.zoom) + 0.6 * e.flash)
     pose.look.set(0, SKY_Y, 0)
+    pose.fov = fov - ZOOM.narrow * e.zoom + 4 * e.kick
   } else if (e.shot === SHOT.arena) {
     arenaPose(e, pose, aspect, fov)
-  } else if (e.shot === SHOT.flight) {
-    localPose(e)
-    pose.position.copy(local.position).applyMatrix4(GIANT_FRAME)
-    pose.look.copy(local.look).applyMatrix4(GIANT_FRAME)
-    pose.up.copy(local.up).transformDirection(GIANT_FRAME)
-    pose.fov = fov + 42 * Math.pow(e.speed, 1.6)
+  } else if (e.shot === SHOT.road) {
+    const drift = e.reduced ? 0 : ROAD.drift * Math.sin(e.t * 0.4)
+    pose.position.set(ROAD.x + drift, ROAD.y, CAMERA_Z)
+    pose.look.set(ROAD.x * 0.85 + drift, ROAD.look.y, ROAD.look.z)
+    pose.fov = fov + 40 * Math.pow(e.speed, 1.5)
   } else {
     pose.position.fromArray(FINALE_CAMERA)
     pose.look.set(0, 0, 0)
@@ -154,11 +128,11 @@ export function solveCamera(e: EasterState, aspect: number, pose: CameraPose): v
   }
 }
 
-/** Amplitude du tremblement (radians) : prisme qui charge, vitesse du vol, impact. Rien en reduced. */
+/** Amplitude du tremblement (radians) : tension du zoom, éclatement, vitesse, impact. Rien en reduced. */
 export function shakeAmount(e: EasterState): number {
   if (e.reduced) return 0
-  if (e.shot === SHOT.sky) return 0.006 * e.tremble
+  if (e.shot === SHOT.sky) return 0.0025 * e.tremble + 0.03 * e.kick
   if (e.shot === SHOT.arena) return 0.002 * e.charge
-  if (e.shot === SHOT.flight) return 0.011 * e.speed * e.speed
+  if (e.shot === SHOT.road) return 0.011 * e.speed * e.speed
   return 0.02 * e.impact
 }

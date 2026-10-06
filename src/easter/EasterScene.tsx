@@ -7,12 +7,15 @@
 //   séquence montés, shaders précompilés (compileAsync), comme Warmup.
 // - 'running' : rendu continu, timeline (useSequence) ; la page s'efface (overlay, html.easter-live).
 // Paliers : desktop (bloom, transmission absente), mobile (moins d'objets, sans postprocessing),
-// reduced-motion (fondus seulement : ni éclatement, ni plongée, ni traînées, ni postprocessing).
+// reduced-motion (fondus seulement : ni éclatement, ni plongée, route immobile, ni traînées, ni
+// postprocessing). Modèles chargés pendant 'loading' : les trois GLB de l'easter egg, le prisme, et
+// les cinq projets de la route (useModel, docs/models.md) avec l'écran de l'app fitness.
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { useContinuousInvalidate } from '../scene/hooks'
 import { useScene } from '../scene/store'
-import { useModel } from '../scene/useModel'
+import { useScreenTextures } from '../scene/objects/useScreenCycle'
+import { type ModelName, preloadModel, useModel } from '../scene/useModel'
 import { Arena } from './Arena'
 import { Atmosphere } from './Atmosphere'
 import { Cards } from './Cards'
@@ -21,12 +24,18 @@ import { EasterEffects } from './EasterEffects'
 import { EasterLights } from './EasterLights'
 import { GiantB } from './GiantB'
 import { preloadEasterModels, useEasterModel } from './models'
+import { Road } from './Road'
+import { Roadside } from './Roadside'
 import { Shatter } from './Shatter'
 import { resetEaster } from './state'
 import { Streaks } from './Streaks'
 import { useSequence } from './useSequence'
 
+const PROJECTS: readonly ModelName[] = ['wegir', 'zephyr', 'fitness', 'gamefactory', 'pizza']
+const FITNESS_HOME = ['/textures/fitness/home.webp']
+
 preloadEasterModels()
+PROJECTS.forEach(preloadModel)
 
 type EasterSceneProps = { mobile: boolean; reducedMotion: boolean }
 
@@ -63,10 +72,12 @@ function World({ mobile, reducedMotion }: EasterSceneProps) {
       <EasterCamera />
       <Atmosphere mobile={mobile} reducedMotion={reducedMotion} />
       <EasterLights mobile={mobile} />
-      {!reducedMotion && <Shatter mobile={mobile} />}
+      <Shatter mobile={mobile} reducedMotion={reducedMotion} />
       <Arena bloom={bloom} mobile={mobile} />
       <Cards bloom={bloom} reducedMotion={reducedMotion} />
-      <GiantB />
+      <Road mobile={mobile} />
+      <Roadside reducedMotion={reducedMotion} />
+      <GiantB bloom={bloom} reducedMotion={reducedMotion} />
       {!reducedMotion && <Streaks mobile={mobile} />}
       {bloom && <EasterEffects />}
       {stage === 'compiling' && <Compile />}
@@ -75,11 +86,17 @@ function World({ mobile, reducedMotion }: EasterSceneProps) {
 }
 
 export default function EasterScene({ mobile, reducedMotion }: EasterSceneProps) {
-  // Suspend jusqu'au chargement des trois GLB (et du prisme, déjà en cache)
+  // Suspend jusqu'au chargement de tous les modèles (le prisme est déjà en cache)
   useEasterModel('arena')
   useEasterModel('cards')
   useEasterModel('logo')
   useModel('prism')
+  useModel('wegir')
+  useModel('zephyr')
+  useModel('fitness')
+  useModel('gamefactory')
+  useModel('pizza')
+  useScreenTextures(FITNESS_HOME)
   const stage = useScene((s) => s.easterStage)
   const setFrameloop = useThree((s) => s.setFrameloop)
 

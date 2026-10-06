@@ -1,7 +1,7 @@
-// Easter egg, beat 5 : « Traînées d'étoiles (instanced) » pendant le vol le long du B. Un seul draw call :
+// Easter egg, beat 5 : traînées d'étoiles (instanced) pendant la course sur la route. Un seul draw call :
 // des étoiles autour de l'axe de la caméra, étirées vers l'arrière selon la vitesse, du blanc bleuté au
 // rouge (E.red). Calcul en vertex shader (streakShader.ts) ; ici seulement 4 uniformes par frame.
-// Non monté en reduced-motion (ni traînées ni plongée). Mobile : 3 fois moins d'étoiles.
+// Non monté en reduced-motion (route immobile). Mobile : 3 fois moins d'étoiles.
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { Color, type Group } from 'three'
@@ -28,7 +28,7 @@ export function Streaks({ mobile }: StreaksProps) {
   useFrame(({ camera }, delta) => {
     const g = group.current
     if (!g) return
-    const speed = E.shot === SHOT.flight ? E.speed : 0
+    const speed = E.shot === SHOT.road ? E.speed : 0
     g.visible = speed > 0.001
     if (!g.visible) return
     g.position.copy(camera.position)

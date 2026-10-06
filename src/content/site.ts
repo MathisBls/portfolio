@@ -148,7 +148,7 @@ export const site = {
   easter: {
     label: 'Secret level',
     description:
-      'A card arena lights up. Three cards are dealt and turned over, then the camera dives into a giant B. Decorative only. Press Escape to leave at any time.',
+      'A glass prism shatters, a card arena lights up and three cards are turned over. Then a road at light speed, past my projects, toward a giant B. Decorative only. Press Escape to leave at any time.',
     loading: 'Loading…',
     noWebGL: 'This one needs WebGL 2. Press Escape to go back.',
     sound: 'Sound',
@@ -156,5 +156,7 @@ export const site = {
     soundOff: 'Off',
     exit: 'Exit',
     exitKey: '(Esc)',
+    // Message tapé sur la route (src/easter/times.ts, T.lines) : chaque ligne remplace la précédente
+    lines: ['You’ve seen my projects.', 'Well… almost.', 'There’s one I never told you about.'],
   },
 }

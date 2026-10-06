@@ -1,11 +1,13 @@
 // Easter egg : son de tension généré en Web Audio (aucun fichier audio). API : start(),
-// setIntensity(0..1), climax(), cue(), mute(bool), stop() (type TensionEngine, audio.ts).
+// setIntensity(0..1), hush(), climax(), cue(), mute(bool), stop() (type TensionEngine, audio.ts).
 // - Nappe grave : trois scies désaccordées (la1, mi2), filtre passe-bas résonant ouvert par l'intensité,
 //   balayé lentement par un LFO.
 // - Riser : bruit filtré dont la bande monte, plus un sinus dont la hauteur monte avec l'intensité.
 // - Cœur : double battement (kick sinus à hauteur qui chute), tempo de 52 à 160 bpm selon l'intensité,
 //   planifié à l'avance sur l'horloge audio (pas de dérive).
+// - Suspension (hush) : une demi-seconde de silence avant l'éclatement du prisme, puis tout reprend.
 // - Climax : silence d'une demi-seconde, impact grave, puis une nappe calme (accord de la majeur).
+// - Tics du message (cue 'type') : un bip court et discret par lettre.
 // Volume : bus maître + compresseur ; mute agit sur une sortie séparée (l'enveloppe du bus continue).
 import type { TensionCue, TensionEngine } from './audio'
 import { kick, noise, noiseBuffer, playCue } from './sfx'
@@ -71,8 +73,15 @@ export function createTension(ctx: AudioContext): TensionEngine {
   let ended = false
   let nextBeat = 0
   let beating = false
+  /** Reprise du cœur après une suspension (temps audio), 0 : aucune en attente. */
+  let resumeAt = 0
   let timer = 0
   const schedule = () => {
+    if (!beating && resumeAt > 0 && !ended && ctx.currentTime >= resumeAt) {
+      beating = true
+      nextBeat = resumeAt
+      resumeAt = 0
+    }
     if (!beating) return
     while (nextBeat < ctx.currentTime + LOOKAHEAD) {
       const v = 0.45 + 0.4 * intensity
@@ -107,9 +116,18 @@ export function createTension(ctx: AudioContext): TensionEngine {
       ramp(whine.frequency, 110 * Math.pow(2, 3.2 * intensity))
       ramp(whineGain.gain, 0.05 * Math.pow(intensity, 1.6))
     },
+    hush() {
+      const now = ctx.currentTime
+      beating = false
+      resumeAt = now + SILENCE + 0.8
+      bus.gain.cancelScheduledValues(now)
+      bus.gain.setTargetAtTime(0, now, 0.03)
+      bus.gain.setValueAtTime(1, now + SILENCE)
+    },
     climax() {
       const now = ctx.currentTime
       ended = true
+      resumeAt = 0
       beating = false
       bus.gain.cancelScheduledValues(now)
       bus.gain.setTargetAtTime(0, now, 0.03)
@@ -134,7 +152,8 @@ export function createTension(ctx: AudioContext): TensionEngine {
       })
     },
     cue(name: TensionCue) {
-      playCue(ctx, bus, name)
+      // L'éclatement suit la suspension : hors du bus, il ne dépend pas de l'instant où le bus revient
+      playCue(ctx, name === 'shatter' ? out : bus, name)
     },
     mute(muted) {
       out.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.05)

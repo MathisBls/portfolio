@@ -31,7 +31,11 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
     attachEngine(engine)
     const tl = buildTimeline({
       cue: (name) => engine?.cue(name),
+      hush: () => engine?.hush(),
       climax: () => engine?.climax(),
+      line: (index) => {
+        useScene.getState().setEasterLine(index)
+      },
       finale: () => {
         useScene.getState().setEasterStage('finale')
       },
@@ -70,6 +74,7 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
     return () => {
       document.removeEventListener('visibilitychange', onVisibility)
       tl.kill()
+      useScene.getState().setEasterLine(-1)
       engine?.stop()
       attachEngine(null)
       delete host.__easter

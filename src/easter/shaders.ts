@@ -1,8 +1,9 @@
 // Easter egg : matériaux procéduraux (aucune texture à télécharger), et leurs réglages par frame.
 // - Halo : dégradé radial additif (éclair du prisme, auras des cartes, halo rouge du final), face
 //   caméra ou posé. Mélange additif avec alpha 1 : la couleur s'ajoute telle quelle (HDR sous bloom).
-// - Fondu : quad plein écran (noir des transitions, vignette rouge du vol et du final). Sans
-//   postprocessing (mobile, reduced-motion), c'est lui qui porte l'ambiance rouge.
+// - Fondu : quad plein écran (noir des transitions, rose du passage carte -> route), vignette noire qui
+//   resserre le zoom sur le prisme puis rouge sur la route et au final. Sans postprocessing (mobile,
+//   reduced-motion), c'est lui qui porte l'ambiance rouge.
 // Traînées d'étoiles : streakShader.ts.
 import {
   AdditiveBlending,
@@ -70,6 +71,11 @@ export function updateGlow(
   if (mesh.visible && camera) mesh.quaternion.copy(camera.quaternion)
 }
 
+/** Couleur d'un halo (copiée, sans allocation). */
+export function tintGlow(material: GlowMaterial, color: Color): void {
+  material.uniforms.uColor.value.copy(color)
+}
+
 const FADER_FRAG = /* glsl */ `
 uniform float uFade;
 uniform vec3 uFadeColor;
@@ -116,18 +122,28 @@ export function createFader(): FaderMaterial {
 
 export const FULLSCREEN_QUAD = new PlaneGeometry(2, 2)
 
+const FADE = { black: new Color('#000000'), pink: new Color('#f2b6ac') }
+const VIGNETTE = { black: new Color('#000000'), red: new Color('#3a0006') }
+
+export type FaderState = {
+  fade: number
+  /** Teinte du fondu : 0 noir, 1 rose du B. */
+  tint: number
+  vignette: number
+  /** Teinte de la vignette : 0 noire, 1 rouge. */
+  red: number
+  aspect: number
+}
+
 /** Réglage par frame du fondu. Renvoie true s'il faut le dessiner. */
-export function updateFader(
-  material: FaderMaterial,
-  fade: number,
-  vignette: number,
-  aspect: number,
-): boolean {
+export function updateFader(material: FaderMaterial, state: FaderState): boolean {
   const u = material.uniforms
-  u.uFade.value = fade
-  u.uVignette.value = vignette
-  u.uAspect.value = aspect
-  return fade > 0.001 || vignette > 0.001
+  u.uFade.value = state.fade
+  u.uFadeColor.value.copy(FADE.black).lerp(FADE.pink, state.tint)
+  u.uVignette.value = state.vignette
+  u.uVignetteColor.value.copy(VIGNETTE.black).lerp(VIGNETTE.red, state.red)
+  u.uAspect.value = state.aspect
+  return state.fade > 0.001 || state.vignette > 0.001
 }
 
 /** Dispersion pseudo-aléatoire déterministe (mulberry32). */

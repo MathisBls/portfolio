@@ -1,8 +1,10 @@
-// Easter egg, beat 1 (0–1.5 s) : « Le prisme éclate : des éclats partent vers la caméra, puis fondu au
-// noir. » Le prisme du hero (prism.glb, même cadrage : échelle 1.15, inclinaison x 0.1 / y −0.35) en
-// verre sans transmission (un seul passage, PrismGlass mobile), haut dans le ciel au-dessus de l'arène.
-// Il tremble (E.tremble), puis disparaît d'un coup : éclats instanciés (shardBurst.ts), éclair unique
-// (lumière ponctuelle + halo, E.flash). Fondu au noir : Atmosphere (E.fade). Non monté en reduced-motion.
+// Easter egg, beat 1 (0–7 s, retour de Mathis du 2026-10-06) : zoom lent sur le prisme intact pendant
+// 5 s, la tension monte (lueur intérieure qui grandit et respire lentement, verre qui vibre de plus en
+// plus, E.focus et E.tremble), une demi-seconde suspendue, puis il éclate d'un coup : éclats instanciés
+// projetés vers la caméra (shardBurst.ts), éclair unique (lumière ponctuelle + halo, E.flash). Fondu au
+// noir : Atmosphere (E.fade). Le prisme du hero (prism.glb, échelle 1.15, inclinaison x 0.1 / y −0.35)
+// en verre sans transmission (PrismGlass mobile), haut dans le ciel au-dessus de l'arène.
+// Reduced-motion : prisme immobile, jamais d'éclatement (fondu enchaîné vers l'arène).
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import {
@@ -21,18 +23,23 @@ import { E, SHOT } from './state'
 
 const SCALE = 1.15
 
-type ShatterProps = { mobile: boolean }
+type ShatterProps = { mobile: boolean; reducedMotion: boolean }
 
-function tremblePrism(group: Group, amount: number, time: number) {
+/** Rotation lente (sauf reduced-motion) et vibration du verre qui monte avec la tension. */
+function tremblePrism(group: Group, amount: number, time: number, still: boolean) {
+  const drift = still ? 0 : time * 0.12
   group.rotation.set(
-    0.1 + amount * 0.04 * Math.sin(time * 41),
-    -0.35 + time * 0.25 + amount * 0.05 * Math.sin(time * 37 + 1),
-    amount * 0.03 * Math.sin(time * 29 + 2),
+    0.1 + amount * 0.025 * Math.sin(time * 41),
+    -0.35 + drift + amount * 0.03 * Math.sin(time * 37 + 1),
+    amount * 0.02 * Math.sin(time * 29 + 2),
   )
-  group.position.set(amount * 0.03 * Math.sin(time * 53), SKY_Y, 0)
+  group.position.set(amount * 0.02 * Math.sin(time * 53), SKY_Y, 0)
 }
 
-export function Shatter({ mobile }: ShatterProps) {
+/** Lueur intérieure : grandit avec la tension, respire lentement (0.5 Hz, pas un clignotement). */
+const breath = (time: number, focus: number) => focus * (0.8 + 0.2 * Math.sin(time * 3.2))
+
+export function Shatter({ mobile, reducedMotion }: ShatterProps) {
   const { nodes } = useModel('prism')
   const res = useMemo(() => {
     const geometry = createShardGeometry()
@@ -46,13 +53,20 @@ export function Shatter({ mobile }: ShatterProps) {
       transparent: true,
       opacity: 0.85,
     })
-    return { geometry, material, burst: createBurst(mobile ? 28 : 72), glow: createGlow('#dfe8ff') }
+    return {
+      geometry,
+      material,
+      burst: createBurst(mobile ? 40 : 110),
+      glow: createGlow('#dfe8ff'),
+      core: createGlow('#cfe0ff', 2.4),
+    }
   }, [mobile])
   useEffect(
     () => () => {
       res.geometry.dispose()
       res.material.dispose()
       res.glow.dispose()
+      res.core.dispose()
     },
     [res],
   )
@@ -62,6 +76,7 @@ export function Shatter({ mobile }: ShatterProps) {
   const shards = useRef<InstancedMesh>(null)
   const light = useRef<PointLight>(null)
   const glow = useRef<Mesh>(null)
+  const core = useRef<Mesh>(null)
 
   useFrame(({ camera, clock }) => {
     const r = root.current
@@ -71,14 +86,16 @@ export function Shatter({ mobile }: ShatterProps) {
     const exploded = E.shatter > 0
     if (prism.current) {
       prism.current.visible = !exploded
-      tremblePrism(prism.current, E.tremble, clock.elapsedTime)
+      tremblePrism(prism.current, E.tremble, clock.elapsedTime, reducedMotion)
     }
     if (shards.current) {
       shards.current.visible = exploded
       if (exploded) updateBurst(shards.current, res.burst, E.shatter * BURST_TIME)
     }
-    if (light.current) light.current.intensity = 400 * E.flash
+    const inner = exploded ? 0 : breath(clock.elapsedTime, E.focus)
+    if (light.current) light.current.intensity = 500 * E.flash + 14 * inner
     if (glow.current) updateGlow(glow.current, res.glow, camera, 2 * E.flash)
+    if (core.current) updateGlow(core.current, res.core, camera, 0.32 * inner)
   })
 
   // La lumière reste hors du groupe masqué : le nombre de lumières visibles ne change jamais (sinon tous
@@ -100,6 +117,9 @@ export function Shatter({ mobile }: ShatterProps) {
           />
         </group>
         <mesh ref={glow} position={[0, SKY_Y, 0.5]} scale={7} material={res.glow}>
+          <planeGeometry />
+        </mesh>
+        <mesh ref={core} position={[0, SKY_Y, -0.6]} scale={2.6} material={res.core}>
           <planeGeometry />
         </mesh>
       </group>

@@ -1,4 +1,4 @@
-// Easter egg, beat 1 (« le prisme éclate : des éclats partent vers la caméra ») : données et pose par
+// Easter egg, beat 1 (« le prisme éclate, net et soudain : éclats projetés vers la caméra ») : données et pose par
 // frame des éclats. Géométrie : l'éclat biseauté du fond de page (lib/shardGeometry.ts). Trajectoires
 // déterministes (seeded) : départ dans le volume du prisme, vitesse vers l'extérieur et vers la caméra
 // (+z), freinage, légère gravité, rotation propre.
@@ -51,8 +51,8 @@ export function createBurst(count: number): Burst {
     const o = new Vector3((random() - 0.5) * 1.8, -0.55 + random() * 1.5, (random() - 0.5) * 2.2)
     burst.origin.set([o.x, o.y, o.z], i * 3)
     dir.copy(o).normalize().multiplyScalar(0.8)
-    dir.z += 1.4 + random() * 0.8
-    dir.normalize().multiplyScalar(5 + random() * 11)
+    dir.z += 1.6 + random() * 1
+    dir.normalize().multiplyScalar(8 + random() * 14)
     burst.velocity.set([dir.x, dir.y, dir.z], i * 3)
     dir.set(random() - 0.5, random() - 0.5, random() - 0.5).normalize()
     burst.axis.set([dir.x, dir.y, dir.z], i * 3)

@@ -2,13 +2,15 @@
 // dans le keydown du code Konami : c'est un geste utilisateur, les navigateurs autorisent alors le son.
 // Le moteur de tension (tension.ts, Web Audio pur) vit dans le chunk lazy et s'y branche une fois chargé.
 
-export type TensionCue = 'shatter' | 'deal' | 'flip' | 'legendary' | 'swap'
+export type TensionCue = 'shatter' | 'deal' | 'flip' | 'legendary' | 'swap' | 'type'
 
 /** API du moteur de tension (tension.ts). */
 export type TensionEngine = {
   start: () => void
   /** 0 calme -> 1 vitesse de la lumière : nappe, riser et tempo du cœur. */
   setIntensity: (value: number) => void
+  /** Une demi-seconde de silence (avant l'éclatement du prisme), puis tout reprend. */
+  hush: () => void
   /** Silence d'une demi-seconde puis impact grave, puis nappe finale. */
   climax: () => void
   cue: (name: TensionCue) => void
