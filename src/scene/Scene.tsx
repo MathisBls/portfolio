@@ -19,7 +19,7 @@ import { Prism } from './objects/Prism'
 import { PrismLook } from './objects/PrismLook'
 import { ProjectObjects } from './objects/ProjectObjects'
 import { FINE_POINTER_QUERY, bindPointer } from './pointer'
-import { setInvalidate } from './store'
+import { setInvalidate, setSceneLive } from './store'
 
 export type SceneProps = { mobile: boolean; reducedMotion: boolean }
 
@@ -68,14 +68,23 @@ function Warmup() {
   const invalidate = useThree((s) => s.invalidate)
   useEffect(() => {
     let cancelled = false
+    let raf = 0
     const start = () => {
       if (cancelled) return
       setFrameloop('demand')
       invalidate()
+      // Deux rAF : la première image est rendue, les drapeaux en attente (poster, titre) s'appliquent
+      raf = requestAnimationFrame(() => {
+        raf = requestAnimationFrame(() => {
+          setSceneLive(true)
+        })
+      })
     }
     gl.compileAsync(scene, camera).then(start, start)
     return () => {
       cancelled = true
+      cancelAnimationFrame(raf)
+      setSceneLive(false)
     }
   }, [gl, scene, camera, setFrameloop, invalidate])
   return null

@@ -106,8 +106,30 @@ export function getAnchorMetrics(id: AnchorId): SlotMetrics | undefined {
 /** Drapeaux de la scène sur <html>, lus par le CSS du DOM. */
 export type SceneFlag = 'has-scene' | 'has-3d-title' | 'has-project-objects'
 
+/**
+ * Tant que la scène n'a pas rendu sa première image (précompilation des shaders, Warmup), les drapeaux
+ * sont mis en attente : sinon le DOM s'efface (poster, titre) avant que la 3D soit visible.
+ */
+let sceneLive = false
+const pendingFlags = new Set<SceneFlag>()
+
 export function setSceneFlag(flag: SceneFlag, on: boolean) {
+  if (on && !sceneLive) {
+    pendingFlags.add(flag)
+    return
+  }
+  if (!on) pendingFlags.delete(flag)
   document.documentElement.classList.toggle(flag, on)
+}
+
+/** Appelé par Warmup après la première image rendue : applique les drapeaux en attente. */
+export function setSceneLive(live: boolean) {
+  sceneLive = live
+  if (!live) return
+  pendingFlags.forEach((flag) => {
+    document.documentElement.classList.add(flag)
+  })
+  pendingFlags.clear()
 }
 
 type SceneState = {
