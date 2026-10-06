@@ -53,6 +53,7 @@ export type ZephyrGLTF = GLTFBase & {
 
 export type WegirGLTF = GLTFBase & {
   nodes: {
+    Weg_Logo: THREE.Mesh
     Car0_Root: THREE.Object3D
     Car1_Root: THREE.Object3D
     Car2_Root: THREE.Object3D
@@ -85,6 +86,7 @@ export type WegirGLTF = GLTFBase & {
     Dash35: THREE.Mesh
   }
   materials: {
+    WegirTeal: THREE.MeshStandardMaterial
     Red: THREE.MeshStandardMaterial
     Screen: THREE.MeshStandardMaterial
     Rubber: THREE.MeshStandardMaterial

@@ -4,6 +4,7 @@
 // la route d'en haut. Survol : vitesse ×1.8. » Mesures : docs/models.md (wegir.glb).
 // Ajout du 2026-10-06 : un téléphone (celui de fitness.glb) debout au bout de la route fait défiler les
 // vrais écrans de l'app (captures de Mathis) ; il reste face caméra, hors de l'inclinaison de la route.
+// Logo Wegir en 3D (scripts/blender/model_wegir_logo.py) : flotte au-dessus de la route, face caméra.
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Group, Mesh } from 'three'
@@ -51,24 +52,29 @@ const SCREENS = ['intro', 'convoit', 'convoi', 'signalement', 'amis', 'qr-code-c
  * elle ; il ne chevauche pas les voitures. La route occupe x ∈ [−2.5, 2.5] dans le groupe ancré.
  */
 const PHONE = { position: [-3.05, 0.2, 0.35] as [number, number, number], scale: 1, turn: 0.3 }
-/** Recentrage de l'ensemble route + téléphone (x ∈ [−3.5, 2.5]). */
+/** Recentrage de l'ensemble route + téléphone (x ∈ [−3.5, 2.5]) + logo (y jusqu'à ~2). */
 const SHIFT_X = 0.5
+const SHIFT_Y = -0.5
+/** Logo au-dessus de la route : flottement, balancement ; au survol, il pivote et grossit un peu. */
+const LOGO = { position: [0.2, 1.35, -0.3] as [number, number, number], scale: 0.95 }
 
 export function Wegir({ slug }: WegirProps) {
   const { nodes } = useModel('wegir')
   const { nodes: device } = useModel('fitness')
   const { materials, shownRef, nextRef, update } = useScreenCycle(SCREENS, { hold: 2.4 })
   const phone = useRef<Group>(null)
+  const logo = useRef<Group>(null)
   // Recentrage +0.6 en x (centre du modèle −0.6) ; emprise vue de face, arc en largeur
   const {
     ref: anchor,
     offset,
     phase,
+    hover,
     visibleRef,
   } = useAnchoredObject({
     slug,
     width: 6.1,
-    height: 1.95,
+    height: 3,
     center: [-0.6, 0.15, 0],
     hoverSpeed: 1.8,
   })
@@ -80,6 +86,14 @@ export function Wegir({ slug }: WegirProps) {
     update(phase.current)
     const ph = phone.current
     if (ph) ph.rotation.y = PHONE.turn + 0.12 * Math.sin(phase.current * 0.5)
+    const lg = logo.current
+    if (lg) {
+      const t = phase.current
+      const h = hover.current
+      lg.position.y = LOGO.position[1] + 0.06 * Math.sin(t * 0.9)
+      lg.rotation.y = 0.18 * Math.sin(t * 0.45) + h * 0.5 * Math.sin(t * 2)
+      lg.scale.setScalar(LOGO.scale * (1 + 0.06 * h))
+    }
     // Angle parcouru : φ décroît, la voiture avance selon son +X local
     const travelled = SPEED * phase.current
     const spin = -(ARC.radius * travelled) / WHEEL_RADIUS
@@ -101,7 +115,11 @@ export function Wegir({ slug }: WegirProps) {
 
   return (
     <group ref={anchor} visible={false}>
-      <group position-x={SHIFT_X}>
+      <group position={[SHIFT_X, SHIFT_Y, 0]}>
+        <group ref={logo} position={LOGO.position} scale={LOGO.scale}>
+          {/* Rotation du node conservée (logo debout) ; position donnée par le groupe */}
+          <Part node={nodes.Weg_Logo} position={[0, 0, 0]} />
+        </group>
         <group ref={phone} position={PHONE.position} scale={PHONE.scale} rotation-y={PHONE.turn}>
           <Part node={device.Fit_Body} />
           <Part ref={shownRef} node={device.Fit_Screen} material={materials.shown} />
