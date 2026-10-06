@@ -6,9 +6,10 @@
 // est ajoutée à la scène pour porter le cockpit (space/Cockpit.tsx, enfant de la caméra). Réglages
 // d'origine rendus au démontage.
 // Second niveau (docs/storyboards/easter-majestic.md, « Caméra ») : pose de majestic/camera.ts sur M.t,
-// plans proche et lointain à l’échelle kilométrique (MAJESTIC_NEAR, MAJESTIC_FAR), tremblement du séisme en rampes (deux couches de
-// bruit lisse : grondement rapide et faible balancement, plafonnées, coupées en reduced-motion), FOV
-// élargi en portrait ; l'altitude et l'amplitude du tremblement sont écrites dans M (HUD, D4).
+// plans proche et lointain à l'échelle kilométrique (MAJESTIC_NEAR, MAJESTIC_FAR), tremblement du
+// séisme en rampes (deux couches de bruit lisse : grondement rapide et faible balancement, plafonnées,
+// coupées en reduced-motion), FOV élargi en portrait ; l'altitude et l'amplitude du tremblement sont
+// écrites dans M (HUD, D4).
 import { useFrame, useThree } from '@react-three/fiber'
 import { useLayoutEffect } from 'react'
 import { type PerspectiveCamera, type Scene, Vector3 } from 'three'
