@@ -130,6 +130,7 @@ export const site = {
         'Text, visuals and 3D models: © Mathis Boulais.',
         'Fonts Instrument Serif, Inter and JetBrains Mono, under the SIL Open Font License 1.1.',
         'Planet textures: Solar System Scope (solarsystemscope.com), based on NASA data, CC BY 4.0. Milky Way panorama: ESO/S. Brunier, CC BY 4.0.',
+        'Wood, velvet, leather and marble textures: Poly Haven (CC0).',
       ],
     },
     labels: {

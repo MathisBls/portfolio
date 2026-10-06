@@ -2,15 +2,18 @@
 // se retournent l'une après l'autre : COMMON (argent), RARE (bleu), puis LEGENDARY (or, cornes,
 // couronne, éclat de lumière et bloom). » Et beat 4 (14–16 s) : la légendaire se lève et montre son dos,
 // où se trouve le B (repère de la plongée : LOGO_FRAME). Préparation : cardRig.ts ; pose : cardPose.ts.
-// Auras additives posées sur la table sous chaque carte (un halo face caméra voilait la face) et une
-// lumière ponctuelle qui prend la couleur de la carte révélée. Reduced-motion :
-// cartes déjà retournées, elles apparaissent en fondu (E.cards[i].alpha), sans vol.
+// Auras additives posées sur la table sous chaque carte (un halo face caméra voilait la face), ombres de
+// contact sur le tapis (arena/cardShadows.ts), une carte face cachée sur la pile du sabot (le paquet
+// continue après la distribution) et une lumière ponctuelle qui prend la couleur de la carte révélée.
+// Reduced-motion : cartes déjà retournées, elles apparaissent en fondu (E.cards[i].alpha), sans vol.
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
-import { Color, type Group, type Mesh, type PointLight } from 'three'
+import { Color, type Group, type Mesh, type Object3D, type PointLight, Quaternion, Vector3 } from 'three'
+import { clamp } from '../lib/math'
+import { createCardShadow, updateCardShadow } from './arena/cardShadows'
 import { fadeCards, poseCards } from './cardPose'
 import { buildCards } from './cardRig'
-import { TABLE_Y, setLogoFrame } from './layout'
+import { DECK, DECK_SCALE, TABLE_Y, setLogoFrame } from './layout'
 import { useEasterModel } from './models'
 import { type GlowMaterial, createGlow, updateGlow } from './shaders'
 import { E, type EasterState, SHOT } from './state'
@@ -26,6 +29,20 @@ const LIGHT_COLORS = LOOKS.map((look) => new Color(look.color))
 const AURA = [5.6, 7.2] as const
 
 type CardsProps = { bloom: boolean; reducedMotion: boolean }
+
+/** Carte face cachée sur la pile du sabot, sous les trois cartes distribuées (même pose qu'au départ). */
+function deckCard(source: Object3D | undefined): Object3D | null {
+  if (!source) return null
+  const card = source.clone(true)
+  const y = new Vector3(0, 1, 0)
+  card.position.set(DECK[0], DECK[1] - 0.03, DECK[2])
+  card.quaternion
+    .setFromAxisAngle(y, Math.PI)
+    .multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2))
+    .multiply(new Quaternion().setFromAxisAngle(y, Math.PI))
+  card.scale.setScalar(DECK_SCALE)
+  return card
+}
 
 function glowOf(e: EasterState, i: number): number {
   const base = (e.cards[i]?.glow ?? 0) * (LOOKS[i]?.gain ?? 1)
@@ -57,6 +74,8 @@ export function Cards({ bloom, reducedMotion }: CardsProps) {
   const gltf = useEasterModel('cards')
   const rig = useMemo(() => buildCards(gltf, bloom, reducedMotion), [gltf, bloom, reducedMotion])
   const glows = useMemo(() => LOOKS.map((look) => createGlow(look.color, 1.8)), [])
+  const shadows = useMemo(() => LOOKS.map(() => createCardShadow()), [])
+  const deck = useMemo(() => deckCard(rig.cards[0]), [rig])
   useEffect(() => {
     setLogoFrame(rig.logoLocal)
     return rig.dispose
@@ -68,6 +87,14 @@ export function Cards({ bloom, reducedMotion }: CardsProps) {
       })
     },
     [glows],
+  )
+  useEffect(
+    () => () => {
+      shadows.forEach((shadow) => {
+        shadow.material.dispose()
+      })
+    },
+    [shadows],
   )
 
   const root = useRef<Group>(null)
@@ -91,6 +118,13 @@ export function Cards({ bloom, reducedMotion }: CardsProps) {
       if (!card || !anchor || !sprite || !material) continue
       anchor.position.set(card.position.x, TABLE_Y + 0.04, card.position.z)
       updateGlow(sprite, material, null, glowOf(E, i))
+      const shadow = shadows[i]
+      const state = E.cards[i]
+      if (shadow && state) {
+        const onDeck = 1 - clamp(state.deal / 0.12)
+        const lifted = i === 2 ? 1 - E.lift : 1
+        updateCardShadow(shadow, card, onDeck, clamp(state.alpha) * lifted)
+      }
     }
     if (light.current) updateCardLight(light.current, anchors.current, E)
   })
@@ -101,6 +135,10 @@ export function Cards({ bloom, reducedMotion }: CardsProps) {
       <group ref={root}>
         {rig.cards.map((card) => (
           <primitive key={card.uuid} object={card} />
+        ))}
+        {deck && <primitive object={deck} />}
+        {shadows.map((shadow) => (
+          <primitive key={shadow.mesh.uuid} object={shadow.mesh} />
         ))}
         {LOOKS.map((look, i) => (
           <group

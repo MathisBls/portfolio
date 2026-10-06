@@ -4,16 +4,30 @@
 // (E.burst), le rouge de la route (E.red) et la lumière des portes (E.glare) ; tone mapping Neutral (garde
 // la teinte des rouges) ; vignette qui se resserre pendant le zoom sur le prisme et avec la vitesse, plus
 // marquée dans le cockpit ; grain léger.
-// Pas d'aberration chromatique (réservée au hero).
+// Pas d'aberration chromatique (réservée au hero). Le composer est préchauffé avec la scène (warmup.ts).
 import { Bloom, EffectComposer, Noise, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
-import { type BloomEffect, ToneMappingMode, type VignetteEffect } from 'postprocessing'
-import { useRef } from 'react'
+import {
+  type BloomEffect,
+  type EffectComposer as Composer,
+  ToneMappingMode,
+  type VignetteEffect,
+} from 'postprocessing'
+import { useEffect, useRef } from 'react'
 import { E, SHOT } from './state'
+import { registerComposer } from './warmup'
 
 export function EasterEffects() {
   const bloom = useRef<BloomEffect>(null)
   const vignette = useRef<VignetteEffect>(null)
+  const composer = useRef<Composer>(null)
+  // Préchauffé avec la scène pendant 'compiling' (warmup.ts) : ses cibles existent avant la séquence
+  useEffect(() => {
+    registerComposer(composer.current)
+    return () => {
+      registerComposer(null)
+    }
+  }, [])
 
   useFrame(() => {
     const road = E.shot === SHOT.road
@@ -34,7 +48,7 @@ export function EasterEffects() {
   })
 
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer ref={composer} multisampling={4}>
       <Bloom
         ref={bloom}
         luminanceThreshold={0.9}

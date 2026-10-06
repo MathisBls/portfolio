@@ -1,10 +1,10 @@
 # Assets de l'easter egg (code Konami) depuis les modèles BoulardTV de Mathis, NOM NEUTRALISÉ :
-# - arena.glb : arène du jeu de cartes, panneau « BOULARD TV » -> « PRISM »
+# - arena.glb : REMPLACÉ le 2026-10-06 par scripts/blender/model_easter_arena.py (salon de jeu modélisé
+#   par script) ; le mode 'arena' ci-dessous n'est plus utilisé et écraserait le nouveau modèle.
 # - cards.glb : 3 cartes (COMMON, RARE, LEGENDARY), dos « PRISM », récompenses neutres
 # - b_logo.glb : le B (logo) en 3D, pour la plongée finale
 # Les fichiers sources ne sont pas modifiés (pas de sauvegarde). Textes convertis en maillages.
 # Usage :
-#   "D:/Blender/blender.exe" -b <BoulardTV_models>/btv_arene_v2.blend --python scripts/blender/easter_assets.py -- arena
 #   "D:/Blender/blender.exe" -b <BoulardTV_models>/btv_cartes.blend --python scripts/blender/easter_assets.py -- cards
 #   "D:/Blender/blender.exe" -b <BoulardTV_models>/btv_cartes.blend --python scripts/blender/easter_assets.py -- logo
 import bpy, os, sys
@@ -67,6 +67,8 @@ def export(objs, name):
 neutralize_texts()
 
 if MODE == 'arena':
+    # Remplacé par model_easter_arena.py : on refuse d'écraser le nouveau arena.glb
+    raise SystemExit('mode arena remplacé : lancer scripts/blender/model_easter_arena.py')
     objs = [o for o in bpy.data.objects if o.name.startswith('B_') and o.type != 'LIGHT']
     to_mesh(objs)
     objs = [o for o in bpy.data.objects if o.name.startswith('B_') and o.type in ('MESH', 'EMPTY')]

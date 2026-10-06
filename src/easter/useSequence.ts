@@ -5,7 +5,7 @@
 // timeline en pause (le contexte audio est suspendu par audio.ts ; sinon le ticker GSAP, sans lissage
 // du décalage quand Lenis tourne, sauterait à la fin au retour). Intensité du son relue chaque frame.
 // En DEV : `?easter-at=<s>` démarre à ce temps (debug.ts) et window.__easter (seek, pause, play).
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { useScene } from '../scene/store'
 import { attachEngine, getAudioContext, getEngine } from './audio'
@@ -23,6 +23,10 @@ type Debug = {
   pause: () => void
   state: typeof E
   audio: () => string
+  /** Compteurs du renderer (programmes compilés, textures et géométries envoyées au GPU). */
+  info: () => { programs: number; textures: number; geometries: number; calls: number }
+  /** Nom et clé de cache de chaque programme compilé (diagnostic des recompilations). */
+  programKeys: () => string[]
 }
 
 const CLIP_IDS = Object.keys(CLIPS) as ClipId[]
@@ -59,6 +63,7 @@ function jumpTo(
 }
 
 export function useSequence(running: boolean, reducedMotion: boolean, bloom: boolean): void {
+  const gl = useThree((s) => s.gl)
   useEffect(() => {
     if (!running) return
     resetEaster(reducedMotion, bloom)
@@ -115,6 +120,13 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
         },
         state: E,
         audio: () => ctx?.state ?? 'none',
+        info: () => ({
+          programs: gl.info.programs?.length ?? 0,
+          textures: gl.info.memory.textures,
+          geometries: gl.info.memory.geometries,
+          calls: gl.info.render.calls,
+        }),
+        programKeys: () => (gl.info.programs ?? []).map((p) => `${p.name}|${p.cacheKey}`),
       }
     }
     return () => {
@@ -128,7 +140,7 @@ export function useSequence(running: boolean, reducedMotion: boolean, bloom: boo
       attachEngine(null)
       delete host.__easter
     }
-  }, [running, reducedMotion, bloom])
+  }, [running, reducedMotion, bloom, gl])
 
   useFrame(() => {
     if (!running || Math.abs(E.intensity - sentIntensity) < 0.01) return

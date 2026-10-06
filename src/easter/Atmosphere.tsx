@@ -5,7 +5,9 @@
 // noire qui se resserre pendant le zoom sur le prisme (E.focus), rouge sur la route. Le rouge monte
 // progressivement avec E.red : fond, brouillard, vignette. À la sortie du warp, le brouillard se referme
 // sur la route (E.roadDim) ; dans l'espace, fond noir profond, presque sans brouillard, et les étoiles
-// génériques laissent la place au ciel réaliste (space/Sky.tsx). Reduced-motion : étoiles immobiles.
+// génériques laissent la place au ciel réaliste (space/Sky.tsx). Arène : salle close, sans étoiles, fond
+// et brouillard violet très sombre (les colonnes et les rideaux se perdent dans la pénombre).
+// Reduced-motion : étoiles immobiles.
 import { Stars } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
@@ -16,10 +18,11 @@ import { E, SHOT } from './state'
 const NIGHT = new Color('#07050b')
 const BLOOD = new Color('#2c0307')
 const DEEP = new Color('#010103')
+const ROOM = new Color('#0b0614')
 /** Densité du brouillard par plan ; la route se perd vers 300 unités, l'espace n'en a presque pas. */
 const FOG: Record<number, number> = {
   [SHOT.sky]: 0.002,
-  [SHOT.arena]: 0.016,
+  [SHOT.arena]: 0.012,
   [SHOT.road]: 0.0058,
   [SHOT.space]: 0.00001,
   [SHOT.park]: 0.0006,
@@ -46,7 +49,8 @@ export function Atmosphere({ mobile, reducedMotion }: AtmosphereProps) {
   useFrame(({ size }) => {
     const road = E.shot === SHOT.road
     const space = E.shot === SHOT.space || E.shot === SHOT.park
-    const tone = space ? DEEP : NIGHT
+    const arena = E.shot === SHOT.arena
+    const tone = space ? DEEP : arena ? ROOM : NIGHT
     const red = road ? E.red * (1 - E.roadDim) : 0
     if (background.current) {
       background.current.copy(tone).lerp(BLOOD, red)
@@ -57,7 +61,7 @@ export function Atmosphere({ mobile, reducedMotion }: AtmosphereProps) {
       const density = FOG[E.shot] ?? 0.002
       fog.current.density = road ? density + (FOG_DIMMED - density) * E.roadDim : density
     }
-    if (stars.current) stars.current.visible = !space || E.sky < 0.999
+    if (stars.current) stars.current.visible = !arena && (!space || E.sky < 0.999)
     fader.fade = E.fade
     fader.tint = E.fadeTint
     fader.vignette = road

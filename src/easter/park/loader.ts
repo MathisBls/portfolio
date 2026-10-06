@@ -117,6 +117,16 @@ export function attachTexture(
   }
 }
 
+/**
+ * Attend la fin des décodages en cours (au plus `timeout` ms) : leurs envois au GPU (attachTexture) partent
+ * alors pendant le préchauffage de la séquence (warmup.ts), pas à sa première image.
+ */
+export function texturesSettled(timeout: number): Promise<void> {
+  const all = Promise.allSettled([...cache.values()]).then(() => undefined)
+  const limit = new Promise<void>((resolve) => setTimeout(resolve, timeout))
+  return Promise.race([all, limit])
+}
+
 /** Libère toutes les textures du parc (GPU et images décodées) ; un prochain lancement recharge. */
 export function releaseTextures(): void {
   generation++

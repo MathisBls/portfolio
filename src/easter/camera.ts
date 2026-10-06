@@ -24,19 +24,22 @@ export type CameraPose = { position: Vector3; look: Vector3; up: Vector3; fov: n
 type Key = { at: number; position: readonly number[]; look: readonly number[] }
 
 const A = T.arena
+// Salon de jeu (arena.glb) : emplacements en z 1.55, paquet dans le sabot en (7.6, 1.4), médaillon du B en
+// z -2.35 (layout.ts). La descente montre la salle entière (colonnes, rideaux, sol miroir) puis plonge sur
+// la table ; ensuite la caméra suit la distribution depuis le sabot et les retournements.
 const ARENA_KEYS: readonly Key[] = [
-  { at: A, position: [0, 32, 6], look: [0, 0, -1] },
-  { at: A + 1.5, position: [-10, 20, 12], look: [0, 0.4, 0] },
-  { at: A + 3.3, position: [-8, 11, 16], look: [0.5, 0.4, 0] },
-  { at: A + 4.9, position: [2, 11, 15], look: [3, 0.6, 0.8] },
-  { at: A + 6.1, position: [5.5, 11, 12.5], look: [5.5, 0.6, 1.2] },
-  { at: A + 7.5, position: [0.5, 11.5, 10], look: [0, 0.4, 0.4] },
-  { at: A + 9.1, position: [-1, 10, 8.6], look: [-0.6, 0.4, 0.5] },
-  { at: A + 10.5, position: [2.2, 8.8, 8], look: [2.6, 0.5, 0.5] },
-  { at: A + 11.8, position: [3.5, 7.4, 7], look: [3.5, 0.8, 0.5] },
-  { at: A + 12.9, position: [3.6, 5.6, 8.8], look: [3.5, 2.8, 1] },
+  { at: A, position: [0, 32, 7], look: [0, 0, -0.6] },
+  { at: A + 1.5, position: [-11, 20, 13], look: [0, 0.4, 0.2] },
+  { at: A + 3.3, position: [-8, 11, 16.8], look: [0.5, 0.4, 0.6] },
+  { at: A + 4.9, position: [2.6, 10.8, 15.6], look: [3.6, 0.6, 1.4] },
+  { at: A + 6.1, position: [6.2, 10.6, 13.8], look: [5.9, 0.6, 1.9] },
+  { at: A + 7.5, position: [0.5, 11.5, 10.9], look: [0, 0.4, 1.3] },
+  { at: A + 9.1, position: [-1, 10, 9.5], look: [-0.6, 0.4, 1.4] },
+  { at: A + 10.5, position: [2.3, 8.8, 8.9], look: [2.7, 0.5, 1.4] },
+  { at: A + 11.8, position: [3.6, 7.4, 7.9], look: [3.6, 0.8, 1.4] },
+  { at: A + 12.9, position: [3.7, 5.6, 9.7], look: [3.6, 2.8, 1.9] },
 ]
-const STILL: Key = { at: 0, position: [0, 11, 9.5], look: [0, 0.4, 0.2] }
+const STILL: Key = { at: 0, position: [0, 11, 10.4], look: [0, 0.4, 1.1] }
 
 const toCurve = (pick: (key: Key) => readonly number[]) =>
   new CatmullRomCurve3(
