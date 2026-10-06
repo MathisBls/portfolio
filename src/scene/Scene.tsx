@@ -9,8 +9,11 @@
 // démarre à la première frame rendue après Warmup et révèle le prisme.
 // Passe « motion » (sans storyboard) : PointerBridge branche le pointeur (pointer.ts) sur desktop à
 // pointeur fin hors reduced-motion ; PrismLook oriente le prisme vers lui et le fait réagir au clic.
+// Easter egg (code Konami, src/easter/) : EasterScene, chunk lazy chargé au déverrouillage, remplace le
+// contenu normal et CameraRig dès que ses modèles sont prêts (easterStage 'compiling'). Lighting reste
+// monté (reflets de l'or). Au retour, le contenu normal se remonte (Warmup refait la précompilation).
 import { Canvas, useThree } from '@react-three/fiber'
-import { Suspense, useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { useMediaQuery } from '../lib/media'
 import { CameraRig } from './CameraRig'
 import { Effects } from './Effects'
@@ -21,7 +24,9 @@ import { PrismLook } from './objects/PrismLook'
 import { ProjectObjects } from './objects/ProjectObjects'
 import { ShardField } from './objects/ShardField'
 import { FINE_POINTER_QUERY, bindPointer } from './pointer'
-import { setInvalidate, setSceneLive } from './store'
+import { setInvalidate, setSceneLive, useScene } from './store'
+
+const EasterScene = lazy(() => import('../easter/EasterScene'))
 
 export type SceneProps = { mobile: boolean; reducedMotion: boolean }
 
@@ -96,10 +101,15 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
   // Postprocessing (bloom, vignette, grain) : desktop sans reduced-motion. Il fait son propre MSAA
   // (multisampling) : l'antialias du contexte ne sert que sans composer.
   const composer = !mobile && !reducedMotion
+  const easter = useScene((s) => s.easter === 'playing')
+  // Contenu normal : démonté pendant l'easter egg, sauf tant que celui-ci charge
+  const normal = useScene((s) => s.easter === 'idle' || s.easterStage === 'loading')
   return (
     <Canvas
       style={canvasStyle}
       aria-hidden="true"
+      // Gardé visible quand l'easter egg masque la page (global.css, html.easter-live)
+      data-scene-canvas=""
       dpr={[1, mobile ? 1.5 : 2]}
       // "never" jusqu'à la fin de la précompilation (Warmup), puis "demand"
       frameloop="never"
@@ -112,18 +122,27 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
       <color attach="background" args={[background()]} />
       <InvalidateBridge />
       <PointerBridge enabled={!mobile && !reducedMotion} />
-      <CameraRig />
+      {normal && <CameraRig />}
       <Suspense fallback={null}>
         <Lighting />
-        <PrismLook>
-          <Prism mobile={mobile} reducedMotion={reducedMotion} />
-        </PrismLook>
-        <ShardField mobile={mobile} reducedMotion={reducedMotion} />
-        {composer && <HeroTitle3D reducedMotion={reducedMotion} />}
-        {composer && <Effects />}
-        <Warmup />
+        {normal && (
+          <>
+            <PrismLook>
+              <Prism mobile={mobile} reducedMotion={reducedMotion} />
+            </PrismLook>
+            <ShardField mobile={mobile} reducedMotion={reducedMotion} />
+            {composer && <HeroTitle3D reducedMotion={reducedMotion} />}
+            {composer && <Effects />}
+            <Warmup />
+          </>
+        )}
       </Suspense>
-      <ProjectObjects mobile={mobile} reducedMotion={reducedMotion} />
+      {normal && <ProjectObjects mobile={mobile} reducedMotion={reducedMotion} />}
+      {easter && (
+        <Suspense fallback={null}>
+          <EasterScene mobile={mobile} reducedMotion={reducedMotion} />
+        </Suspense>
+      )}
     </Canvas>
   )
 }

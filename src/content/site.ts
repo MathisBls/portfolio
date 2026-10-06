@@ -144,4 +144,17 @@ export const site = {
     legal: 'Legal notice',
     home: 'Back to home',
   },
+  // Easter egg (code Konami, src/easter/) : overlay de la séquence. Aucun nom de marque.
+  easter: {
+    label: 'Secret level',
+    description:
+      'A card arena lights up. Three cards are dealt and turned over, then the camera dives into a giant B. Decorative only. Press Escape to leave at any time.',
+    loading: 'Loading…',
+    noWebGL: 'This one needs WebGL 2. Press Escape to go back.',
+    sound: 'Sound',
+    soundOn: 'On',
+    soundOff: 'Off',
+    exit: 'Exit',
+    exitKey: '(Esc)',
+  },
 }

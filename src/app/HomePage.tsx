@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect } from 'react'
 import { site } from '../content/site'
+import { EasterOverlay } from '../easter/EasterOverlay'
 import { ScrollTrigger } from '../lib/gsap'
 import { startLenis } from '../lib/lenis'
 import { observeReveals } from '../lib/reveal'
@@ -68,6 +69,8 @@ export function HomePage() {
         <Contact />
       </main>
       <Footer />
+      {/* Easter egg : écoute le code Konami, overlay pendant la séquence (src/easter/) */}
+      <EasterOverlay />
     </>
   )
 }

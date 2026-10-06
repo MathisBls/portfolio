@@ -159,3 +159,21 @@ section[tabindex='-1']:focus {
     scroll-behavior: auto;
   }
 }
+
+/* Easter egg (src/easter/session.ts) : html.easter = page verrouillée derrière l'overlay (scroll bloqué,
+   DOM inerte) ; html.easter-live = la séquence a commencé, la page s'efface et laisse voir la scène.
+   Masquée en opacité + visibility (pas display) : la mise en page et la position de scroll restent. */
+html.easter {
+  overflow: hidden;
+}
+
+html.easter #root > :not([data-scene-canvas], [data-easter-overlay]) {
+  transition:
+    opacity 0.5s var(--ease),
+    visibility 0s linear 0.5s;
+}
+
+html.easter-live #root > :not([data-scene-canvas], [data-easter-overlay]) {
+  opacity: 0;
+  visibility: hidden;
+}

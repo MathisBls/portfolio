@@ -1,0 +1,115 @@
+/* Easter egg : overlay de la séquence (EasterOverlay.tsx). Barre en haut, statut en bas, le reste laisse
+   voir la scène. Au-dessus de la nav, du skip link et du curseur. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-cursor) + 10);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--gutter);
+  pointer-events: none;
+  animation: overlay-in 0.5s var(--ease) both;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff3b3b;
+  box-shadow: 0 0 10px #ff3b3b;
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.button {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 0.6rem 1.05rem;
+  border: 1px solid rgba(237, 237, 240, 0.28);
+  border-radius: 999px;
+  background: rgba(10, 10, 12, 0.55);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--fg);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    color 0.3s var(--ease),
+    box-shadow 0.6s var(--ease);
+}
+
+.button:hover {
+  border-color: rgba(237, 237, 240, 0.6);
+}
+
+.state {
+  color: var(--fg-2);
+}
+
+/* Fin de séquence : « Exit » mis en avant. Respiration lente (2.8 s), aucun clignotement. */
+.highlight {
+  border-color: transparent;
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 0 28px rgba(255, 59, 59, 0.55);
+  animation: breathe 2.8s ease-in-out infinite;
+}
+
+.highlight .state {
+  color: #4a4a52;
+}
+
+@keyframes breathe {
+  50% {
+    box-shadow: 0 0 44px rgba(255, 59, 59, 0.8);
+    transform: scale(1.04);
+  }
+}
+
+.status {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .highlight {
+    animation: none;
+  }
+}

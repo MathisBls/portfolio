@@ -132,6 +132,15 @@ export function setSceneLive(live: boolean) {
   pendingFlags.clear()
 }
 
+/** Easter egg (code Konami, src/easter/) : séquence plein écran qui remplace la scène normale. */
+export type EasterMode = 'idle' | 'playing'
+/**
+ * Étapes d'une partie : 'loading' (chunk et modèles, la scène normale reste affichée), 'compiling'
+ * (scène normale démontée, shaders précompilés), 'running' (séquence), 'finale' (le B reste affiché,
+ * sortie mise en avant, retour automatique).
+ */
+export type EasterStage = 'loading' | 'compiling' | 'running' | 'finale'
+
 type SceneState = {
   hovered: Project['slug'] | null
   /** true quand la section Projets est à moins d'un écran : la scène précharge et monte les objets. */
@@ -141,15 +150,23 @@ type SceneState = {
    * story-v2.md, Contact) : la scène joue une fois la rafale « l'idée traverse le prisme ».
    */
   ideaSentAt: number | null
+  easter: EasterMode
+  easterStage: EasterStage
   setHovered: (slug: Project['slug'] | null) => void
   setProjectsNear: (near: boolean) => void
   setIdeaSent: () => void
+  /** État seul : les effets de page (scroll, focus, son) sont dans src/easter/session.ts. */
+  startEaster: () => void
+  exitEaster: () => void
+  setEasterStage: (stage: EasterStage) => void
 }
 
 export const useScene = create<SceneState>((set) => ({
   hovered: null,
   projectsNear: false,
   ideaSentAt: null,
+  easter: 'idle',
+  easterStage: 'loading',
   setHovered: (slug) => {
     set({ hovered: slug })
     invalidate()
@@ -160,5 +177,15 @@ export const useScene = create<SceneState>((set) => ({
   setIdeaSent: () => {
     set({ ideaSentAt: performance.now() })
     invalidate()
+  },
+  startEaster: () => {
+    set({ easter: 'playing', easterStage: 'loading', hovered: null })
+  },
+  exitEaster: () => {
+    set({ easter: 'idle', easterStage: 'loading' })
+    invalidate()
+  },
+  setEasterStage: (stage) => {
+    set({ easterStage: stage })
   },
 }))

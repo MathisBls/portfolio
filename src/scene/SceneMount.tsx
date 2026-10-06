@@ -4,11 +4,13 @@
 // - Mobile : à la première interaction (scroll, toucher, clavier), puis au premier moment libre. Le
 //   poster SVG du hero tient lieu de visuel en attendant ; le chargement de la scène ne pèse plus sur
 //   le premier rendu (review Phase 1 : TBT mobile de 3 s).
+// - Easter egg (code Konami, src/easter/) : montée tout de suite au déverrouillage, puis gardée.
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { whenIdle } from '../lib/idle'
 import { MOBILE_QUERY, matches, useIsMobile } from '../lib/media'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import { hasWebGL2 } from '../lib/webgl'
+import { useScene } from './store'
 
 const Scene = lazy(() => import('./Scene'))
 
@@ -35,6 +37,9 @@ export function SceneMount() {
   const [ready, setReady] = useState(false)
   const mobile = useIsMobile()
   const reducedMotion = useReducedMotion()
+  const easter = useScene((s) => s.easter === 'playing')
+  // Mise à jour pendant le rendu (motif React « ajuster l'état ») : la scène reste montée après la sortie
+  if (easter && !ready && hasWebGL2()) setReady(true)
 
   useEffect(() => {
     if (!hasWebGL2()) return

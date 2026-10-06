@@ -3,7 +3,7 @@
 // l'emplacement en monde, boîte de l'objet dessiné. Lues par l'objet (useAnchoredObject) et par le
 // prisme pour viser l'objet actif (rayPath, prismFocus). Aucune allocation par frame.
 import type { RootState } from '@react-three/fiber'
-import type { Box3} from 'three';
+import type { Box3 } from 'three'
 import { type Camera, Vector3 } from 'three'
 import { slotCenter } from '../../lib/projects'
 import { getAnchorMetrics, getProgress } from '../store'
