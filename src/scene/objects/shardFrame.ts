@@ -74,9 +74,12 @@ function advance(rt: FieldRuntime, delta: number, now: number): number {
   if (rt.introStart === null) {
     rt.introStart = now
     rt.lastScroll = scroll
-    // Page rechargée plus bas : pas d'intro, le prisme est déjà ailleurs
-    if (getTimeline() > INTRO.skipAfter) rt.introDone = true
   }
+  // Page rechargée plus bas : pas d'intro, le prisme est déjà ailleurs et le champ s'affiche tout de
+  // suite. Vérifié à chaque image de l'intro, pas seulement à la première : la position de scroll
+  // restaurée (et donc la timeline) peut n'arriver qu'après les premières images, et le champ restait
+  // alors invisible le temps de son fondu d'intro (retour de Mathis du 2026-10-09).
+  if (!rt.introDone && getTimeline() > INTRO.skipAfter) rt.introDone = true
   const elapsed = (now - rt.introStart) / 1000
   if (elapsed >= INTRO.duration) rt.introDone = true
   const dt = Math.min(delta, MAX_DT)
