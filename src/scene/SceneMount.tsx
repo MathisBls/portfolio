@@ -12,7 +12,8 @@ import { useReducedMotion } from '../lib/useReducedMotion'
 import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from './store'
 
-const Scene = lazy(() => import('./Scene'))
+const loadScene = () => import('./Scene')
+const Scene = lazy(loadScene)
 
 export function SceneMount() {
   const [ready, setReady] = useState(false)
@@ -24,6 +25,8 @@ export function SceneMount() {
 
   useEffect(() => {
     if (!hasWebGL2()) return
+    // Téléchargement du chunk dès l'hydratation, en parallèle ; le montage attend le moment libre
+    void loadScene()
     return whenIdle(() => {
       setReady(true)
     })

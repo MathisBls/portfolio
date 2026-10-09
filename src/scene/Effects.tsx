@@ -8,6 +8,7 @@
 import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocessing'
 import { BlendFunction, Effect } from 'postprocessing'
 import { useEffect, useMemo } from 'react'
+import { registerComposer } from './warm'
 
 const shoulder = /* glsl */ `
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
@@ -34,6 +35,7 @@ class HighlightShoulder extends Effect {
 
 export function Effects() {
   const toneMapping = useMemo(() => new HighlightShoulder(), [])
+
   useEffect(
     () => () => {
       toneMapping.dispose()
@@ -42,7 +44,8 @@ export function Effects() {
   )
 
   return (
-    <EffectComposer multisampling={4}>
+    // Ref callback : enregistré pour le préchauffage de ses programmes (warm.ts, appelé par Warmup)
+    <EffectComposer ref={registerComposer} multisampling={4}>
       {/* levels/radius : halo serré autour des rayons, pas de voile sur tout l'écran */}
       <Bloom
         luminanceThreshold={1}

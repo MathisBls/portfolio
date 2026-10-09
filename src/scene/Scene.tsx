@@ -26,6 +26,7 @@ import { ProjectObjects } from './objects/ProjectObjects'
 import { ShardField } from './objects/ShardField'
 import { FINE_POINTER_QUERY, bindPointer } from './pointer'
 import { setInvalidate, setSceneLive, useScene } from './store'
+import { warmScene } from './warm'
 
 const EasterScene = lazy(() => import('../easter/EasterScene'))
 
@@ -67,8 +68,10 @@ function PointerBridge({ enabled }: { enabled: boolean }) {
  * liaison synchrone des programmes bloquait le thread principal ~400 ms (review Phase 1, TBT). Le
  * Canvas démarre en frameloop "never" ; Warmup est monté après le chargement du GLB (dans le
  * Suspense), puis passe en "demand".
+ * `offscreen` (postprocessing actif) : compilation dans la variante de la cible du composer, passes
+ * comprises (warm.ts) ; sans ça, la première image compilait encore 7 programmes (gel de 590 ms).
  */
-function Warmup() {
+function Warmup({ offscreen }: { offscreen: boolean }) {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
@@ -88,13 +91,13 @@ function Warmup() {
         })
       })
     }
-    gl.compileAsync(scene, camera).then(start, start)
+    warmScene(gl, scene, camera, offscreen).then(start, start)
     return () => {
       cancelled = true
       cancelAnimationFrame(raf)
       setSceneLive(false)
     }
-  }, [gl, scene, camera, setFrameloop, invalidate])
+  }, [gl, scene, camera, setFrameloop, invalidate, offscreen])
   return null
 }
 
@@ -135,7 +138,7 @@ export default function Scene({ mobile, reducedMotion }: SceneProps) {
             <ShardField mobile={mobile} reducedMotion={reducedMotion} />
             {composer && <HeroTitle3D reducedMotion={reducedMotion} />}
             {composer && <Effects />}
-            <Warmup />
+            <Warmup offscreen={composer} />
           </>
         )}
       </Suspense>
