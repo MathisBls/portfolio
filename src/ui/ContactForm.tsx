@@ -3,6 +3,8 @@
 // page minimale. Avec JS : validation maison (lib/form.ts), envoi en fetch avec réponse JSON, statuts
 // annoncés en aria-live, motion pour les transitions (coupées en reduced-motion). En dev, Vite ne sert
 // pas le PHP : l'envoi aboutit à l'état d'erreur et à son lien email de secours.
+// Type de projet (2026-10-09, demande de Mathis) : menu déroulant natif (accessible, clavier et lecteurs
+// d'écran) ; « 18+ » affiche un avis : la pièce d'identité est demandée hors du site, jamais ici.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { SubmitEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
@@ -15,6 +17,7 @@ import {
   CONTACT_FORM_NAME,
   CONTACT_MAX,
   HONEYPOT_FIELD,
+  PROJECT_TYPES,
   sendContact,
   validateContact,
 } from '../lib/form'
@@ -26,7 +29,12 @@ import styles from './ContactForm.module.css'
 import { SubmitButton } from './SubmitButton'
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
-const FIELD_ORDER = ['name', 'email', 'message'] as const satisfies readonly (keyof ContactFields)[]
+const FIELD_ORDER = [
+  'name',
+  'email',
+  'type',
+  'message',
+] as const satisfies readonly (keyof ContactFields)[]
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -97,6 +105,50 @@ function Field({
   )
 }
 
+type ProjectTypeFieldProps = {
+  error: string | undefined
+  onEdit: (name: keyof ContactFields) => void
+  onChoose: (value: string) => void
+}
+
+function ProjectTypeField({ error, onEdit, onChoose }: ProjectTypeFieldProps) {
+  const { form } = site.contact
+  const id = fieldId('type')
+  const errorId = `${id}-error`
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id} className={styles.label}>
+        {form.projectType}
+      </label>
+      <select
+        id={id}
+        name="type"
+        required
+        defaultValue=""
+        className={`${styles.control} ${styles.select}`}
+        aria-invalid={error !== undefined}
+        aria-describedby={errorId}
+        onChange={(event) => {
+          onEdit('type')
+          onChoose(event.currentTarget.value)
+        }}
+      >
+        <option value="" disabled>
+          {form.projectTypePlaceholder}
+        </option>
+        {PROJECT_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {form.projectTypes[type]}
+          </option>
+        ))}
+      </select>
+      <p id={errorId} className={styles.error}>
+        {error}
+      </p>
+    </div>
+  )
+}
+
 type MotionProps = { initial: false | { opacity: number; y: number }; transition: object }
 
 /** Remplace le formulaire : prend le focus (lu par les lecteurs d'écran), sans contour visible. */
@@ -126,6 +178,7 @@ export function ContactForm() {
   const hydrated = useHydrated()
   const [status, setStatus] = useState<Status>('idle')
   const [errors, setErrors] = useState<ContactErrors>({})
+  const [projectType, setProjectType] = useState('')
 
   const transition = reduced ? { duration: 0 } : { duration: 0.4, ease: EASE }
   const enter = reduced ? false : ({ opacity: 0, y: 12 } as const)
@@ -166,6 +219,7 @@ export function ContactForm() {
     const fields: ContactFields = {
       name: readField(data, 'name').trim(),
       email: readField(data, 'email').trim(),
+      type: readField(data, 'type'),
       message: readField(data, 'message').trim(),
     }
     const found = validateContact(fields)
@@ -227,6 +281,14 @@ export function ContactForm() {
                 error={messageFor(errors.email)}
                 onEdit={clearError}
               />
+              <ProjectTypeField
+                error={messageFor(errors.type)}
+                onEdit={clearError}
+                onChoose={setProjectType}
+              />
+              <p className={styles.notice} aria-live="polite">
+                {projectType === 'adult' ? form.adultNotice : ''}
+              </p>
               <Field
                 name="message"
                 label={form.message}

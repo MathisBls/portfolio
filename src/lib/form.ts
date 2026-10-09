@@ -9,12 +9,33 @@ export const CONTACT_ENDPOINT = '/contact.php'
 /** Champ piège : rempli par les robots, accepté sans envoi par contact.php (HONEYPOT). */
 export const HONEYPOT_FIELD = 'bot-field'
 
-export type ContactFields = { name: string; email: string; message: string }
+/**
+ * Types de projet du menu déroulant (libellés : site.contact.form.projectTypes). Valeurs identiques à
+ * PROJECT_TYPES dans public/contact.php. `adult` : plateforme 18+, une pièce d'identité est demandée hors
+ * du site (jamais par ce formulaire) avant tout travail.
+ */
+export const PROJECT_TYPES = [
+  'website',
+  'shop',
+  'webapp',
+  'mobile',
+  'redesign',
+  'adult',
+  'other',
+] as const
+
+export type ProjectType = (typeof PROJECT_TYPES)[number]
+
+export const isProjectType = (value: string): value is ProjectType =>
+  (PROJECT_TYPES as readonly string[]).includes(value)
+
+export type ContactFields = { name: string; email: string; type: string; message: string }
 
 /** Longueurs maximales (maxlength des champs), identiques à MAX_* dans public/contact.php. */
 export const CONTACT_MAX = {
   name: 100,
   email: 254,
+  type: 20,
   message: 5000,
 } as const satisfies Record<keyof ContactFields, number>
 
@@ -34,6 +55,7 @@ export function validateContact(fields: ContactFields): ContactErrors {
   if (fields.name.trim() === '') errors.name = 'required'
   if (fields.email.trim() === '') errors.email = 'required'
   else if (!EMAIL.test(fields.email.trim())) errors.email = 'email'
+  if (!isProjectType(fields.type)) errors.type = 'required'
   if (fields.message.trim() === '') errors.message = 'required'
   return errors
 }

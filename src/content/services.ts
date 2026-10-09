@@ -58,8 +58,8 @@ export const identity = {
   name: 'Mathis Boulais',
   role: 'Full-stack developer',
   location: 'Choisy-le-Roi, near Paris, France',
-  // Email à confirmer par Mathis (contact@mathisboulais.com ?) : ne changer que si l'adresse existe
-  email: 'mathis.bls@pm.me',
+  // Boîte créée chez alwaysdata le 2026-10-09 (aussi RECIPIENT de public/contact.php)
+  email: 'contact@mathisboulais.com',
   phone: '+33 7 82 07 17 88',
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',

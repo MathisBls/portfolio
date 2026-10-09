@@ -94,6 +94,21 @@ export const site = {
       name: 'Name',
       email: 'Email',
       message: 'Your project',
+      // Menu déroulant (lib/form.ts, PROJECT_TYPES) : une étiquette par type
+      projectType: 'Type of project',
+      projectTypePlaceholder: 'Choose…',
+      projectTypes: {
+        website: 'Showcase website',
+        shop: 'Online store',
+        webapp: 'Web app',
+        mobile: 'Mobile app',
+        redesign: 'Redesign or maintenance',
+        adult: '18+ platform (adult content)',
+        other: 'Something else',
+      },
+      // Affiché seulement quand « 18+ » est choisi : la pièce d'identité ne passe jamais par le site
+      adultNotice:
+        'For 18+ projects, I ask for a copy of your ID before any work starts, through a secure channel. Please don’t send it through this form.',
       submit: 'Send message',
       sending: 'Sending…',
       success: 'Message sent. I’ll get back to you shortly.',
@@ -113,7 +128,8 @@ export const site = {
     data: {
       title: 'Personal data',
       text: [
-        'The contact form collects your name, email address and message. This data is only used to reply to you and is never sold or shared.',
+        'The contact form collects your name, email address, the type of project and your message. This data is only used to reply to you and is never sold or shared.',
+        'Identity documents (requested for 18+ projects) are never collected through this website.',
         'Your message is sent to me by email. It is not stored on the web server (hosted by alwaysdata).',
         'To prevent abuse, the server temporarily keeps a hashed form of your IP address (about 10 minutes). It is used for nothing else.',
         'Retention period of messages in my mailbox: TODO: to be confirmed (suggested: 12 months after the last exchange, then deleted).',

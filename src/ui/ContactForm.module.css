@@ -43,6 +43,38 @@
     box-shadow 0.4s var(--ease);
 }
 
+/* Menu déroulant du type de projet : flèche dessinée en CSS (dégradés), aux couleurs du thème */
+.select {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--fg-2) 50%),
+    linear-gradient(135deg, var(--fg-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.3rem) 55%,
+    calc(100% - 0.95rem) 55%;
+  background-size: 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.select option {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Avis « 18+ » : visible seulement quand ce type est choisi */
+.notice {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--accent);
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.notice:empty {
+  display: none;
+}
+
 textarea.control {
   min-height: 9rem;
   resize: vertical;

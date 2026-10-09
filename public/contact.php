@@ -9,9 +9,8 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 date_default_timezone_set('Europe/Paris');
 
-// À confirmer : contact@mathisboulais.com à créer chez alwaysdata. En attendant, identity.email
-// (src/content/services.ts).
-const RECIPIENT = 'mathis.bls@pm.me';
+// Boîte créée chez alwaysdata le 2026-10-09 (identity.email, src/content/services.ts).
+const RECIPIENT = 'contact@mathisboulais.com';
 const SENDER = 'noreply@mathisboulais.com';
 // Sujet fixe : aucune donnée du visiteur dans les en-têtes, sauf le Reply-To validé
 const SUBJECT = '[mathisboulais.com] Nouveau message du formulaire de contact';
@@ -25,6 +24,16 @@ const MAX_NAME = 100;
 const MAX_EMAIL = 254;
 const MAX_MESSAGE = 5000;
 const MAX_BODY_BYTES = 32768;
+// Types de projet : identiques à PROJECT_TYPES (src/lib/form.ts), libellés pour l'email de Mathis
+const PROJECT_TYPES = [
+    'website' => 'Site vitrine',
+    'shop' => 'Boutique en ligne',
+    'webapp' => 'Application web',
+    'mobile' => 'Application mobile',
+    'redesign' => 'Refonte ou maintenance',
+    'adult' => 'Plateforme 18+ (contenu adulte)',
+    'other' => 'Autre',
+];
 // Champ piège : identique à HONEYPOT_FIELD (src/lib/form.ts)
 const HONEYPOT = 'bot-field';
 
@@ -181,9 +190,15 @@ function rate_wait(string $ip): int
     return $wait;
 }
 
-function send_mail(string $name, string $email, string $message): bool
+function send_mail(string $name, string $email, string $type, string $message): bool
 {
-    $body = "Nom : {$name}\nEmail : {$email}\nReçu le " . date('d/m/Y à H:i') . "\n\n{$message}\n";
+    $label = PROJECT_TYPES[$type];
+    // Plateforme 18+ : rappel de la vérification d'identité, faite hors du site
+    $warning = $type === 'adult'
+        ? "\n⚠ Projet 18+ : demander une pièce d'identité (canal sécurisé) avant tout travail.\n"
+        : '';
+    $body = "Nom : {$name}\nEmail : {$email}\nType de projet : {$label}\nReçu le "
+        . date('d/m/Y à H:i') . "\n{$warning}\n{$message}\n";
     $headers = [
         'From' => SENDER,
         'Reply-To' => $email,
@@ -222,6 +237,7 @@ if (field(HONEYPOT) !== '') {
 
 $name = field('name');
 $email = field('email');
+$type = field('type');
 $message = field('message');
 
 foreach ([$name, $email, $message] as $value) {
@@ -238,13 +254,16 @@ if (char_length($name) > MAX_NAME || char_length($email) > MAX_EMAIL || char_len
 if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || preg_match('/[\r\n]/', $email) === 1) {
     respond(422, 'invalid_email');
 }
+if (!array_key_exists($type, PROJECT_TYPES)) {
+    respond(422, 'invalid_type');
+}
 
 // Nettoyage : le nom tient sur une ligne, le message garde ses retours à la ligne et tabulations
 $name = trim((string) preg_replace('/[\x00-\x1F\x7F]+/', ' ', $name));
 $message = str_replace(["\r\n", "\r"], "\n", $message);
 $message = (string) preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $message);
 
-if (!send_mail($name, $email, $message)) {
+if (!send_mail($name, $email, $type, $message)) {
     error_log('contact.php: mail() a échoué');
     respond(500, 'send_failed');
 }

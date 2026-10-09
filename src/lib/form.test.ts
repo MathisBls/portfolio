@@ -21,19 +21,33 @@ describe('encodeForm', () => {
 })
 
 describe('validateContact', () => {
+  it('refuse un type de projet hors de la liste', () => {
+    expect(
+      validateContact({ name: 'Léa', email: 'lea@exemple.fr', type: 'casino', message: 'x' }),
+    ).toEqual({ type: 'required' })
+  })
+
   it('accepte un message complet', () => {
-    expect(validateContact({ name: 'Léa', email: 'lea@exemple.fr', message: 'Un site' })).toEqual(
-      {},
-    )
+    expect(
+      validateContact({
+        name: 'Léa',
+        email: 'lea@exemple.fr',
+        type: 'website',
+        message: 'Un site',
+      }),
+    ).toEqual({})
   })
 
   it('signale les champs vides et un email invalide', () => {
-    expect(validateContact({ name: ' ', email: 'lea@', message: '' })).toEqual({
+    expect(validateContact({ name: ' ', email: 'lea@', type: '', message: '' })).toEqual({
       name: 'required',
       email: 'email',
+      type: 'required',
       message: 'required',
     })
-    expect(validateContact({ name: 'Léa', email: '', message: 'x' })).toEqual({ email: 'required' })
+    expect(validateContact({ name: 'Léa', email: '', type: 'shop', message: 'x' })).toEqual({
+      email: 'required',
+    })
   })
 })
 
