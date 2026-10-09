@@ -156,7 +156,12 @@ export function aimRay(
     aimed = Math.atan2(local.y - ray.y0, local.x - ray.x0) - Math.PI / 2
     reach = reachToEdge(start, target) / parentScale
   }
-  pose.rotation = rest + wrapAngle(aimed - rest) * mode
+  // Visée seulement quand le rayon est affiché (show > 0) : pendant que l'éventail rentre, un rayon pas
+  // encore présenté garde son orientation de repos (retour de Mathis du 2026-10-10 : le rayon vert se
+  // tordait vers son objet pendant une seconde avant de disparaître). Montée raide : quand il ressort, il
+  // pointe déjà vers l'objet.
+  const aim = clamp(show * 50)
+  pose.rotation = rest + wrapAngle(aimed - rest) * mode * aim
   pose.length = lerp(length, (reach / (2 * ray.half)) * show, mode)
   pose.show = lerp(1, show, mode)
   return pose
