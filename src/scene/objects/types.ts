@@ -151,6 +151,8 @@ export type GameFactoryGLTF = GLTFBase & {
   }
 }
 
+// Part réaliste (scripts/blender/model_pizza_real.py, 2026-10-09) : part cuite (couleur, rugosité,
+// normales), trois feuilles de basilic, quatre brins de mozzarella (origine au point d'accroche).
 export type PizzaGLTF = GLTFBase & {
   nodes: {
     Pizza_Browser_Root: THREE.Object3D
@@ -160,17 +162,15 @@ export type PizzaGLTF = GLTFBase & {
     Pizza_Dot0: THREE.Mesh
     Pizza_Dot1: THREE.Mesh
     Pizza_Dot2: THREE.Mesh
-    Dough: THREE.Mesh
-    Sauce: THREE.Mesh
-    Cheese: THREE.Mesh
-    Crust: THREE.Mesh
-    ['Pep06-012']: THREE.Mesh
-    Pep105018: THREE.Mesh
-    ['Pep115-022']: THREE.Mesh
-    ['Pep085-002']: THREE.Mesh
-    Basil045015: THREE.Mesh
-    Basil0900: THREE.Mesh
-    Basil12005: THREE.Mesh
+    Pizza_Slice_Root: THREE.Object3D
+    Pizza_Slice: THREE.Mesh
+    Pizza_Basil0: THREE.Mesh
+    Pizza_Basil1: THREE.Mesh
+    Pizza_Basil2: THREE.Mesh
+    Pizza_CheeseStrand0: THREE.Mesh
+    Pizza_CheeseStrand1: THREE.Mesh
+    Pizza_CheeseStrand2: THREE.Mesh
+    Pizza_CheeseStrand3: THREE.Mesh
   }
   materials: {
     BrowserFrame: THREE.MeshStandardMaterial
@@ -179,11 +179,9 @@ export type PizzaGLTF = GLTFBase & {
     BrowserDotR: THREE.MeshStandardMaterial
     BrowserDotY: THREE.MeshStandardMaterial
     BrowserDotG: THREE.MeshStandardMaterial
-    Crust: THREE.MeshStandardMaterial
-    Sauce: THREE.MeshStandardMaterial
-    Cheese: THREE.MeshStandardMaterial
-    Pepperoni: THREE.MeshStandardMaterial
-    Basil: THREE.MeshStandardMaterial
+    PizzaSlice: THREE.MeshStandardMaterial
+    PizzaBasil: THREE.MeshPhysicalMaterial
+    PizzaCheese: THREE.MeshStandardMaterial
   }
 }
 

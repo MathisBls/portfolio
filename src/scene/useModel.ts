@@ -24,7 +24,7 @@ type ModelMap = {
 
 export type ModelName = keyof ModelMap & Project['model']
 
-const DRACO_PATH = '/draco/'
+export const DRACO_PATH = '/draco/'
 const modelUrl = (name: ModelName) => `/models/${name}.glb`
 
 export function useModel<K extends ModelName>(name: K): ModelMap[K] {

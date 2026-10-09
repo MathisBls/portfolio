@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Quatre pages, chacune avec ses versions linguistiques (src/content/locales.ts, ROUTES). -->
+<!-- Toutes les pages prérendues (src/content/locales.ts) : accueil et mentions légales avec leurs versions
+     linguistiques (ROUTES), puis les pages d'atterrissage en français seul, sans alternate (LANDING_ROUTES).
+     lastmod : date de la dernière modification du contenu de la page (AAAA-MM-JJ), à mettre à jour à la
+     main. Synchronisation vérifiée par src/content/seo/sitemap.test.ts. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://mathisboulais.com/</loc>
+    <lastmod>2026-10-09</lastmod>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/" />
   </url>
   <url>
     <loc>https://mathisboulais.com/en/</loc>
+    <lastmod>2026-10-09</lastmod>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/" />
   </url>
   <url>
     <loc>https://mathisboulais.com/mentions-legales/</loc>
+    <lastmod>2026-10-09</lastmod>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/mentions-legales/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/legal/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/mentions-legales/" />
   </url>
   <url>
     <loc>https://mathisboulais.com/en/legal/</loc>
+    <lastmod>2026-10-09</lastmod>
     <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/mentions-legales/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/legal/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/mentions-legales/" />
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/creation-site-internet-paris/</loc>
+    <lastmod>2026-10-09</lastmod>
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/site-internet-artisan/</loc>
+    <lastmod>2026-10-09</lastmod>
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/application-mobile-sur-mesure/</loc>
+    <lastmod>2026-10-09</lastmod>
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/realisations/meme-rina/</loc>
+    <lastmod>2026-10-09</lastmod>
   </url>
 </urlset>

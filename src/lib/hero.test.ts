@@ -5,6 +5,7 @@ import {
   RAY_COUNT,
   beamT,
   captionOpacity,
+  introT,
   rayT,
   rayWindow,
   turnT,
@@ -53,6 +54,17 @@ describe('captions du hero', () => {
     expect(captionOpacity(0.45, 1)).toBe(1)
     expect(captionOpacity(0.45, 0)).toBe(0)
     expect(captionOpacity(0.8, 2)).toBe(1)
+  })
+
+  it('le bloc d’intro (rôle, disponibilité, pitch, boutons) a disparu avant la première caption', () => {
+    const first = CAPTIONS[0]
+    expect(first).toBeDefined()
+    expect(HERO.intro[1]).toBeLessThanOrEqual(first?.[0] ?? 0)
+    // À tout progress, l'intro et la première caption ne sont jamais visibles ensemble
+    for (let i = 0; i <= 200; i++) {
+      const p = i / 200
+      expect(Math.min(1 - introT(p), captionOpacity(p, 0))).toBe(0)
+    }
   })
 
   it('invisibles avant le faisceau et après le pin', () => {

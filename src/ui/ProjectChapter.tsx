@@ -31,25 +31,6 @@ type Props = {
   index: number
 }
 
-/** Étoile du badge « highlight ». Décorative : le texte du badge porte l'information. */
-function StarIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 16 16"
-      width="12"
-      height="12"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M8 1.2 9.9 5.7l4.9.4-3.7 3.2 1.1 4.8L8 11.6l-4.2 2.5 1.1-4.8L1.2 6.1l4.9-.4Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
 export function ProjectChapter({ project, index }: Props) {
   const {
     slug,
@@ -65,7 +46,7 @@ export function ProjectChapter({ project, index }: Props) {
     highlight,
   } = project
   const { text } = useContent()
-  const { stackLabel, newTab, inDevelopment, links: linkLabels } = text.projects
+  const { stackLabel, posterAlt, newTab, inDevelopment, links: linkLabels } = text.projects
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const articleRef = useRef<HTMLElement>(null)
@@ -147,7 +128,7 @@ export function ProjectChapter({ project, index }: Props) {
             height={800}
             loading="lazy"
             decoding="async"
-            alt=""
+            alt={posterAlt.replace('{name}', name)}
           />
         </div>
 
@@ -161,20 +142,12 @@ export function ProjectChapter({ project, index }: Props) {
               (year ?? inDevelopment)
             )}
             {/* Contexte factuel : projet client, produit à moi, projet personnel ou communautaire */}
-            {` — ${context}`}
+            {` · ${context}`}
           </p>
 
           <RevealTitle as="h3" id={titleId} className={styles.name}>
             {name}
           </RevealTitle>
-
-          {highlight && (
-            <p className={styles.highlight} data-reveal style={stagger(1)}>
-              <span className={styles.dot} aria-hidden="true" />
-              <StarIcon className={styles.star} />
-              {highlight}
-            </p>
-          )}
 
           <p className={styles.tagline} data-reveal style={stagger(2)}>
             {tagline}
@@ -182,6 +155,14 @@ export function ProjectChapter({ project, index }: Props) {
           <p className={styles.description} data-reveal style={stagger(3)}>
             {description}
           </p>
+
+          {/* Chiffre réel, en une ligne mono sous la description (retour de Mathis du 2026-10-10 : le grand
+              « 25+ » sous le nom faisait bizarre) */}
+          {highlight && (
+            <p className={styles.stat} data-reveal style={stagger(3)}>
+              <span className={styles.statValue}>{highlight.value}</span> {highlight.label}
+            </p>
+          )}
 
           <ul className={styles.stack} aria-label={stackLabel} data-reveal style={stagger(4)}>
             {stack.map((item) => (

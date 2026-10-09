@@ -1,4 +1,5 @@
-/* Halo --bg : le texte reste lisible quand un rayon de la scène passe derrière */
+/* Étiquette mono, sans trait décoratif devant (retour de Mathis du 2026-10-10 : « tirets IA »).
+   Halo --bg : le texte reste lisible quand un rayon de la scène passe derrière */
 .label {
   display: flex;
   align-items: center;
@@ -11,31 +12,4 @@
   text-shadow:
     0 0 0.5rem var(--bg),
     0 0 1rem var(--bg);
-}
-
-/* Trait de 24 px devant le texte */
-.label::before {
-  content: '';
-  flex: none;
-  width: 24px;
-  height: 1px;
-  background: var(--accent);
-  transform-origin: left center;
-}
-
-/* Il se dessine (scaleX 0 -> 1) une fois le label visible. Caché seulement sous html.has-reveal. */
-:global(.has-reveal) .label::before {
-  transform: scaleX(0);
-  transition: transform var(--dur) var(--ease) 0.15s;
-}
-
-:global(.has-reveal) .label:global(.is-in)::before {
-  transform: scaleX(1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :global(.has-reveal) .label::before {
-    transform: none;
-    transition: none;
-  }
 }

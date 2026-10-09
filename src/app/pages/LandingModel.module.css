@@ -1,0 +1,47 @@
+/* Visuel des pages d'atterrissage (LandingModel.tsx) : un carré sans boîte (ni bordure ni fond, skill
+   design-sans-ia), le poster dessous, le canvas 3D par-dessus. Fondu croisé quand la 3D a rendu sa
+   première image (data-state="live"). Le canvas a un fond transparent : la page passe au travers. */
+.visual {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.9s var(--ease);
+}
+
+/* Conteneur créé par le <Canvas> de R3F (className ; position absolue posée en style par le viewer,
+   le style en ligne de R3F l'emporterait sur une classe) */
+.canvas {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease);
+}
+
+.visual[data-state='live'] .poster {
+  opacity: 0;
+}
+
+.visual[data-state='live'] .canvas {
+  opacity: 1;
+}
+
+/* On peut faire tourner le modèle : glisser horizontalement, le scroll vertical reste à la page */
+.visual[data-state='live'] {
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.visual[data-state='live'][data-dragging] {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster,
+  .canvas {
+    transition: none;
+  }
+}

@@ -26,3 +26,6 @@ public/posters/*.png
 
 # Compteur de débit de contact.php quand il tourne en local (php -S ... -t dist)
 .contact-rate
+
+# Cache Python des scripts Blender
+__pycache__/

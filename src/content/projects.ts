@@ -25,7 +25,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'wegir',
-    stack: ['React Native', 'Expo', 'Vite', 'NestJS', 'Prisma', 'MapLibre', 'RevenueCat'],
+    stack: ['React Native', 'Expo', 'Vite', 'Express', 'Prisma', 'MapLibre', 'RevenueCat'],
     links: { site: 'https://wegir.com', store: 'https://apps.apple.com/app/wegir/id6789985288' },
     model: 'wegir',
     accent: '#ffb020',

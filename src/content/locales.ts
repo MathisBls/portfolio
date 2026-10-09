@@ -34,6 +34,28 @@ export const PAGES: readonly Page[] = LOCALES.flatMap((locale) =>
   (['home', 'legal'] as const).map((kind) => ({ locale, kind })),
 )
 
+/**
+ * Pages d'atterrissage (référencement local), en français seulement : elles visent des recherches locales
+ * françaises, donc ni version anglaise ni hreflang. Hors de ROUTES et PAGES (qui listent les pages
+ * bilingues). Contenu : src/content/seo/ ; rendu : src/app/pages/LandingPage.tsx ; gabarits HTML à la
+ * racine (un dossier par URL, entrées de vite.config.ts) ; sitemap : public/sitemap.xml.
+ */
+export const LANDING_IDS = ['website-paris', 'artisan', 'mobile-app', 'meme-rina'] as const
+export type LandingId = (typeof LANDING_IDS)[number]
+
+export const LANDING_ROUTES: Record<LandingId, string> = {
+  'website-paris': '/creation-site-internet-paris/',
+  artisan: '/site-internet-artisan/',
+  'mobile-app': '/application-mobile-sur-mesure/',
+  'meme-rina': '/realisations/meme-rina/',
+}
+
+/** Page d'atterrissage d'une URL (chemin seul, « index.html » et / final tolérés), sinon undefined. */
+export function landingFromPath(path: string): LandingId | undefined {
+  const clean = path.replace(/index\.html$/, '').replace(/\/?$/, '/')
+  return LANDING_IDS.find((id) => LANDING_ROUTES[id] === clean)
+}
+
 /** Page d'une URL (chemin seul). Inconnue : accueil de la langue du préfixe. */
 export function pageFromPath(path: string): Page {
   const clean = path.replace(/index\.html$/, '')

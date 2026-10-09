@@ -10,13 +10,21 @@ const BUDGET_KB = 350
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 const gz = (file) => gzipSync(readFileSync(join(dist, file))).length / 1024
 
-// Les quatre pages (src/content/locales.ts) : les deux langues partagent les mêmes scripts
+// Les pages (src/content/locales.ts, ROUTES puis LANDING_ROUTES) : les deux langues partagent les mêmes
+// scripts. Le budget porte sur l'union ; le JS initial de chaque page d'atterrissage est aussi affiché.
 const pages = ['index.html', 'en/index.html', 'mentions-legales/index.html', 'en/legal/index.html']
-const initial = new Set()
-for (const page of pages) {
+const landings = [
+  'creation-site-internet-paris/index.html',
+  'site-internet-artisan/index.html',
+  'application-mobile-sur-mesure/index.html',
+  'realisations/meme-rina/index.html',
+]
+const scriptsOf = (page) => {
   const html = readFileSync(join(dist, page), 'utf8')
-  for (const [, file] of html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)) initial.add(file)
+  return [...html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)].map(([, file]) => file)
 }
+const initial = new Set()
+for (const page of [...pages, ...landings]) for (const file of scriptsOf(page)) initial.add(file)
 
 const initialKb = [...initial].reduce((sum, f) => sum + gz(f), 0)
 const allJs = readdirSync(join(dist, 'assets'))
@@ -29,6 +37,10 @@ for (const f of initial) console.log(`  ${f}  ${gz(f).toFixed(1)} Ko`)
 console.log(big.length ? 'Chunks > 100 Ko gz :' : 'Aucun chunk > 100 Ko gz')
 for (const [f, kb] of big) {
   console.log(`  ${f}  ${kb.toFixed(1)} Ko ${initial.has(f) ? '(initial)' : '(lazy)'}`)
+}
+for (const page of landings) {
+  const kb = scriptsOf(page).reduce((sum, f) => sum + gz(f), 0)
+  console.log(`JS initial de /${page.replace('index.html', '')} : ${kb.toFixed(1)} Ko gz`)
 }
 console.log(`JS total : ${allJs.reduce((sum, f) => sum + gz(f), 0).toFixed(1)} Ko gz`)
 if (initialKb > BUDGET_KB) process.exit(1)

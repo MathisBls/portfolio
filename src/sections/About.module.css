@@ -90,27 +90,107 @@
   color: var(--fg-2);
 }
 
-/* Même badge que dans le hero (Hero.module.css) */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  justify-self: start;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-2);
-  font-size: var(--text-sm);
-  color: var(--fg-2);
+/* Lien de la ligne « Open source » : en pleine lumière, souligné d'un filet (pas de pastille ni de flèche) */
+.link {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--fg-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+  transition: text-decoration-color 0.4s var(--ease);
 }
 
-.dot {
-  flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 25%, transparent);
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* Portrait : cadre à angles droits, sans ombre. Noir et blanc contrasté ; un filet du spectre le
+   traverse en biais (pseudo-élément du cadre). La couleur revient au survol de la photo et au focus
+   clavier dans la section, jamais en reduced-motion. Mobile : au-dessus du texte, largeur raisonnable. */
+.portrait {
+  width: min(100%, 20rem);
+}
+
+.frame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--bg-2);
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Recadrage 4:5 du carré d'origine : le visage reste au centre */
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: 50% 40%;
+  filter: grayscale(1) contrast(1.18) brightness(0.86);
+  transition: filter 0.9s var(--ease);
+}
+
+/* Le filet : les 7 rayons du prisme (--spectrum), fondu aux deux bouts, incliné de 18° sous le menton.
+   Le reflet est la même bande, large et très pâle. Rien ne bouge. */
+.frame::before,
+.frame::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  background: var(--spectrum);
+  rotate: -18deg;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+}
+
+.frame::after {
+  top: 84%;
+  height: 2px;
+  opacity: 0.9;
+}
+
+.frame::before {
+  top: calc(84% - 1rem);
+  height: 2rem;
+  opacity: 0.1;
+  filter: blur(0.75rem);
+}
+
+.caption {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .about:focus-within .photo {
+    filter: grayscale(0) contrast(1) brightness(1);
+  }
+
+  @media (hover: hover) {
+    .portrait:hover .photo {
+      filter: grayscale(0) contrast(1) brightness(1);
+    }
+  }
 }
 
 @media (min-width: 640px) {
@@ -121,12 +201,32 @@
   .body {
     margin-top: var(--space-6);
   }
+
+  .portrait {
+    width: min(100%, 24rem);
+  }
 }
 
 @media (min-width: 1024px) {
-  /* Texte décalé de deux colonnes sur douze : le titre reste ancré à gauche */
+  /* Texte décalé de deux colonnes sur douze : le titre reste ancré à gauche. Le portrait prend la colonne
+     de droite, plus étroite que le texte (asymétrie), et reste en place pendant la lecture. */
   .body {
     padding-left: calc(100% / 12 * 2);
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: var(--space-5);
+    align-items: start;
+  }
+
+  .body > * {
+    grid-column: 1;
+  }
+
+  .body > .portrait {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    position: sticky;
+    top: var(--space-5);
+    width: 100%;
   }
 
   .line {

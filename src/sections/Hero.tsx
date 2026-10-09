@@ -1,5 +1,9 @@
 // Hero (docs/storyboards/hero.md) : DOM du pin de 200 %. Le h1 est l'élément LCP, visible dès le HTML.
 // La timeline GSAP écrit le progress 'hero' (lu par la scène) et efface le DOM aux fenêtres de lib/hero.ts.
+// Bloc d'intro ([data-intro] : rôle, ligne de disponibilité, pitch, boutons, indice) : un seul fondu scrubbé,
+// fini avant la première phrase du prisme (captions) ; remonter le fait réapparaître.
+// Le h1 porte le nom, le métier (la ligne de rôle affichée) et « à Paris » (lu, jamais affiché) pour le
+// référencement. Seuls les <span data-word> deviennent des mots 3D (HeroTitle3D).
 import { Fragment, useLayoutEffect, useRef } from 'react'
 import { site } from '../content/site'
 import { useContent } from '../content/useContent'
@@ -7,6 +11,7 @@ import { gsap, ScrollTrigger } from '../lib/gsap'
 import { CAPTIONS, CAPTION_FADE, HERO, wordWindow } from '../lib/hero'
 import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
 import { registerAnchor, setProgress } from '../scene/store'
+import { AvailabilityLine } from '../ui/AvailabilityLine'
 import { Button } from '../ui/Button'
 import { HeroPoster } from './HeroPoster'
 import styles from './Hero.module.css'
@@ -14,7 +19,7 @@ import styles from './Hero.module.css'
 export function Hero() {
   const { id } = site.sections.hero
   const { text, identity } = useContent()
-  const { availability, ctaPrimary, ctaSecondary, scrollHint, captions } = text.hero
+  const { titleLocation, ctaPrimary, ctaSecondary, scrollHint, captions } = text.hero
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
@@ -58,7 +63,6 @@ export function Hero() {
 
     const ctx = gsap.context(() => {
       const intro = section.querySelectorAll<HTMLElement>('[data-intro]')
-      const role = section.querySelectorAll<HTMLElement>('[data-role]')
       const wordEls = section.querySelectorAll<HTMLElement>('[data-word]')
       const captionEls = section.querySelectorAll<HTMLElement>('[data-caption]')
 
@@ -78,7 +82,6 @@ export function Hero() {
       })
 
       tl.to(intro, { opacity: 0, y: -12, duration: HERO.intro[1] - HERO.intro[0] }, HERO.intro[0])
-      tl.to(role, { opacity: 0, y: -12, duration: HERO.role[1] - HERO.role[0] }, HERO.role[0])
       wordEls.forEach((el, i) => {
         const [start, end] = wordWindow(i, wordEls.length)
         // Opacité seule : pas de flou animé (repaint de mots de 144 px sur mobile) ni de décalage y
@@ -121,14 +124,13 @@ export function Hero() {
               </span>
             </Fragment>
           ))}
+          <span className="sr-only">, </span>
+          <span className={styles.role} data-intro>
+            {identity.role}
+          </span>
+          <span className="sr-only">, {titleLocation}</span>
         </h1>
-        <p className={styles.role} data-role>
-          {identity.role}
-        </p>
-        <p className={styles.badge} data-role>
-          <span className={styles.dot} aria-hidden="true" />
-          {availability}
-        </p>
+        <AvailabilityLine placement="hero" />
       </div>
 
       <div className={styles.bottom}>

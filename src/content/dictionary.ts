@@ -15,8 +15,11 @@ export type ProjectCopy = {
   context: string
   tagline: string
   description: string
-  /** Fait marquant affiché à côté du projet (fourni par Mathis). */
-  highlight?: string
+  /**
+   * Chiffre mis en avant par la typographie (fourni par Mathis) : `value` en grand (police display),
+   * `label` en petites capitales mono dessous.
+   */
+  highlight?: { value: string; label: string }
 }
 
 export type ServiceCopy = { title: string; for: string; includes: string[] }
@@ -30,16 +33,22 @@ export type Dictionary = {
   /** Sélecteur de langue (nav, menu mobile, footer). */
   lang: { label: string }
   identity: { role: string; location: string; status: string; pitch: string }
+  /**
+   * Ligne mono « Paris, 14:32 · Disponible pour de nouveaux projets » (ui/AvailabilityLine.tsx, hero et
+   * à propos) : `city` précède l'heure de Paris, `status` suit le séparateur.
+   */
+  availability: { city: string; status: string }
   nav: {
     label: string
     home: string
-    links: Record<'projects' | 'services' | 'about', string>
+    links: Record<'projects' | 'services' | 'about' | 'contact', string>
     cta: string
     menuOpen: string
     menuClose: string
   }
   hero: {
-    availability: string
+    /** Précision ajoutée au h1 pour le référencement, lue par les lecteurs d'écran, jamais affichée. */
+    titleLocation: string
     ctaPrimary: string
     ctaSecondary: string
     scrollHint: string
@@ -50,6 +59,8 @@ export type Dictionary = {
   projects: {
     intro: string
     stackLabel: string
+    /** Texte alternatif du poster d'un projet ; `{name}` est remplacé par le nom du projet. */
+    posterAlt: string
     links: { site: string; store: string; github: string }
     newTab: string
     /** Remplace l'année d'un projet pas encore sorti. */
@@ -71,7 +82,14 @@ export type Dictionary = {
     cta: string
     items: Record<ServiceId, ServiceCopy>
   }
-  about: { lines: string[]; stackLabel: string; availability: string }
+  about: {
+    lines: string[]
+    /** Ligne « Open source » : insérée avant la dernière ligne. Les deux liens (fix, plugin) sont posés dans About.tsx. */
+    openSource: { lead: string; fix: string; stars: string; plugin: string; rest: string }
+    stackLabel: string
+    /** Photo de Mathis : texte alternatif et légende. */
+    portrait: { alt: string; caption: string }
+  }
   contact: {
     intro: string
     direct: string

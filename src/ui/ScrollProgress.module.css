@@ -1,0 +1,18 @@
+/* Filet de progression du scroll, bord droit de l'écran. Au-dessus de tout, sans interaction. */
+.track {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-nav);
+  width: 2px;
+  pointer-events: none;
+}
+
+.bar {
+  width: 100%;
+  height: 100%;
+  background: var(--fg-2);
+  transform: scaleY(0);
+  transform-origin: top center;
+}

@@ -24,19 +24,24 @@ function remember(locale: Locale) {
 type Props = {
   /** Page courante : le lien mène à la même page dans l'autre langue. */
   kind: PageKind
+  /**
+   * Liens imposés, hors de ROUTES (pages d'atterrissage en français seul : FR = la page, EN = l'accueil
+   * anglais). Remplace ROUTES[langue][kind].
+   */
+  routes?: Record<Locale, string>
   /** bar : barre de nav ; panel : menu mobile (cibles de 44 px) ; footer : pied de page. */
   variant?: 'bar' | 'panel' | 'footer'
   onNavigate?: () => void
 }
 
-export function LangSwitch({ kind, variant = 'bar', onNavigate }: Props) {
+export function LangSwitch({ kind, routes, variant = 'bar', onNavigate }: Props) {
   const { locale, text } = useContent()
   return (
     <ul className={styles.switch} data-variant={variant} aria-label={text.lang.label}>
       {LOCALES.map((l) => (
         <li key={l} className={styles.item}>
           <a
-            href={ROUTES[l][kind]}
+            href={routes?.[l] ?? ROUTES[l][kind]}
             hrefLang={l}
             lang={l}
             className={styles.link}

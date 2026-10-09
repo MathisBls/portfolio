@@ -65,38 +65,22 @@ html:global(.has-3d-title) .word {
   transition: opacity var(--dur) var(--ease);
 }
 
+/* Ligne de rôle : dans le h1 (le métier compte pour le référencement) mais affichée comme avant, en petit
+   mono sous le nom. Elle ne reprend donc rien du style du titre : taille, interlignage et casse sont
+   posés ici. Ce n'est pas un <span data-word> : la 3D ne la lit pas. */
 .role {
+  display: block;
   margin-top: 1rem;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  line-height: 1.6;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-wrap: wrap;
   color: var(--fg-2);
   text-shadow:
     0 0 0.5rem var(--bg),
     0 0 1rem var(--bg);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  margin-top: 0.75rem;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-2);
-  font-size: var(--text-sm);
-  color: var(--fg-2);
-}
-
-.dot {
-  flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .bottom {
@@ -105,7 +89,7 @@ html:global(.has-3d-title) .word {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  /* Respiration sous le badge quand la hauteur est juste (le bas grandit alors vers le haut) */
+  /* Respiration sous la ligne de disponibilité quand la hauteur est juste (le bas grandit alors vers le haut) */
   margin-top: 1rem;
   width: 100%;
   max-width: var(--max-w);

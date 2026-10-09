@@ -1,4 +1,7 @@
+# https://mathisboulais.com : tout le site est public et indexable.
 User-agent: *
 Allow: /
+# Point d'envoi du formulaire de contact (POST seulement), sans contenu à indexer
+Disallow: /contact.php
 
 Sitemap: https://mathisboulais.com/sitemap.xml

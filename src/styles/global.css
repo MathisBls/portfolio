@@ -17,6 +17,28 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Barre de défilement de la page masquée (skill design-sans-ia) : le scroll reste possible à la molette,
+   au clavier et au toucher. La progression est montrée par un filet (ui/ScrollProgress.tsx). */
+html,
+body {
+  scrollbar-width: none;
+}
+
+/* Rien ne peut élargir la page sur mobile : la lueur sous un long nom de projet (ProjectChapter
+   .name::after) dépassait de 18 px à 375 px, et Chrome mobile élargit alors toute la page (défilement vers
+   la droite, page dézoomée). Sur html, overflow passe au viewport, ce que Chrome mobile ignore pour la
+   largeur de page : c'est body qui coupe. clip ne crée pas de conteneur de défilement (sticky, Lenis et
+   ScrollTrigger inchangés) ; les éléments fixes, rattachés au viewport, ne sont pas coupés. */
+html,
+body {
+  overflow-x: clip;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   min-height: 100svh;
   background: var(--bg);

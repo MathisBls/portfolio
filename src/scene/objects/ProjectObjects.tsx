@@ -3,12 +3,17 @@
 // la scène précharge et monte les objets » et « Drapeau has-project-objects : posé par ProjectObjects
 // quand les 5 objets sont prêts » (les posters s'effacent). §2 « Mobile, reduced-motion » : posters seuls.
 // Retour de Mathis (rayons) : mesure des cards au refresh pour le chemin du rayon actif (rayPath).
+// Brief agent V du 2026-10-09 (nouvelle pizza) : les objets montent après le préchauffage de la scène
+// (Warmup, Scene.tsx) ; quand ils sont tous prêts, la scène est précompilée de nouveau (warm.ts : objets
+// masqués compris, programmes déjà compilés en cache) avant de lever has-project-objects, pour que leurs
+// matériaux (part de pizza réaliste comprise) ne se compilent pas pendant la première image du chapitre.
 import { useThree } from '@react-three/fiber'
 import { type ComponentType, Suspense, useCallback, useEffect, useRef } from 'react'
 import { type Project, projects } from '../../content/projects'
 import { ScrollTrigger } from '../../lib/gsap'
 import { setSceneFlag, useScene } from '../store'
 import { preloadModel } from '../useModel'
+import { warmScene } from '../warm'
 import { Factory } from './Factory'
 import { Fitness } from './Fitness'
 import { Pizza } from './Pizza'
@@ -46,26 +51,36 @@ function Ready({ slug, onReady }: { slug: string; onReady: (slug: string) => voi
 
 function Objects() {
   const invalidate = useThree((s) => s.invalidate)
+  const gl = useThree((s) => s.gl)
+  const scene = useThree((s) => s.scene)
+  const camera = useThree((s) => s.camera)
   const ready = useRef(new Set<string>())
+  const mounted = useRef(true)
 
   const onReady = useCallback(
     (slug: string) => {
       ready.current.add(slug)
       if (ready.current.size < ITEMS.length) return
-      setSceneFlag('has-project-objects', true)
-      // Les posters s'effacent : les triggers (et les mesures des emplacements) se recalculent
-      ScrollTrigger.refresh()
-      invalidate()
+      const show = () => {
+        if (!mounted.current) return
+        setSceneFlag('has-project-objects', true)
+        // Les posters s'effacent : les triggers (et les mesures des emplacements) se recalculent
+        ScrollTrigger.refresh()
+        invalidate()
+      }
+      // Objets montés seulement avec le postprocessing (desktop hors reduced-motion) : variante hors écran
+      warmScene(gl, scene, camera, true).then(show, show)
     },
-    [invalidate],
+    [invalidate, gl, scene, camera],
   )
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
       setSceneFlag('has-project-objects', false)
-    },
-    [],
-  )
+    }
+  }, [])
 
   // Corps des cards, pour que le rayon actif ne passe pas dessus (rayPath) : au montage et à chaque
   // refresh de ScrollTrigger (resize, polices, posters), jamais dans useFrame

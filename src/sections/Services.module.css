@@ -52,10 +52,10 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--bg-2);
+  /* Survol : contour accent, lift et inclinaison, sans lueur ni flou (retour de Mathis du 2026-10-10) */
   transition:
     transform 0.5s var(--ease),
-    border-color 0.6s var(--ease),
-    box-shadow 0.6s var(--ease);
+    border-color 0.6s var(--ease);
 }
 
 .index,
@@ -118,21 +118,9 @@
   color: var(--fg-2);
 }
 
+/* Sans puce ni tiret devant (retour de Mathis du 2026-10-10 : « tirets IA ») : l'espacement sépare */
 .includesList li {
-  position: relative;
-  padding-left: 1.25rem;
   line-height: 1.5;
-}
-
-/* Trait court teal en guise de puce */
-.includesList li::before {
-  content: '';
-  position: absolute;
-  top: 0.75em;
-  left: 0;
-  width: 0.5rem;
-  height: 1px;
-  background: var(--accent);
 }
 
 .cta {
@@ -140,13 +128,10 @@
   margin-top: var(--space-5);
 }
 
-/* Survol : léger lift + 1 px de lueur accent. Jamais sur écran tactile, jamais en reduced-motion. */
+/* Survol : le contour passe à l'accent, sans box-shadow. Jamais sur écran tactile. */
 @media (hover: hover) {
   .card:hover {
     border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
-      0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--accent) 45%, transparent);
   }
 }
 

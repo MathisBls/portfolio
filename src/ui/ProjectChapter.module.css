@@ -84,36 +84,18 @@ html:global(.has-project-objects) .poster {
   opacity: 1;
 }
 
-/* Fait marquant : badge mono, point accent + étoile décorative */
-.highlight {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--accent-project) 45%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-project) 10%, var(--bg));
+/* Chiffre mis en avant : une ligne mono discrète sous la description, le chiffre en blanc */
+.stat {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
   text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.statValue {
   color: var(--fg);
-  text-shadow: none;
-}
-
-.dot {
-  flex: none;
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--accent-project);
-  box-shadow: 0 0 0.5rem var(--accent-project);
-}
-
-.star {
-  flex: none;
-  color: var(--accent-project);
 }
 
 .tagline {

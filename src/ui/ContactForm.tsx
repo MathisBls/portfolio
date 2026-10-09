@@ -9,6 +9,7 @@
 // du site, jamais ici.
 // Langue : champ caché `lang` (fr/en), envoyé aussi en JS : contact.php répond dans la langue de la page
 // (page sans JS) et l'indique dans l'email.
+import { trackEvent } from '../app/analytics'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { SubmitEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
@@ -240,7 +241,11 @@ export function ContactForm() {
     const result = await sendContact({ ...fields, lang: locale, [HONEYPOT_FIELD]: honeypot })
     setStatus(result.ok ? 'success' : 'error')
     // La scène joue « l'idée traverse le prisme » (store sans three : rien de 3D importé ici)
-    if (result.ok) useScene.getState().setIdeaSent()
+    if (result.ok) {
+      useScene.getState().setIdeaSent()
+      // Conversion comptée dans la mesure d'audience (type de projet seulement, rien de personnel)
+      trackEvent('contact-sent', { type: fields.type })
+    }
   }
 
   const onSubmit = (event: SubmitEvent<HTMLFormElement>) => {

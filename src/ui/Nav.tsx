@@ -8,6 +8,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
 import * as m from 'motion/react-m'
+import type { Locale } from '../content/locales'
 import { site } from '../content/site'
 import { useContent } from '../content/useContent'
 import { onAnchorClick } from '../lib/anchors'
@@ -22,14 +23,25 @@ import styles from './Nav.module.css'
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const PANEL_ID = 'menu-mobile'
 /** Liens de la nav, dans l'ordre : sections de la page (ancres communes aux deux langues). */
-const NAV_SECTIONS = ['projects', 'services', 'about'] as const
-const CTA_HREF = `#${site.sections.contact.id}`
+const NAV_SECTIONS = ['projects', 'services', 'about', 'contact'] as const
 
-export function Nav() {
+type Props = {
+  /**
+   * Nav hors de l'accueil (pages d'atterrissage, src/app/pages/) : le nom mène à l'accueil `home`
+   * (`homeLabel` : nom accessible), les liens et le CTA visent les ancres de l'accueil (`/#work`…), le
+   * sélecteur de langue suit `langRoutes`. Absent : nav de l'accueil, ancres de la page.
+   */
+  away?: { home: string; homeLabel: string; langRoutes: Record<Locale, string> }
+}
+
+export function Nav({ away }: Props) {
   const { text, identity } = useContent()
   const { label, home, cta, menuOpen, menuClose } = text.nav
+  // Préfixe des ancres : rien sur l'accueil, son URL ailleurs (onAnchorClick laisse alors naviguer)
+  const base = away?.home ?? ''
+  const ctaHref = `${base}#${site.sections.contact.id}`
   const links = NAV_SECTIONS.map((key) => ({
-    href: `#${site.sections[key].id}`,
+    href: `${base}#${site.sections[key].id}`,
     label: text.nav.links[key],
   }))
   const reduced = useReducedMotion()
@@ -63,8 +75,8 @@ export function Nav() {
           transition={transition}
         >
           <a
-            href={`#${site.sections.hero.id}`}
-            aria-label={home}
+            href={away ? away.home : `#${site.sections.hero.id}`}
+            aria-label={away?.homeLabel ?? home}
             className={styles.home}
             onClick={onLinkClick}
           >
@@ -81,8 +93,8 @@ export function Nav() {
                 </li>
               ))}
             </ul>
-            <LangSwitch kind="home" />
-            <Button href={CTA_HREF} size="sm">
+            <LangSwitch kind="home" routes={away?.langRoutes} />
+            <Button href={ctaHref} size="sm">
               {cta}
             </Button>
           </nav>
@@ -133,8 +145,13 @@ export function Nav() {
                   ))}
                 </ul>
                 <div className={styles.mobileCta}>
-                  <LangSwitch kind="home" variant="panel" onNavigate={closeMenu} />
-                  <Button href={CTA_HREF} onClick={closeMenu}>
+                  <LangSwitch
+                    kind="home"
+                    routes={away?.langRoutes}
+                    variant="panel"
+                    onNavigate={closeMenu}
+                  />
+                  <Button href={ctaHref} onClick={closeMenu}>
                     {cta}
                   </Button>
                 </div>

@@ -1,0 +1,75 @@
+/* Fond de formes du chargement (ShardBackdrop.tsx). Fixe, au-dessus du canvas (même z-index, monté après)
+   et derrière le contenu (--z-content). Deux cadrages : portrait (téléphone) et paysage. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scene);
+  /* Les formes du bord dépassent du cadrage : coupées ici, sinon la page déborde en largeur sur
+     mobile (18 px mesurés à 375 px) */
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.6s var(--ease),
+    visibility 0s;
+}
+
+.backdrop svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tall {
+  display: none;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .wide {
+    display: none;
+  }
+
+  .tall {
+    display: block;
+  }
+}
+
+/* Traits fins, quelle que soit l'échelle du cadrage */
+.outline,
+.facets {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1px;
+  stroke-linejoin: round;
+}
+
+/* Facettes : plus discrètes que les arêtes */
+.facets {
+  stroke-opacity: 0.45;
+}
+
+/* La scène est là : fondu de 0,6 s, puis le fond ne peint plus rien (visibility après le fondu).
+   data-gone : la scène a été vue une fois, le fond ne revient jamais (retour de l'easter egg). */
+html:global(.has-scene) .backdrop,
+.backdrop[data-gone] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.6s var(--ease),
+    visibility 0s linear 0.6s;
+}
+
+/* L'easter egg prend tout l'écran : pas de fond DOM, pas de réapparition pendant son chargement */
+html:global(.easter) .backdrop {
+  opacity: 0;
+  visibility: hidden;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  html:global(.has-scene) .backdrop,
+  .backdrop[data-gone] {
+    transition: none;
+  }
+}

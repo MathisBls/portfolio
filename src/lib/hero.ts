@@ -5,16 +5,18 @@ import { range } from './math'
 export const HERO = {
   /** Longueur du pin (ScrollTrigger end) */
   pinEnd: '+=200%',
-  /** Pitch, CTA et indice de scroll s'effacent */
-  intro: [0, 0.12],
+  /**
+   * Tout le bloc d'intro s'efface : rôle, ligne de disponibilité, pitch, boutons et indice de scroll.
+   * Fini avant la première caption (CAPTIONS[0], à 0.1) : les phrases du prisme ne passent jamais
+   * par-dessus ce texte (testé dans hero.test.ts).
+   */
+  intro: [0, 0.08],
   /** Le faisceau blanc entre depuis la gauche */
   beam: [0.1, 0.28],
   /** Les 7 rayons s'allument un par un (Spec0 rouge -> Spec6 violet) */
   rays: [0.25, 0.55],
   /** Durée d'allumage d'un rayon */
   rayDuration: 0.1,
-  /** Rôle et badge s'effacent */
-  role: [0.4, 0.5],
   /** Les mots du titre se dissolvent, un par un */
   words: [0.45, 0.75],
   /** Quart de tour du groupe sur Z, tilt ramené à 0 */
@@ -33,7 +35,6 @@ const inWindow = (p: number, [a, b]: Window) => range(p, a, b)
 
 export const introT = (p: number) => inWindow(p, HERO.intro)
 export const beamT = (p: number) => inWindow(p, HERO.beam)
-export const roleT = (p: number) => inWindow(p, HERO.role)
 export const turnT = (p: number) => inWindow(p, HERO.turn)
 export const spreadT = (p: number) => inWindow(p, HERO.spread)
 

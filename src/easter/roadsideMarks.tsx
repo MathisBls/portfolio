@@ -147,15 +147,13 @@ export function FactoryMark({ still }: MarkProps) {
   )
 }
 
-const SLICE = ['Dough', 'Sauce', 'Cheese', 'Crust'] as const
+// Part réaliste du 2026-10-09 (scripts/blender/model_pizza_real.py) : nouveaux noms de nœuds de pizza.glb
+const SLICE = ['Pizza_Slice', 'Pizza_Basil0', 'Pizza_Basil1', 'Pizza_Basil2'] as const
 const TOPPINGS = [
-  'Pep06-012',
-  'Pep105018',
-  'Pep115-022',
-  'Pep085-002',
-  'Basil045015',
-  'Basil0900',
-  'Basil12005',
+  'Pizza_CheeseStrand0',
+  'Pizza_CheeseStrand1',
+  'Pizza_CheeseStrand2',
+  'Pizza_CheeseStrand3',
 ] as const
 
 export function PizzaMark({ still }: MarkProps) {

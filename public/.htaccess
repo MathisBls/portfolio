@@ -2,7 +2,9 @@
 # déposé à la racine du site. Reprend les en-têtes de l'ancien netlify.toml.
 
 # Pages prérendues, une par langue (src/content/locales.ts) : / et /en/ (accueil), /mentions-legales/ et
-# /en/legal/ (mentions légales). Chaque dossier a son index.html ; mod_dir ajoute le / final (/en -> /en/).
+# /en/legal/ (mentions légales), puis les pages d'atterrissage en français seul (LANDING_ROUTES :
+# /creation-site-internet-paris/, /site-internet-artisan/, /application-mobile-sur-mesure/,
+# /realisations/meme-rina/). Chaque dossier a son index.html ; mod_dir ajoute le / final (/en -> /en/).
 DirectoryIndex index.html
 Options -Indexes
 AddDefaultCharset utf-8
@@ -14,6 +16,9 @@ AddDefaultCharset utf-8
   AddType application/wasm .wasm
   AddType image/webp .webp
   AddType image/svg+xml .svg
+  # Icônes (src/app/head.ts) : favicon.ico multi-taille, PNG 48/96/192/512, apple-touch-icon
+  AddType image/x-icon .ico
+  AddType image/png .png
   AddType video/mp4 .mp4
   AddType audio/mpeg .mp3
   AddType font/woff2 .woff2
@@ -37,6 +42,10 @@ AddDefaultCharset utf-8
 
   # Anciennes mentions légales (site en anglais seul, /legal/) : vers la version française qui fait foi
   RewriteRule ^legal/?$ /mentions-legales/ [R=301,L]
+
+  # /realisations/ n'a pas de page (seulement /realisations/meme-rina/, src/content/locales.ts,
+  # LANDING_ROUTES) : vers les réalisations de l'accueil. NE : le # n'est pas encodé.
+  RewriteRule ^realisations/?$ /#work [R=302,NE,L]
 </IfModule>
 
 # --- Compression -----------------------------------------------------------------------------------
@@ -47,6 +56,8 @@ AddDefaultCharset utf-8
     AddOutputFilterByType DEFLATE text/javascript application/javascript application/json
     AddOutputFilterByType DEFLATE application/manifest+json
     AddOutputFilterByType DEFLATE image/svg+xml application/wasm
+    # favicon.ico : bitmaps non compressés (15 Ko -> 2 Ko environ)
+    AddOutputFilterByType DEFLATE image/x-icon
   </IfModule>
 </IfModule>
 
@@ -60,6 +71,10 @@ AddDefaultCharset utf-8
   <ElseIf "%{REQUEST_URI} =~ m#^/(models|textures|audio|posters|draco)/#">
     # Modèles, textures, vidéos, audio, posters, décodeur Draco : noms stables, une semaine
     Header set Cache-Control "public, max-age=604800"
+  </ElseIf>
+  <ElseIf "%{REQUEST_URI} =~ m#^/(favicon[^/]*|icon-[^/]+\.png|apple-touch-icon\.png|site\.webmanifest)$#">
+    # Icônes et manifeste : noms stables, un jour (un changement d'icône reste visible vite)
+    Header set Cache-Control "public, max-age=86400"
   </ElseIf>
   <ElseIf "%{REQUEST_URI} =~ m#(\.html|/)$#">
     # Pages HTML (et URL de dossier) : cache court, revalidé à chaque visite (304 si inchangé), pour

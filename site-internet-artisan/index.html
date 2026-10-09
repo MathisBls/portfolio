@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Gabarit de la page d'atterrissage /site-internet-artisan/ (français seulement, src/content/locales.ts,
+     LANDING_ROUTES). Les quatre gabarits d'atterrissage ne diffèrent que par ce commentaire : les garder
+     synchronisés entre eux et avec les autres gabarits (index.html…). Contenu : src/content/seo/ ;
+     balises du head : src/app/pages/landingSchema.ts (head.ts, renderHeadTags). -->
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--app-head-->
+    <meta name="color-scheme" content="dark" />
+    <link
+      rel="preload"
+      href="/fonts/instrument-serif-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/inter-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <div id="root"><!--app-html--></div>
+    <script type="module" src="/src/main-landing.tsx"></script>
+  </body>
+</html>

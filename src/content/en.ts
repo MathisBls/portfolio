@@ -6,10 +6,10 @@ export const en: Dictionary = {
     home: {
       title: 'Mathis Boulais · Freelance web developer',
       description:
-        'Websites, web apps and mobile apps for independents, small businesses and new ventures. From design to launch, one person to talk to.',
+        'Websites, web apps and mobile apps for independents, small businesses and new ventures. Price agreed before work starts.',
     },
     legal: {
-      title: 'Legal notice · Mathis Boulais',
+      title: 'Mathis Boulais · Legal notice',
       description: 'Legal notice and privacy policy of Mathis Boulais, web developer.',
     },
     ogImageAlt:
@@ -22,18 +22,19 @@ export const en: Dictionary = {
     location: 'Choisy-le-Roi, near Paris, France',
     status: 'Sole proprietorship (French micro-entreprise)',
     pitch:
-      'I design and build websites and apps for independents, small businesses and new ventures. From design to launch, one person to talk to.',
+      'I design and build websites and apps for independents, small businesses and new ventures. I design your site, write the code and put it online myself.',
   },
+  availability: { city: 'Paris', status: 'Available for new projects' },
   nav: {
     label: 'Main navigation',
     home: 'Mathis Boulais, back to top',
-    links: { projects: 'Work', services: 'Services', about: 'About' },
+    links: { projects: 'Work', services: 'Services', about: 'About', contact: 'Contact' },
     cta: 'Start a project',
     menuOpen: 'Open menu',
     menuClose: 'Close menu',
   },
   hero: {
-    availability: 'Available for new projects',
+    titleLocation: 'in Paris',
     ctaPrimary: 'Start a project',
     ctaSecondary: 'See the work',
     scrollHint: 'Scroll',
@@ -46,13 +47,14 @@ export const en: Dictionary = {
   sections: {
     hero: { label: '00 / Home', title: 'Home' },
     projects: { label: '01 / Work', title: 'What came out of the prism' },
-    services: { label: '02 / Services', title: 'Three ways to work together' },
-    about: { label: '03 / About', title: 'One person, start to finish' },
-    contact: { label: '04 / Contact', title: 'Your idea is next.' },
+    services: { label: '02 / Services', title: 'What I offer, and at what price' },
+    about: { label: '03 / About', title: 'I’m Mathis.' },
+    contact: { label: '04 / Contact', title: 'Tell me about your project.' },
   },
   projects: {
-    intro: 'Products I build and projects delivered to clients, each taken from idea to launch.',
+    intro: 'Products of my own and projects made for clients.',
     stackLabel: 'Stack',
+    posterAlt: '3D illustration of the {name} project',
     links: { site: 'Visit site', store: 'App Store', github: 'Source code' },
     newTab: '(opens in a new tab)',
     inDevelopment: 'In development',
@@ -63,7 +65,7 @@ export const en: Dictionary = {
         tagline: 'Open-source mod manager',
         description:
           'Desktop app to install and manage mods from Thunderstore, NexusMods, CurseForge and GitHub. Shareable profiles, built-in config editor, randomizer module.',
-        highlight: '25+ stars on GitHub',
+        highlight: { value: '25+', label: 'stars on GitHub' },
       },
       wegir: {
         name: 'Wegir',
@@ -75,7 +77,7 @@ export const en: Dictionary = {
       fitness: {
         // L'app n'a pas encore de nom : nom descriptif. Description d'après les écrans de Mathis.
         name: 'Fitness coaching app',
-        context: 'My own product',
+        context: 'Client project',
         tagline: 'Coaching, training and nutrition in one app',
         description:
           'Mobile fitness app: training programs from free to personal coaching, nutrition tracking with macros, and progress charts with body measurements and photos. Premium subscription through the App Store and Google Play.',
@@ -99,7 +101,7 @@ export const en: Dictionary = {
   },
   marquee: ['Design', 'Development', 'Launch'],
   services: {
-    intro: 'A clear quote, one person to talk to, from first sketch to launch.',
+    intro: 'You know the price before we start, and the quote spells out everything.',
     fromLabel: 'from',
     forLabel: 'For',
     includesLabel: 'Included',
@@ -136,21 +138,29 @@ export const en: Dictionary = {
           'Speed, mobile and SEO audit',
           'Full redesign or targeted fixes',
           'Updates, backups, monitoring',
-          'One contact, reply within 24 hours',
+          'Reply within 24 hours',
         ],
       },
     },
   },
   about: {
-    // Rédigé depuis l'identité et les projets, aucun fait ajouté. À valider par Mathis.
+    // Réécrit le 2026-10-10, comme la version française (mêmes faits).
     lines: [
-      'Full-stack developer based near Paris, France.',
-      'I build my own products: a navigation app on the App Store, an open-source mod manager, a pipeline of AI agents that makes games.',
-      'And websites for local businesses, like Meme Rina, a pizzeria in Chatou.',
-      'From design to deployment, you talk to the person who writes the code.',
+      'I build websites and apps in Choisy-le-Roi, just outside Paris.',
+      'I shipped Wegir, a GPS app for driving in a convoy, on the App Store. I maintain Zephyr, an open-source mod manager. Game Factory has AI agents build mobile games.',
+      'For clients, I made the website of Meme Rina, a pizzeria in Chatou, and I’m building a fitness coaching app.',
+      'Have a project? Write to me, I reply within 24 hours.',
     ],
+    // Facts checked in docs/projets-contexte.md (§6): OpenCut PR #518 merged, NicePrice plugin.
+    openSource: {
+      lead: 'Open source:',
+      fix: 'a merged fix in OpenCut',
+      stars: '(93k stars), and',
+      plugin: 'NicePrice',
+      rest: ', my plugin for Millennium.',
+    },
     stackLabel: 'Technologies used in these projects',
-    availability: 'Available for new projects',
+    portrait: { alt: 'Portrait of Mathis Boulais', caption: 'Mathis Boulais, Paris' },
   },
   contact: {
     intro: 'Describe your project in a few lines. I’ll get back to you to talk it through.',
@@ -208,7 +218,7 @@ export const en: Dictionary = {
     },
     cookies: {
       title: 'Cookies',
-      text: 'This website uses no cookies and no analytics. If you pick a language, that choice is saved in your browser (local storage) and is never sent anywhere.',
+      text: 'This website uses no cookies. Visits are measured with Umami, a cookie-free tool that collects no personal data: only pages viewed, country and device type, anonymously. If you pick a language, that choice is saved in your browser (local storage) and is never sent anywhere.',
     },
     ip: {
       title: 'Intellectual property and credits',

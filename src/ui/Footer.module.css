@@ -1,18 +1,94 @@
+/* Pied de page : rubrique « Services à Paris » (pages françaises) au-dessus d'une ligne mono (nom, langue,
+   mentions légales), séparées par un filet. Pas de boîte : filets et grille seulement. */
 .footer {
   position: relative;
   z-index: var(--z-content);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
   max-width: var(--max-w);
   margin-inline: auto;
-  padding: var(--space-4) var(--gutter);
+  padding: 0 var(--gutter);
   border-top: 1px solid var(--line);
+  /* Halo --bg, comme les sections de l'accueil : lisible quand la scène passe derrière */
+  text-shadow:
+    0 0 0.5rem var(--bg),
+    0 0 1rem var(--bg);
+}
+
+.services {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.servicesTitle {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-2);
+}
+
+.servicesList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.servicesLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  color: var(--fg);
+  transition: color 0.4s var(--ease);
+}
+
+/* Page courante : soulignée d'un trait d'accent, comme la langue de la page */
+.servicesLink[aria-current] {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.45em;
+}
+
+@media (hover: hover) {
+  .servicesLink:hover {
+    color: var(--accent);
+  }
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+/* Dès 768 px : titre à gauche, liens en ligne à droite */
+@media (min-width: 768px) {
+  .services {
+    grid-template-columns: 12rem 1fr;
+    align-items: baseline;
+  }
+
+  .servicesList {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .servicesLink {
+    transition: none;
+  }
 }

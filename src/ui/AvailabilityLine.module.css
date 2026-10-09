@@ -1,0 +1,97 @@
+/* Ligne de disponibilité (hero et à propos). Mono, sans fond ni bordure : un filet fin au-dessus, qui se
+   dessine à l'apparition, et l'heure de Paris en pleine lumière. Mobile first : deux lignes (le lieu et
+   l'heure, puis le statut) ; à partir de 640 px, une seule ligne séparée par un point médian.
+   Pas de halo (text-shadow) : celui d'un morceau de la ligne assombrirait les voisins, qui sont
+   peints après lui. Rien ne passe derrière : le bloc s'efface avant les rayons (lib/hero.ts). */
+.line {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+
+/* Hero : centrée sous le titre (le bloc parent centre déjà ses enfants) */
+.line[data-placement='hero'] {
+  align-items: center;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+/* À propos : alignée à gauche, la taille de son contenu */
+.line[data-placement='about'] {
+  align-items: flex-start;
+  justify-self: start;
+}
+
+/* Filet fin au-dessus du texte, sur toute sa largeur (un vrai élément : voir AvailabilityLine.tsx) */
+.rule {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--fg-3);
+  transform-origin: left center;
+}
+
+/* Hero : replié par défaut, dessiné par l'animation du chargement ; en reduced-motion, tracé d'emblée
+   (règle plus bas) */
+.line[data-placement='hero'] .rule {
+  transform: scaleX(0);
+}
+
+/* À propos : il se dessine quand la ligne entre à l'écran (même déclencheur que les autres apparitions).
+   Caché seulement sous html.has-reveal : sans JS, le filet est tracé. */
+:global(.has-reveal) .line[data-placement='about'] .rule {
+  transform: scaleX(0);
+  transition: transform 0.8s var(--ease) 0.2s;
+}
+
+:global(.has-reveal) .line[data-placement='about']:global(.is-in) .rule {
+  transform: scaleX(1);
+}
+
+.place {
+  white-space: nowrap;
+}
+
+/* L'heure : la seule chose qui change, donc la plus claire. Posée après l'hydratation (parisTime.ts), en
+   fondu (AvailabilityLine.tsx). Aucune largeur fixe ni masque : le texte n'est jamais rogné. */
+.time {
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  color: var(--fg);
+}
+
+.sep {
+  display: none;
+  color: var(--fg-3);
+}
+
+@media (min-width: 640px) {
+  .line {
+    flex-direction: row;
+    gap: 0.75em;
+  }
+
+  .sep {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line[data-placement='hero'] .rule {
+    transform: none;
+  }
+
+  :global(.has-reveal) .line[data-placement='about'] .rule {
+    transform: none;
+    transition: none;
+  }
+}

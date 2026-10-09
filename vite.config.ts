@@ -15,12 +15,17 @@ export default defineConfig({
     // Le budget qui compte est le JS initial : `npm run size` (350 Ko gz max).
     chunkSizeWarningLimit: 1200,
     rolldownOptions: {
-      // Une page HTML par langue (src/content/locales.ts, ROUTES) : accueil et mentions légales
+      // Une page HTML par langue (src/content/locales.ts, ROUTES) : accueil et mentions légales ; puis les
+      // pages d'atterrissage, en français seul (LANDING_ROUTES : un gabarit par URL)
       input: {
         main: resolve(root, 'index.html'),
         'main-en': resolve(root, 'en/index.html'),
         legal: resolve(root, 'mentions-legales/index.html'),
         'legal-en': resolve(root, 'en/legal/index.html'),
+        'landing-website-paris': resolve(root, 'creation-site-internet-paris/index.html'),
+        'landing-artisan': resolve(root, 'site-internet-artisan/index.html'),
+        'landing-mobile-app': resolve(root, 'application-mobile-sur-mesure/index.html'),
+        'landing-meme-rina': resolve(root, 'realisations/meme-rina/index.html'),
       },
     },
   },

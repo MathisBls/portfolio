@@ -1,0 +1,575 @@
+/* Pages d'atterrissage : grille éditoriale, filets pleine largeur, aucune boîte (skill design-sans-ia).
+   Mobile first. Au-dessus de 1024 px : chaque section en deux colonnes inégales, l'étiquette et le titre à
+   gauche (collés pendant le scroll), le contenu à droite. Aucune animation d'entrée. */
+.main {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding: 6.5rem var(--gutter) 0;
+}
+
+/* --- En-tête -------------------------------------------------------------------------------------- */
+.header {
+  display: grid;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  line-height: 2;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.breadcrumb li {
+  white-space: pre;
+}
+
+.breadcrumb li[aria-current] {
+  white-space: normal;
+  color: var(--fg);
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  transition: color 0.4s var(--ease);
+}
+
+.kicker,
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.kicker {
+  margin-top: var(--space-5);
+}
+
+.title {
+  margin-top: var(--space-3);
+  max-width: 15em;
+  font-size: clamp(2.5rem, 1.5rem + 4.4vw, 5.75rem);
+  /* Un peu plus que les titres de l'accueil (0.95) : les capitales accentuées (« Île ») ne touchent pas
+     la ligne du dessus */
+  line-height: 1.04;
+}
+
+.intro {
+  margin-top: var(--space-4);
+  max-width: 40rem;
+  font-size: var(--text-lg);
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: var(--space-4);
+}
+
+.visual {
+  width: min(80%, 24rem);
+  justify-self: end;
+}
+
+.facts {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.fact {
+  display: grid;
+  gap: 0.25rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Le filet suivant est celui de la première section */
+.fact:last-child {
+  border-bottom: 0;
+}
+
+.factLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.factValue {
+  margin: 0;
+  color: var(--fg);
+}
+
+/* --- Sections ------------------------------------------------------------------------------------- */
+.section {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.labelNumber {
+  color: var(--accent);
+}
+
+.heading {
+  margin-top: var(--space-3);
+  max-width: 14em;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+}
+
+.sectionBody {
+  min-width: 0;
+}
+
+.prose p,
+.blockIntro {
+  max-width: 40rem;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--fg-2);
+}
+
+.prose p + p {
+  margin-top: var(--space-3);
+}
+
+.blockIntro {
+  margin-bottom: var(--space-4);
+}
+
+/* Intitulé + phrase, séparés par des filets */
+.terms {
+  display: grid;
+  margin: 0;
+}
+
+.termRow {
+  display: grid;
+  gap: 0.35rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.termRow:first-child {
+  padding-top: 0;
+}
+
+.termRow:last-child {
+  border-bottom: 0;
+}
+
+.term {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.termText {
+  margin: 0;
+  max-width: 38rem;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+
+/* Prix : le montant en grand, dans la police display */
+.prices {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.priceRow {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.priceRow:first-child {
+  padding-top: 0;
+}
+
+.priceName {
+  font-size: 1.75rem;
+  line-height: 1.05;
+}
+
+.priceText {
+  margin-top: 0.5rem;
+  max-width: 34rem;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.priceLead {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.priceValue {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.note {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+/* Méthode : 4 étapes numérotées, 2 × 2 dès 768 px */
+.steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.step:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.stepNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.stepTitle {
+  margin-top: 0.75rem;
+  font-size: 1.625rem;
+  line-height: 1.05;
+}
+
+.stepText {
+  margin-top: 0.5rem;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+
+/* Exemples : une ligne par projet, liens vers l'accueil et l'étude de cas */
+.examples {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.example {
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.example:first-child {
+  padding-top: 0;
+}
+
+.example:last-child {
+  border-bottom: 0;
+}
+
+.exampleMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.exampleName {
+  margin-top: 0.5rem;
+  font-size: clamp(1.875rem, 1.5rem + 1.4vw, 2.75rem);
+}
+
+.exampleText {
+  margin-top: 0.75rem;
+  max-width: 38rem;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+
+.exampleLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Questions fréquentes : toutes ouvertes, lisibles sans clic ni JS */
+.faq {
+  display: grid;
+}
+
+.faqItem {
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.faqItem:first-child {
+  padding-top: 0;
+}
+
+.faqItem:last-child {
+  border-bottom: 0;
+}
+
+.question {
+  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.answer {
+  margin-top: 0.75rem;
+  max-width: 42rem;
+  line-height: 1.7;
+  color: var(--fg-2);
+}
+
+/* --- Appel final et voir aussi -------------------------------------------------------------------- */
+.cta {
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.ctaTitle {
+  max-width: 12em;
+  font-size: var(--text-section);
+}
+
+.ctaText {
+  margin-top: var(--space-3);
+  max-width: 34rem;
+  font-size: var(--text-lg);
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+
+.direct {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--fg-2);
+}
+
+.direct > span {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.direct .link {
+  color: var(--fg);
+}
+
+.seeAlso {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.seeAlsoList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seeAlsoLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  transition: color 0.4s var(--ease);
+}
+
+/* Mot composé (« faut-il », « Île-de-France ») : jamais coupé après le trait d'union dans un titre */
+.keep {
+  white-space: nowrap;
+}
+
+/* --- Liens ---------------------------------------------------------------------------------------- */
+.link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  text-decoration: underline;
+  text-decoration-color: var(--fg-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition:
+    color 0.4s var(--ease),
+    text-decoration-color 0.4s var(--ease);
+}
+
+.arrow {
+  font-family: var(--font-text);
+}
+
+.external {
+  align-self: center;
+  flex: none;
+}
+
+@media (hover: hover) {
+  .breadcrumb a:hover,
+  .seeAlsoLink:hover,
+  .link:hover {
+    color: var(--accent);
+  }
+
+  .link:hover {
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* --- Grands écrans -------------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .termRow {
+    grid-template-columns: minmax(10rem, 2fr) minmax(0, 3fr);
+    column-gap: var(--space-4);
+  }
+
+  .priceRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-4);
+    align-items: end;
+  }
+
+  .price {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-5);
+  }
+
+  /* Deux colonnes : le filet au-dessus de chaque étape de la seconde ligne seulement */
+  .step:nth-child(2) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fact {
+    padding-inline: var(--space-3);
+    border-bottom: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .fact:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  /* La fiche est fermée par son propre filet : pas de second filet au-dessus de la première section */
+  .header + .section {
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding-top: 9rem;
+  }
+
+  .header {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    column-gap: var(--space-5);
+    align-items: end;
+    padding-bottom: 6rem;
+  }
+
+  .visual {
+    width: 100%;
+    max-width: 30rem;
+  }
+
+  .facts {
+    grid-column: 1 / -1;
+  }
+
+  .section {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: var(--space-5);
+    padding-block: 6rem;
+  }
+
+  .sectionHead {
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+  }
+
+  .cta {
+    padding-block: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumb a,
+  .seeAlsoLink,
+  .link {
+    transition: none;
+  }
+}

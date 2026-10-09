@@ -9,10 +9,10 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
     home: {
       title: 'Mathis Boulais · Création de sites internet et d’applications',
       description:
-        'Sites vitrines, boutiques en ligne et applications pour artisans, commerçants et indépendants, près de Paris. Un seul interlocuteur, du premier croquis à la mise en ligne.',
+        'Sites vitrines, boutiques en ligne et applications pour artisans, commerçants et indépendants à Paris. Prix annoncé avant de commencer.',
     },
     legal: {
-      title: 'Mentions légales · Mathis Boulais',
+      title: 'Mathis Boulais · Mentions légales',
       description:
         'Mentions légales et politique de confidentialité du site de Mathis Boulais, développeur web.',
     },
@@ -26,18 +26,24 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
     location: 'Choisy-le-Roi, près de Paris',
     status: 'Entrepreneur individuel (micro-entreprise)',
     pitch:
-      'Je crée des sites et des applications pour les artisans, les commerçants et les projets qui démarrent. Du premier croquis à la mise en ligne, vous parlez à une seule personne.',
+      'Je crée des sites et des applications pour les artisans, les commerçants et les projets qui démarrent. C’est moi qui dessine votre site, qui le code et qui le mets en ligne.',
   },
+  availability: { city: 'Paris', status: 'Disponible pour de nouveaux projets' },
   nav: {
     label: 'Navigation principale',
     home: 'Mathis Boulais, retour en haut de page',
-    links: { projects: 'Réalisations', services: 'Services', about: 'À propos' },
+    links: {
+      projects: 'Réalisations',
+      services: 'Services',
+      about: 'À propos',
+      contact: 'Contact',
+    },
     cta: 'Démarrer un projet',
     menuOpen: 'Ouvrir le menu',
     menuClose: 'Fermer le menu',
   },
   hero: {
-    availability: 'Disponible pour de nouveaux projets',
+    titleLocation: 'à Paris',
     ctaPrimary: 'Démarrer un projet',
     ctaSecondary: 'Voir les réalisations',
     scrollHint: 'Faites défiler',
@@ -50,14 +56,15 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
   sections: {
     hero: { label: '00 / Accueil', title: 'Accueil' },
     projects: { label: '01 / Réalisations', title: 'Ce qui est sorti du prisme' },
-    services: { label: '02 / Services', title: 'Trois façons de travailler ensemble' },
-    about: { label: '03 / À propos', title: 'Une seule personne, du début à la fin' },
-    contact: { label: '04 / Contact', title: 'La prochaine idée, c’est la vôtre.' },
+    services: { label: '02 / Services', title: 'Ce que je propose, et à quel prix' },
+    about: { label: '03 / À propos', title: 'Je m’appelle Mathis.' },
+    contact: { label: '04 / Contact', title: 'Parlez-moi de votre projet.' },
   },
   projects: {
     intro:
-      'Mes propres produits et des projets livrés à des clients. Chacun mené de l’idée à la mise en ligne.',
+      'Mes propres produits et des projets faits pour des clients.',
     stackLabel: 'Technologies',
+    posterAlt: 'Illustration 3D du projet {name}',
     links: { site: 'Voir le site', store: 'App Store', github: 'Code source' },
     newTab: '(s’ouvre dans un nouvel onglet)',
     inDevelopment: 'En développement',
@@ -68,7 +75,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
         tagline: 'Gestionnaire de mods open source',
         description:
           'Application de bureau pour installer et gérer des mods depuis Thunderstore, NexusMods, CurseForge et GitHub. Profils partageables, éditeur de configuration intégré, module de tirage aléatoire.',
-        highlight: 'Plus de 25 étoiles sur GitHub',
+        highlight: { value: '25+', label: 'étoiles sur GitHub' },
       },
       wegir: {
         name: 'Wegir',
@@ -80,7 +87,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
       fitness: {
         // L'app n'a pas encore de nom : nom descriptif. Description d'après les écrans de Mathis.
         name: 'Application de coaching sportif',
-        context: 'Mon produit',
+        context: 'Projet client',
         tagline: 'Coaching, entraînement et nutrition dans une seule appli',
         description:
           'Application mobile de fitness : programmes d’entraînement, du gratuit au coaching personnalisé, suivi nutritionnel avec les macros, courbes de progression avec mensurations et photos. Abonnement premium via l’App Store et Google Play.',
@@ -104,7 +111,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
   },
   marquee: ['Design', 'Développement', 'Mise en ligne'],
   services: {
-    intro: 'Un devis clair, un seul interlocuteur, du premier croquis à la mise en ligne.',
+    intro: 'Le prix est annoncé avant de commencer, le devis détaille tout.',
     fromLabel: 'à partir de',
     forLabel: 'Pour qui',
     includesLabel: 'Inclus',
@@ -141,21 +148,30 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
           'Audit de vitesse, d’affichage mobile et de référencement',
           'Refonte complète ou corrections ciblées',
           'Mises à jour, sauvegardes, surveillance',
-          'Un seul interlocuteur, réponse sous 24 h',
+          'Réponse sous 24 h',
         ],
       },
     },
   },
   about: {
-    // Rédigé depuis l'identité et les projets, aucun fait ajouté. À valider par Mathis.
+    // Réécrit le 2026-10-10 (Mathis : l'ancien texte « fait beaucoup trop IA »). Faits seulement : lieu,
+    // projets (docs/projets-contexte.md), réponse sous 24 h (déjà promise dans les services).
     lines: [
-      'Développeur web et mobile, installé près de Paris.',
-      'Je construis mes propres produits : une appli de navigation sur l’App Store, un gestionnaire de mods open source, une chaîne d’agents IA qui fabrique des jeux.',
-      'Et des sites pour les commerces de quartier, comme Meme Rina, une pizzeria à Chatou.',
-      'Du design à la mise en ligne, vous parlez à celui qui écrit le code.',
+      'Je développe des sites et des applications à Choisy-le-Roi, à côté de Paris.',
+      'J’ai sorti Wegir, une appli de GPS pour rouler en convoi, sur l’App Store. Je maintiens Zephyr, un gestionnaire de mods open source. Game Factory fait fabriquer des jeux mobiles par des agents IA.',
+      'Côté clients, j’ai fait le site de Meme Rina, une pizzeria de Chatou, et je développe une appli de coaching sportif.',
+      'Vous avez un projet ? Écrivez-moi, je réponds sous 24 h.',
     ],
+    // Faits vérifiés dans docs/projets-contexte.md (§6) : PR #518 d'OpenCut fusionnée, plugin NicePrice.
+    openSource: {
+      lead: 'Open source :',
+      fix: 'un correctif fusionné dans OpenCut',
+      stars: '(93 000 étoiles), et',
+      plugin: 'NicePrice',
+      rest: ', mon plugin pour Millennium.',
+    },
     stackLabel: 'Technologies utilisées dans ces projets',
-    availability: 'Disponible pour de nouveaux projets',
+    portrait: { alt: 'Portrait de Mathis Boulais', caption: 'Mathis Boulais, Paris' },
   },
   contact: {
     intro: 'Décrivez votre projet en quelques lignes. Je vous recontacte pour en parler.',
@@ -213,7 +229,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
     },
     cookies: {
       title: 'Cookies',
-      text: 'Ce site ne dépose aucun cookie et n’utilise aucun outil de mesure d’audience. Si vous choisissez une langue, ce choix est enregistré dans votre navigateur (stockage local) et n’est jamais transmis.',
+      text: 'Ce site ne dépose aucun cookie. La mesure d’audience passe par Umami, un outil sans cookies qui ne collecte aucune donnée personnelle : seulement les pages vues, le pays et le type d’appareil, de façon anonyme. Si vous choisissez une langue, ce choix est enregistré dans votre navigateur (stockage local) et n’est jamais transmis.',
     },
     ip: {
       title: 'Propriété intellectuelle et crédits',
