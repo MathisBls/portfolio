@@ -5,8 +5,9 @@
 // chaque tick du ScrollTrigger, le sticky casse tout calcul linéaire).
 // Liens : le premier renseigné (site, store, GitHub) est le Button principal, les autres sont des liens.
 import { type CSSProperties, useLayoutEffect, useRef } from 'react'
+import type { LocalizedProject } from '../content'
 import type { Project } from '../content/projects'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { isFilled } from '../lib/content'
 import { ScrollTrigger, gsap } from '../lib/gsap'
 import { stagger } from '../lib/stagger'
@@ -25,7 +26,7 @@ const LINK_ORDER: readonly LinkKey[] = ['site', 'store', 'github']
 const EXTERNAL = { target: '_blank', rel: 'noopener' } as const
 
 type Props = {
-  project: Project
+  project: LocalizedProject
   /** Position dans la liste, à partir de 0 (affichée sur 2 chiffres). */
   index: number
 }
@@ -50,8 +51,21 @@ function StarIcon({ className }: { className?: string }) {
 }
 
 export function ProjectChapter({ project, index }: Props) {
-  const { slug, name, tagline, description, stack, links, model, accent, year, highlight } = project
-  const { stackLabel, newTab, links: linkLabels } = site.projects
+  const {
+    slug,
+    name,
+    context,
+    tagline,
+    description,
+    stack,
+    links,
+    model,
+    accent,
+    year,
+    highlight,
+  } = project
+  const { text } = useContent()
+  const { stackLabel, newTab, inDevelopment, links: linkLabels } = text.projects
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const articleRef = useRef<HTMLElement>(null)
@@ -140,8 +154,14 @@ export function ProjectChapter({ project, index }: Props) {
         <div className={styles.text}>
           <p className={styles.label} data-reveal style={stagger(0)}>
             <span aria-hidden="true">{number} / </span>
-            {/* Seule une vraie année est une date (<time>) ; « In development » ou un TODO : texte simple */}
-            {/^d{4}$/.test(year) ? <time dateTime={year}>{year}</time> : year}
+            {/* Seule une vraie année est une date (<time>) ; sans année : « En développement » */}
+            {year !== undefined && /^\d{4}$/.test(year) ? (
+              <time dateTime={year}>{year}</time>
+            ) : (
+              (year ?? inDevelopment)
+            )}
+            {/* Contexte factuel : projet client, produit à moi, projet personnel ou communautaire */}
+            {` — ${context}`}
           </p>
 
           <RevealTitle as="h3" id={titleId} className={styles.name}>

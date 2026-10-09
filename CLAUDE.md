@@ -44,10 +44,11 @@ src/
 1. **Perf** : 60 fps desktop, 30 fps mobile mid-range. Budget JS initial < 350 Ko gz. Modèles lazy (`useGLTF.preload` au hover/visibilité). Un seul `<Canvas>` global, jamais un Canvas par card. Sur mobile ou `prefers-reduced-motion` : scène simplifiée (pas de transmission, pas de bloom, posters statiques si besoin).
 2. **Scroll** : tout mouvement de caméra ou d'objet lié au scroll passe par GSAP ScrollTrigger avec `scrub`. Pas de `window.scrollY` à la main dans `useFrame`.
 3. **Accessibilité** : le contenu existe en DOM (titres, textes, liens) et est lisible sans WebGL. La 3D est décorative. Focus visible, contrastes AA, `prefers-reduced-motion` respecté.
-4. **Contenu** : anglais (cible internationale, décision de Mathis du 2026-10-05), ton direct, pas de jargon creux ("innovative solutions"). Phrases courtes. Les textes vivent dans `src/content/`, jamais en dur dans les composants. La documentation interne (docs/, commentaires) reste en français.
+4. **Contenu** : bilingue, français par défaut (`/`) et anglais (`/en/`), langue choisie selon le navigateur (décision de Mathis du 2026-10-09 ; dictionnaires `src/content/fr.ts` et `en.ts`), vouvoiement en français, ton direct, pas de jargon creux ("innovative solutions"). Phrases courtes. Les textes vivent dans `src/content/`, jamais en dur dans les composants. La documentation interne (docs/, commentaires) reste en français.
 5. **Pas de dépendance ajoutée sans raison écrite dans la PR.** Pas de lib UI (MUI, Chakra…). Pas de Tailwind.
 6. **TypeScript strict**, pas de `any`, pas de `// @ts-ignore`.
 7. Chaque section est livrée fonctionnelle de bout en bout (3D + DOM + responsive + reduced-motion) avant de passer à la suivante. Ordre : Hero → Projects → Services → Contact → About → mentions légales.
+8. **Pas de « look IA »** (demande de Mathis du 2026-10-09) : ni pastilles à point lumineux, ni pilules, ni cartes arrondies à bordure, ni glassmorphism, ni barre de défilement visible. Lire le skill `.claude/skills/design-sans-ia/SKILL.md` avant tout composant ou CSS.
 
 ## Commandes
 - `npm run dev` / `npm run build` / `npm run preview`

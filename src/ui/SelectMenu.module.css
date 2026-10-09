@@ -1,0 +1,159 @@
+/* Menu déroulant personnalisé (SelectMenu.tsx). Le bouton reprend .control du formulaire (cadre arrondi,
+   focus teal). Ouvert, la liste le prolonge sans écart ni contour blanc : le cadre teal continue sur les
+   côtés et ferme le bloc, le côté collé au champ n'est plus qu'un filet (retours de Mathis du 2026-10-09,
+   skill design-sans-ia). Options séparées par des filets, alignées sur le texte du champ ; option active :
+   texte plein, aplat à peine éclairci, libellé légèrement décalé, sans filet coloré ; coche sur l'option
+   choisie. La liste tient en entier (27rem), sans barre de défilement visible. Cibles de 44 px au moins. */
+.root {
+  position: relative;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.value[data-placeholder] {
+  color: var(--fg-2);
+}
+
+.chevron {
+  flex: none;
+  color: var(--fg-2);
+  transition: rotate 0.3s var(--ease);
+}
+
+.chevron[data-open] {
+  rotate: 180deg;
+  color: var(--accent);
+}
+
+.list {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 5;
+  max-height: min(27rem, 70svh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 0;
+  /* Retours de Mathis du 2026-10-09 : pas de liste décollée à contour blanc. Elle prolonge le champ
+     ouvert : même fond, même cadre teal qui continue sur les côtés et ferme le bloc, sans écart. */
+  border: 1px solid var(--accent);
+  background: var(--bg);
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.list[data-placement='below'] {
+  top: calc(100% - 1px);
+  border-top: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.list[data-placement='above'] {
+  bottom: calc(100% - 1px);
+  border-bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* Champ ouvert : son cadre devient le haut (ou le bas) du bloc ; le côté collé à la liste n'est plus
+   qu'un filet discret, sans arrondi */
+.root:has(.list) .button {
+  border-color: var(--accent);
+  box-shadow: none;
+}
+
+.root:has(.list[data-placement='below']) .button {
+  border-bottom-color: var(--line);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.root:has(.list[data-placement='above']) .button {
+  border-top-color: var(--line);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  /* Aligné sur le texte du champ (même padding), la coche au bord droit comme le chevron */
+  padding: 0.5rem 1rem;
+  color: var(--fg-2);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color 0.2s var(--ease),
+    background-color 0.2s var(--ease);
+}
+
+/* Libellé : glisse de quelques pixels vers la droite sur l'option active (pas de filet coloré) */
+.option > :first-child {
+  transition: translate 0.25s var(--ease);
+}
+
+/* Filet fin entre deux options */
+.option + .option {
+  border-top: 1px solid var(--line);
+}
+
+/* Option active (clavier ou survol) : texte plein, aplat un peu plus clair, libellé décalé, sans filet */
+.option[data-active] {
+  background: rgba(237, 237, 240, 0.05);
+  color: var(--fg);
+}
+
+.option[data-active] > :first-child {
+  translate: 0.375rem 0;
+}
+
+.option[aria-selected='true'] {
+  color: var(--fg);
+}
+
+.check {
+  flex: none;
+  color: var(--accent);
+  visibility: hidden;
+}
+
+.option[aria-selected='true'] .check {
+  visibility: visible;
+}
+
+@media (hover: hover) {
+  .option:hover {
+    color: var(--fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron,
+  .option,
+  .option > :first-child {
+    transition: none;
+  }
+
+  .option[data-active] > :first-child {
+    translate: none;
+  }
+}

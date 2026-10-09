@@ -1,4 +1,4 @@
-// Point d'entrée de la page d'accueil (index.html).
+// Point d'entrée des pages d'accueil (index.html, en/index.html).
 import { HomePage } from './app/HomePage'
 import { mount } from './app/mount'
 

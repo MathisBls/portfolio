@@ -179,6 +179,12 @@
 
 .mobileCta {
   display: grid;
+  gap: var(--space-3);
+}
+
+/* Sélecteur de langue du menu mobile : centré au-dessus du CTA */
+.mobileCta > ul {
+  justify-content: center;
 }
 
 @media (min-width: 1024px) {

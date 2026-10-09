@@ -5,7 +5,14 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const required = ['index.html', 'legal/index.html', 'contact.php', '.htaccess']
+const required = [
+  'index.html',
+  'en/index.html',
+  'mentions-legales/index.html',
+  'en/legal/index.html',
+  'contact.php',
+  '.htaccess',
+]
 const missing = required.filter((file) => !existsSync(join(root, 'dist', file)))
 
 if (missing.length > 0) {

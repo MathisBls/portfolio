@@ -1,8 +1,8 @@
 // Contact (docs/storyboards/services-contact.md) : coordonnées à gauche, formulaire à droite dès 1024 px.
 // Le progress 'contact' (scrub, sans pin) pilote le retour du prisme dans la scène. Reduced-motion : pas de trigger.
 import { useRef } from 'react'
-import { identity } from '../content/services'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { isFilled, telHref } from '../lib/content'
 import { stagger } from '../lib/stagger'
 import { useSectionProgress } from '../lib/useSectionProgress'
@@ -12,8 +12,10 @@ import { SectionLabel } from '../ui/SectionLabel'
 import styles from './Contact.module.css'
 
 export function Contact() {
-  const { id, label, title } = site.sections.contact
-  const { intro, direct, emailLabel, phoneLabel, locationLabel, sirenLabel } = site.contact
+  const { text, identity } = useContent()
+  const { id } = site.sections.contact
+  const { label, title } = text.sections.contact
+  const { intro, direct, emailLabel, phoneLabel, locationLabel, sirenLabel } = text.contact
   const sectionRef = useRef<HTMLElement>(null)
 
   // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)

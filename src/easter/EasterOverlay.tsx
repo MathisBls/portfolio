@@ -6,7 +6,8 @@
 // En fin de séquence (stage 'finale'), « Exit » est mis en avant ; la page revient seule à la fin de la
 // musique du parc (useSequence.ts), ou après 8 s sans WebGL.
 // Sous-titres des voix (EasterSubtitles) en bas ; une seule région aria-live pour le message de la route
-// et, son coupé, les sous-titres (en français : lang="fr" sur l'annonce).
+// (langue de la page) et, son coupé, les sous-titres (toujours en français : lang="fr" sur l'annonce).
+// Textes traduits : dictionnaire de la page, clé `easter` (useContent).
 // Second niveau (docs/storyboards/easter-majestic.md, « Déclencheur ») : pendant le final, si la séquence
 // a été jouée jusqu'au bout (easterPlayed), `boulardtv` au clavier ou 5 tapes rapides sur l'overlay
 // (couche de tapes sous la barre) débloquent la musique dans le geste (unlockMajestic), passent au stage
@@ -21,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { hasWebGL2 } from '../lib/webgl'
 import { useScene } from '../scene/store'
 import { isMuted, setMuted, unlockMajestic } from './audio'
@@ -34,9 +35,8 @@ import { beginEaster, endEaster, lockPage, setPageHidden } from './session'
 
 /** Retour automatique à la page après la fin de la séquence. */
 const AUTO_EXIT_MS = 8000
-const text = site.easter
 
-/** Annonce de la région aria-live : ligne de la route (anglais) ou sous-titre (français). */
+/** Annonce de la région aria-live : ligne de la route (langue de la page) ou sous-titre (français). */
 type Announce = { text: string; lang?: string }
 
 function useDialogKeys(root: RefObject<HTMLDivElement | null>) {
@@ -70,6 +70,7 @@ function useDialogKeys(root: RefObject<HTMLDivElement | null>) {
 }
 
 function Dialog() {
+  const text = useContent().text.easter
   const stage = useScene((s) => s.easterStage)
   const [webgl] = useState(hasWebGL2)
   const [soundOn, setSoundOn] = useState(() => !isMuted())
@@ -105,12 +106,13 @@ function Dialog() {
   // Second niveau : mot de passe ou tapes rapides pendant le final d'une séquence jouée en entier
   const played = useScene((s) => s.easterPlayed)
   const armed = webgl && stage === 'finale' && played
+  const unlocked = text.majestic.unlocked
   const unlock = useCallback(() => {
     // Dans le geste (keydown, pointerup) : la musique du second niveau est débloquée ici (iOS)
     unlockMajestic()
     useScene.getState().setEasterStage('majestic')
-    setAnnounced({ text: text.majestic.unlocked })
-  }, [])
+    setAnnounced({ text: unlocked })
+  }, [unlocked])
   const onTap = useMajesticTrigger(armed, unlock)
 
   const done = stage === 'finale' || !webgl

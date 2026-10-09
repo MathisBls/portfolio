@@ -1,8 +1,8 @@
-import { isLegalPath } from './head'
+import type { PageKind } from '../content/locales'
 import { HomePage } from './HomePage'
 import { LegalPage } from './LegalPage'
 
-/** Deux pages statiques (index.html et legal/index.html), pas de routeur. */
-export function App({ path }: { path: string }) {
-  return isLegalPath(path) ? <LegalPage /> : <HomePage />
+/** Quatre pages statiques (accueil et mentions légales, en français et en anglais), pas de routeur. */
+export function App({ kind }: { kind: PageKind }) {
+  return kind === 'legal' ? <LegalPage /> : <HomePage />
 }

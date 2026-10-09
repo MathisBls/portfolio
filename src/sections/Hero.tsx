@@ -1,8 +1,8 @@
 // Hero (docs/storyboards/hero.md) : DOM du pin de 200 %. Le h1 est l'élément LCP, visible dès le HTML.
 // La timeline GSAP écrit le progress 'hero' (lu par la scène) et efface le DOM aux fenêtres de lib/hero.ts.
 import { Fragment, useLayoutEffect, useRef } from 'react'
-import { identity } from '../content/services'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { gsap, ScrollTrigger } from '../lib/gsap'
 import { CAPTIONS, CAPTION_FADE, HERO, wordWindow } from '../lib/hero'
 import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
@@ -13,7 +13,8 @@ import styles from './Hero.module.css'
 
 export function Hero() {
   const { id } = site.sections.hero
-  const { availability, ctaPrimary, ctaSecondary, scrollHint, captions } = site.hero
+  const { text, identity } = useContent()
+  const { availability, ctaPrimary, ctaSecondary, scrollHint, captions } = text.hero
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
@@ -135,9 +136,9 @@ export function Hero() {
           {identity.pitch}
         </p>
         <div className={styles.actions} data-intro>
-          <Button href={ctaPrimary.href}>{ctaPrimary.label}</Button>
-          <Button href={ctaSecondary.href} variant="ghost">
-            {ctaSecondary.label}
+          <Button href={`#${site.sections.contact.id}`}>{ctaPrimary}</Button>
+          <Button href={`#${site.sections.projects.id}`} variant="ghost">
+            {ctaSecondary}
           </Button>
         </div>
       </div>

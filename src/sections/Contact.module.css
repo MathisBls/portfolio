@@ -1,5 +1,6 @@
 /* Contact : mobile first. Deux colonnes dès 1024 px (coordonnées à gauche, sous le prisme ; formulaire
-   à droite, sur son panneau opaque). Responsive en CSS seulement (le prerender n'a pas de window). */
+   à droite, sur un aplat opaque sans bordure). Responsive en CSS seulement (le prerender n'a pas de
+   window). */
 .section {
   position: relative;
   z-index: var(--z-content);

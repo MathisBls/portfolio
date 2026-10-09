@@ -25,7 +25,8 @@ ssh <compte>@ssh-<compte>.alwaysdata.net "rm -rf www-old && mv www www-old && mv
 
 ## Test en production
 
-- `http://` et `www.` redirigent vers `https://mathisboulais.com/` ; `/legal/` s'affiche ; `curl -i https://mathisboulais.com/contact.php` répond 405 en JSON.
+- `http://` et `www.` redirigent vers `https://mathisboulais.com/` ; `/`, `/en/`, `/mentions-legales/` et `/en/legal/` s'affichent dans leur langue ; `/legal/` redirige (301) vers `/mentions-legales/` ; `curl -i https://mathisboulais.com/contact.php` répond 405 en JSON.
+- Langue : navigateur en anglais sur `/` -> `/en/` ; navigateur en français sur `/en/` -> `/` ; un choix fait avec le sélecteur FR | EN est respecté ensuite.
 - Envoyer un vrai message : réception, `Reply-To` = le visiteur. Six envois en 10 min : erreur 429 attendue.
 - Erreur 500 partout : commenter `Options -Indexes` du `.htaccess`. Boucle de redirection : commenter le bloc https (Forcer HTTPS suffit).
 

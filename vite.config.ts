@@ -15,9 +15,12 @@ export default defineConfig({
     // Le budget qui compte est le JS initial : `npm run size` (350 Ko gz max).
     chunkSizeWarningLimit: 1200,
     rolldownOptions: {
+      // Une page HTML par langue (src/content/locales.ts, ROUTES) : accueil et mentions légales
       input: {
         main: resolve(root, 'index.html'),
-        legal: resolve(root, 'legal/index.html'),
+        'main-en': resolve(root, 'en/index.html'),
+        legal: resolve(root, 'mentions-legales/index.html'),
+        'legal-en': resolve(root, 'en/legal/index.html'),
       },
     },
   },

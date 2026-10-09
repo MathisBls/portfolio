@@ -2,7 +2,8 @@
 // (correctif 2), lignes du message tapées en entier et tenues avant la suite (correctif 3), et repères
 // des beats 4 à 7 dérivés des clips.
 import { describe, expect, it } from 'vitest'
-import { site } from '../content/site'
+import { DICTIONARIES } from '../content'
+import { LOCALES } from '../content/locales'
 import { typingDuration } from './typing'
 import {
   LINE_HOLD,
@@ -39,23 +40,27 @@ describe('beat 3 : route', () => {
 })
 
 describe('message de la route : chaque ligne tapée en entier puis tenue', () => {
-  for (const reduced of [false, true]) {
-    it(`repère + durée de frappe + ${String(LINE_HOLD)} s ≤ repère suivant (${reduced ? 'reduced' : 'complète'})`, () => {
-      const cues = lineCues(reduced)
-      site.easter.lines.forEach((text, i) => {
-        const at = cues[i]?.at ?? 0
-        const next = cues[i + 1]?.at ?? 0
-        const typed = at + (reduced ? 0 : typingDuration(text))
-        expect(lineTypedAt(i, reduced)).toBeCloseTo(typed)
-        expect(typed + LINE_HOLD).toBeLessThanOrEqual(next)
+  for (const locale of LOCALES) {
+    const { lines } = DICTIONARIES[locale].easter
+    for (const reduced of [false, true]) {
+      it(`repère + durée de frappe + ${String(LINE_HOLD)} s ≤ repère suivant (${locale}, ${reduced ? 'reduced' : 'complète'})`, () => {
+        const cues = lineCues(reduced)
+        expect(lines).toHaveLength(T.lines.length)
+        lines.forEach((text, i) => {
+          const at = cues[i]?.at ?? 0
+          const next = cues[i + 1]?.at ?? 0
+          const typed = at + (reduced ? 0 : typingDuration(text))
+          expect(lineTypedAt(lines, i, reduced)).toBeCloseTo(typed)
+          expect(typed + LINE_HOLD).toBeLessThanOrEqual(next)
+        })
       })
-    })
+    }
   }
 
   it('la dernière ligne s’efface à la sortie du warp, pas avant', () => {
     const cues = lineCues(false)
     expect(cues.at(-1)).toEqual({ at: T.warp, index: -1 })
-    expect(cues).toHaveLength(site.easter.lines.length + 1)
+    expect(cues).toHaveLength(T.lines.length + 1)
   })
 
   it('lignes dans la route', () => {

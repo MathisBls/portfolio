@@ -1,38 +1,30 @@
-// Contenu des projets, en anglais (CLAUDE.md règle 4).
+// Données communes des projets, sans texte traduit : ordre, liens, stack, modèle 3D, couleur. Lues aussi
+// par la scène (slug, model, accent). Les textes (nom, accroche, description, fait marquant) vivent dans
+// les dictionnaires src/content/fr.ts et en.ts, sous projects.items[slug].
+
+export type ProjectSlug = 'zephyr' | 'wegir' | 'fitness' | 'game-factory' | 'meme-rina'
+
 export type Project = {
-  slug: string
-  name: string
-  tagline: string
-  description: string
+  slug: ProjectSlug
   stack: string[]
   links: { site?: string; github?: string; store?: string }
   model: 'prism' | 'zephyr' | 'wegir' | 'quorin' | 'gamefactory' | 'pizza' | 'fitness'
   accent: string
-  year: string
-  /** Fait marquant affiché à côté du projet (fourni par Mathis). */
-  highlight?: string
+  /** Année de sortie ; absente tant que le projet est en développement (libellé traduit). */
+  year?: string
 }
 
 export const projects: Project[] = [
   {
     slug: 'zephyr',
-    name: 'Zephyr',
-    tagline: 'Open-source mod manager',
-    description:
-      'Desktop app to install and manage mods from Thunderstore, NexusMods, CurseForge and GitHub. Shareable profiles, built-in config editor, randomizer module.',
     stack: ['Tauri 2', 'Svelte 5', 'Rust'],
     links: { github: 'https://github.com/prismo-studio/zephyr' },
     model: 'zephyr',
     accent: '#12b5bd',
     year: '2026',
-    highlight: '25+ stars on GitHub · Community project',
   },
   {
     slug: 'wegir',
-    name: 'Wegir',
-    tagline: 'GPS navigation for convoys',
-    description:
-      'Mobile and web app to drive as a group without getting lost: shared route, live positions, push-to-talk, alerts. Live on the App Store.',
     stack: ['React Native', 'Expo', 'Vite', 'NestJS', 'Prisma', 'MapLibre', 'RevenueCat'],
     links: { site: 'https://wegir.com', store: 'https://apps.apple.com/app/wegir/id6789985288' },
     model: 'wegir',
@@ -40,25 +32,16 @@ export const projects: Project[] = [
     year: '2026',
   },
   {
-    slug: 'fitness',
     // Ajouté le 2026-10-06 depuis les captures de Mathis. L'app n'a pas encore de nom ni de lien
-    // (en développement) : nom descriptif, pas de lien. Description d'après les écrans.
-    name: 'Fitness coaching app',
-    tagline: 'Coaching, training and nutrition in one app',
-    description:
-      'Mobile fitness app: training programs from free to personal coaching, nutrition tracking with macros, and progress charts with body measurements and photos. Premium subscription through the App Store and Google Play.',
+    // (en développement) : nom descriptif, pas de lien.
+    slug: 'fitness',
     stack: ['React Native', 'Expo'],
     links: {},
     model: 'fitness',
     accent: '#13c6d3',
-    year: 'In development',
   },
   {
     slug: 'game-factory',
-    name: 'Game Factory',
-    tagline: 'Games built by agents',
-    description:
-      'A chain of AI pipelines that turns a concept into a Godot mobile game: tickets, code, pull requests and reviews generated automatically on GitHub.',
     stack: ['Claude Code', 'GitHub Actions', 'Godot 4', 'Docker'],
     links: { github: 'https://github.com/Prismo-Studio/game-factory' },
     model: 'gamefactory',
@@ -67,11 +50,6 @@ export const projects: Project[] = [
   },
   {
     slug: 'meme-rina',
-    name: 'Meme Rina',
-    tagline: 'Website for a pizzeria',
-    // Description rédigée d'après le site en ligne (oct. 2026), à valider par Mathis
-    description:
-      'Website for a neighborhood pizzeria in Chatou, near Paris. Full menu, table booking, delivery ordering and Google reviews, all one tap from the home page.',
     stack: ['Next.js', 'React', 'Netlify'],
     links: { site: 'https://www.memerina.fr/' },
     model: 'pizza',

@@ -1,69 +1,31 @@
-// Services et identité, en anglais (CLAUDE.md règle 4).
+// Données communes des services (identifiants, prix chiffrés) et de l'identité (coordonnées, SIREN,
+// hébergeur), sans texte traduit. Les textes vivent dans src/content/fr.ts et en.ts ; la mise en forme
+// des prix et des numéros selon la langue est dans src/content/index.ts (lib/content.ts).
+
+export type ServiceId = 'website' | 'app' | 'maintenance'
 
 export type Service = {
-  id: string
-  title: string
-  /** Montant affiché ; précédé de site.services.fromLabel quand priceFrom est vrai. */
-  price: string
+  id: ServiceId
+  /** Montant en euros, `null` : sur devis (libellé traduit). `perMonth` : prix mensuel. */
+  price: { amount: number; perMonth?: boolean } | null
+  /** Affiché précédé de « à partir de » / « from ». */
   priceFrom: boolean
-  for: string
-  includes: string[]
 }
 
 export const services: Service[] = [
-  {
-    id: 'website',
-    title: 'Business website',
-    price: '€900',
-    priceFrom: true,
-    for: 'Craftspeople, shops and independents who want to be found and called.',
-    includes: [
-      'Custom design, no template',
-      'Fast and easy to read on mobile',
-      'Local SEO (Google Business, service and city pages)',
-      'Contact form and booking',
-      'Launch, domain name and email setup',
-    ],
-  },
-  {
-    id: 'app',
-    title: 'Web or mobile app',
-    price: 'Custom quote',
-    priceFrom: false,
-    for: 'A business tool, a customer app, an MVP to ship fast and clean.',
-    includes: [
-      'Scoping and wireframes',
-      'React / React Native, Node API',
-      'Payments, accounts, notifications',
-      'App Store and Play Store release',
-      'Documented code that you own',
-    ],
-  },
-  {
-    id: 'maintenance',
-    title: 'Redesign and maintenance',
-    price: '€60/month',
-    priceFrom: true,
-    for: 'An existing site that is slow, dated, or that nobody knows how to edit anymore.',
-    includes: [
-      'Speed, mobile and SEO audit',
-      'Full redesign or targeted fixes',
-      'Updates, backups, monitoring',
-      'One contact, reply within 24 hours',
-    ],
-  },
+  { id: 'website', price: { amount: 900 }, priceFrom: true },
+  { id: 'app', price: null, priceFrom: false },
+  { id: 'maintenance', price: { amount: 60, perMonth: true }, priceFrom: true },
 ]
 
 export const identity = {
   name: 'Mathis Boulais',
-  role: 'Full-stack developer',
-  location: 'Choisy-le-Roi, near Paris, France',
   // Boîte créée chez alwaysdata le 2026-10-09 (aussi RECIPIENT de public/contact.php)
   email: 'contact@mathisboulais.com',
+  // Format international ; affiché au format national sur les pages françaises (formatPhone)
   phone: '+33 7 82 07 17 88',
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
-  status: 'Sole proprietorship (French micro-entreprise)',
   // Adresse de l'entreprise, donnée par Mathis le 2026-10-09. Obligatoire dans les mentions légales
   // (LCEN art. 6).
   address: '59 rue Pernety, 75014 Paris, France',
@@ -76,6 +38,4 @@ export const identity = {
     phone: '+33 1 84 16 23 40',
     url: 'https://www.alwaysdata.com',
   },
-  pitch:
-    'I design and build websites and apps for independents, small businesses and new ventures. From design to launch, one person to talk to.',
 }

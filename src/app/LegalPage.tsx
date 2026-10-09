@@ -1,15 +1,13 @@
-// Mentions légales (docs/storyboards/about-legal.md) : générées depuis identity et site.legal, aucun
-// texte en dur. Cette page ne monte ni la scène, ni Lenis, ni GSAP.
+// Mentions légales (docs/storyboards/about-legal.md) : générées depuis l'identité et le dictionnaire
+// (clé legal) de la langue de la page, aucun texte en dur. La version française fait foi. Cette page ne monte ni la scène, ni Lenis, ni GSAP.
 // Une valeur "TODO:" reste du texte, jamais un lien, et s'affiche dans un cadre pointillé pour ne pas
 // passer inaperçue.
 import { type ReactNode, useId } from 'react'
-import { identity } from '../content/services'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { displayUrl, isFilled, telHref } from '../lib/content'
 import { Footer } from '../ui/Footer'
 import styles from './LegalPage.module.css'
-
-const { legal } = site
 
 /** Texte courant : la partie "TODO: ..." (jusqu'au point final) est isolée dans un cadre pointillé. */
 function Text({ children }: { children: string }) {
@@ -68,15 +66,17 @@ function Paragraphs({ items }: { items: readonly string[] }) {
 }
 
 export function LegalPage() {
+  const { text, identity, routes } = useContent()
+  const { legal } = text
   const { host } = identity
 
   return (
     <>
       <a className="skip-link" href="#contenu">
-        {site.skipLink}
+        {text.skipLink}
       </a>
       <main id="contenu" tabIndex={-1} className={styles.main}>
-        <h1 className={styles.title}>{site.footer.legal}</h1>
+        <h1 className={styles.title}>{text.footer.legal}</h1>
         <p className={styles.intro}>{legal.intro}</p>
 
         <LegalSection title={legal.editor}>
@@ -146,8 +146,8 @@ export function LegalPage() {
         </LegalSection>
 
         <p className={styles.back}>
-          <a className={styles.link} href="/">
-            {site.footer.home}
+          <a className={styles.link} href={routes.home}>
+            {text.footer.home}
           </a>
         </p>
       </main>

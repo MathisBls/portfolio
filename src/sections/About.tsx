@@ -4,6 +4,7 @@
 import { useRef } from 'react'
 import { projects } from '../content/projects'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { uniqueStack } from '../lib/stack'
 import { stagger } from '../lib/stagger'
 import { useSectionProgress } from '../lib/useSectionProgress'
@@ -14,8 +15,10 @@ import styles from './About.module.css'
 const stack = uniqueStack(projects)
 
 export function About() {
-  const { id, label, title } = site.sections.about
-  const { lines, stackLabel, availability } = site.about
+  const { text } = useContent()
+  const { id } = site.sections.about
+  const { label, title } = text.sections.about
+  const { lines, stackLabel, availability } = text.about
   const sectionRef = useRef<HTMLElement>(null)
 
   // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)

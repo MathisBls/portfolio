@@ -4,15 +4,14 @@
 // d'éléments (alternance contour / plein continue à la jonction). aria-hidden : les services existent
 // déjà en texte dans la section suivante. Reduced-motion : statique.
 import { useLayoutEffect, useRef } from 'react'
-import { services } from '../content/services'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { gsap } from '../lib/gsap'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import styles from './Marquee.module.css'
 
-const items = [...services.map((service) => service.title), ...site.marquee]
-
 export function Marquee() {
+  const { text, services } = useContent()
+  const items = [...services.map((service) => service.title), ...text.marquee]
   const reduced = useReducedMotion()
   const rootRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)

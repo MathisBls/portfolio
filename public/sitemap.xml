@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://mathisboulais.com/</loc></url>
-  <url><loc>https://mathisboulais.com/legal/</loc></url>
+<!-- Quatre pages, chacune avec ses versions linguistiques (src/content/locales.ts, ROUTES). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://mathisboulais.com/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/" />
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/" />
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/mentions-legales/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/mentions-legales/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/legal/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/mentions-legales/" />
+  </url>
+  <url>
+    <loc>https://mathisboulais.com/en/legal/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://mathisboulais.com/mentions-legales/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://mathisboulais.com/en/legal/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mathisboulais.com/mentions-legales/" />
+  </url>
 </urlset>

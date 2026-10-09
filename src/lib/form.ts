@@ -12,7 +12,8 @@ export const HONEYPOT_FIELD = 'bot-field'
 /**
  * Types de projet du menu déroulant (libellés : site.contact.form.projectTypes). Valeurs identiques à
  * PROJECT_TYPES dans public/contact.php. `adult` : plateforme 18+, une pièce d'identité est demandée hors
- * du site (jamais par ce formulaire) avant tout travail.
+ * du site (jamais par ce formulaire) avant tout travail. `devtools` : outil pour développeurs,
+ * automatisation, agents IA (comme Game Factory), ajouté le 2026-10-09.
  */
 export const PROJECT_TYPES = [
   'website',
@@ -21,6 +22,7 @@ export const PROJECT_TYPES = [
   'mobile',
   'redesign',
   'adult',
+  'devtools',
   'other',
 ] as const
 

@@ -3,15 +3,18 @@
 // page minimale. Avec JS : validation maison (lib/form.ts), envoi en fetch avec réponse JSON, statuts
 // annoncés en aria-live, motion pour les transitions (coupées en reduced-motion). En dev, Vite ne sert
 // pas le PHP : l'envoi aboutit à l'état d'erreur et à son lien email de secours.
-// Type de projet (2026-10-09, demande de Mathis) : menu déroulant natif (accessible, clavier et lecteurs
-// d'écran) ; « 18+ » affiche un avis : la pièce d'identité est demandée hors du site, jamais ici.
+// Type de projet (2026-10-09, demandes de Mathis) : menu déroulant aux couleurs du site (ui/SelectMenu,
+// motif combobox de l'APG) une fois le JS hydraté ; au rendu serveur et sans JS, <select> natif (le POST
+// natif vers contact.php marche toujours). « 18+ » affiche un avis : la pièce d'identité est demandée hors
+// du site, jamais ici.
+// Langue : champ caché `lang` (fr/en), envoyé aussi en JS : contact.php répond dans la langue de la page
+// (page sans JS) et l'indique dans l'email.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { SubmitEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
 import * as m from 'motion/react-m'
 import { isFilled } from '../lib/content'
-import { identity } from '../content/services'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import {
   CONTACT_ENDPOINT,
   CONTACT_FORM_NAME,
@@ -26,6 +29,7 @@ import { ScrollTrigger } from '../lib/gsap'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import { useScene } from '../scene/store'
 import styles from './ContactForm.module.css'
+import { SelectMenu } from './SelectMenu'
 import { SubmitButton } from './SubmitButton'
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
@@ -107,14 +111,41 @@ function Field({
 
 type ProjectTypeFieldProps = {
   error: string | undefined
-  onEdit: (name: keyof ContactFields) => void
+  value: string
   onChoose: (value: string) => void
+  /** JS hydraté : menu personnalisé ; sinon <select> natif. */
+  enhanced: boolean
 }
 
-function ProjectTypeField({ error, onEdit, onChoose }: ProjectTypeFieldProps) {
-  const { form } = site.contact
+function ProjectTypeField({ error, value, onChoose, enhanced }: ProjectTypeFieldProps) {
+  const { form } = useContent().text.contact
   const id = fieldId('type')
   const errorId = `${id}-error`
+  const labelId = `${id}-label`
+  if (enhanced) {
+    return (
+      <div className={styles.field}>
+        <span id={labelId} className={styles.label}>
+          {form.projectType}
+        </span>
+        <SelectMenu
+          id={id}
+          labelId={labelId}
+          name="type"
+          options={PROJECT_TYPES.map((type) => ({ value: type, label: form.projectTypes[type] }))}
+          value={value}
+          placeholder={form.projectTypePlaceholder}
+          onChange={onChoose}
+          invalid={error !== undefined}
+          describedBy={errorId}
+          className={styles.control}
+        />
+        <p id={errorId} className={styles.error}>
+          {error}
+        </p>
+      </div>
+    )
+  }
   return (
     <div className={styles.field}>
       <label htmlFor={id} className={styles.label}>
@@ -129,7 +160,6 @@ function ProjectTypeField({ error, onEdit, onChoose }: ProjectTypeFieldProps) {
         aria-invalid={error !== undefined}
         aria-describedby={errorId}
         onChange={(event) => {
-          onEdit('type')
           onChoose(event.currentTarget.value)
         }}
       >
@@ -153,6 +183,7 @@ type MotionProps = { initial: false | { opacity: number; y: number }; transition
 
 /** Remplace le formulaire : prend le focus (lu par les lecteurs d'écran), sans contour visible. */
 function Success({ initial, transition }: MotionProps) {
+  const { form } = useContent().text.contact
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     ref.current?.focus()
@@ -167,13 +198,14 @@ function Success({ initial, transition }: MotionProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={transition}
     >
-      <p className={styles.successText}>{site.contact.form.success}</p>
+      <p className={styles.successText}>{form.success}</p>
     </m.div>
   )
 }
 
 export function ContactForm() {
-  const { form } = site.contact
+  const { locale, text, identity, routes } = useContent()
+  const { form } = text.contact
   const reduced = useReducedMotion()
   const hydrated = useHydrated()
   const [status, setStatus] = useState<Status>('idle')
@@ -205,7 +237,7 @@ export function ContactForm() {
   const send = async (fields: ContactFields, honeypot: string) => {
     setStatus('sending')
     // sendContact ne lève jamais : réseau coupé, 404 ou HTML (dev) donnent { ok: false }
-    const result = await sendContact({ ...fields, [HONEYPOT_FIELD]: honeypot })
+    const result = await sendContact({ ...fields, lang: locale, [HONEYPOT_FIELD]: honeypot })
     setStatus(result.ok ? 'success' : 'error')
     // La scène joue « l'idée traverse le prisme » (store sans three : rien de 3D importé ici)
     if (result.ok) useScene.getState().setIdeaSent()
@@ -226,8 +258,8 @@ export function ContactForm() {
     setErrors(found)
     const first = FIELD_ORDER.find((name) => found[name] !== undefined)
     if (first) {
-      const control = element.elements.namedItem(first)
-      if (control instanceof HTMLElement) control.focus()
+      // Par id : le type de projet est un bouton (menu personnalisé), sa valeur un champ caché
+      element.querySelector<HTMLElement>(`#${fieldId(first)}`)?.focus()
       return
     }
     void send(fields, readField(data, HONEYPOT_FIELD))
@@ -265,6 +297,7 @@ export function ContactForm() {
                   <input name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
                 </label>
               </p>
+              <input type="hidden" name="lang" value={locale} />
 
               <Field
                 name="name"
@@ -283,8 +316,12 @@ export function ContactForm() {
               />
               <ProjectTypeField
                 error={messageFor(errors.type)}
-                onEdit={clearError}
-                onChoose={setProjectType}
+                value={projectType}
+                enhanced={hydrated}
+                onChoose={(value) => {
+                  clearError('type')
+                  setProjectType(value)
+                }}
               />
               <p className={styles.notice} aria-live="polite">
                 {projectType === 'adult' ? form.adultNotice : ''}
@@ -337,7 +374,7 @@ export function ContactForm() {
 
               <p className={styles.privacy}>
                 {form.privacy}{' '}
-                <a href={site.legalPath} className={styles.link}>
+                <a href={routes.legal} className={styles.link}>
                   {form.privacyLink}
                 </a>
               </p>

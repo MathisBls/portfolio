@@ -1,7 +1,8 @@
 # Apache chez alwaysdata (docs/deploy-alwaysdata.md). Copié tel quel de public/ vers dist/ au build,
 # déposé à la racine du site. Reprend les en-têtes de l'ancien netlify.toml.
 
-# Pages prérendues : / -> index.html, /legal/ -> legal/index.html (/legal redirigé vers /legal/ par mod_dir)
+# Pages prérendues, une par langue (src/content/locales.ts) : / et /en/ (accueil), /mentions-legales/ et
+# /en/legal/ (mentions légales). Chaque dossier a son index.html ; mod_dir ajoute le / final (/en -> /en/).
 DirectoryIndex index.html
 Options -Indexes
 AddDefaultCharset utf-8
@@ -16,7 +17,8 @@ AddDefaultCharset utf-8
   AddType video/mp4 .mp4
   AddType audio/mpeg .mp3
   AddType font/woff2 .woff2
-  AddCharset utf-8 .html .css .js .mjs .json .svg .txt .xml
+  AddType application/manifest+json .webmanifest
+  AddCharset utf-8 .html .css .js .mjs .json .webmanifest .svg .txt .xml
 </IfModule>
 
 # --- Redirections : https et sans www, en un seul saut ---------------------------------------------
@@ -32,6 +34,9 @@ AddDefaultCharset utf-8
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Anciennes mentions légales (site en anglais seul, /legal/) : vers la version française qui fait foi
+  RewriteRule ^legal/?$ /mentions-legales/ [R=301,L]
 </IfModule>
 
 # --- Compression -----------------------------------------------------------------------------------
@@ -40,6 +45,7 @@ AddDefaultCharset utf-8
   <IfModule mod_filter.c>
     AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml
     AddOutputFilterByType DEFLATE text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE application/manifest+json
     AddOutputFilterByType DEFLATE image/svg+xml application/wasm
   </IfModule>
 </IfModule>
@@ -72,6 +78,9 @@ AddDefaultCharset utf-8
   # Header always set Strict-Transport-Security "max-age=31536000"
 
   # CSP permissive, NON activée : à tester sur toute la page et l'easter egg avant de décommenter.
+  # Le script inline de détection de langue (accueils FR et EN, src/app/langRedirect.ts) devra être
+  # autorisé par ses empreintes : ajouter à script-src les 'sha256-…' affichés par npm run build
+  # (ligne « [prerender] scripts inline »). Le JSON-LD (type application/ld+json) n'est pas exécuté.
   # three et le décodeur Draco ont besoin de 'wasm-unsafe-eval', de workers et d'images en blob:,
   # les VideoTexture de media-src blob:, les styles inline (motion, R3F) de 'unsafe-inline'.
   # Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"

@@ -3,15 +3,17 @@
 // le <nav> du panneau n'existe que menu ouvert ; au-dessus, le <nav> en ligne (masqué en display: none
 // sous 1024 px, donc absent de l'arbre d'accessibilité).
 // Les effets vivent dans ui/nav/ : masquage au scroll, focus dans la barre, fermeture du menu.
+// Sélecteur de langue (LangSwitch) dans la barre desktop et dans le menu mobile.
 import { useCallback, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation } from 'motion/react'
 import * as m from 'motion/react-m'
-import { identity } from '../content/services'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { onAnchorClick } from '../lib/anchors'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import { Button } from './Button'
+import { LangSwitch } from './LangSwitch'
 import { useFocusWithin } from './nav/useFocusWithin'
 import { useHideOnScroll } from './nav/useHideOnScroll'
 import { useMenuDismiss } from './nav/useMenuDismiss'
@@ -19,9 +21,17 @@ import styles from './Nav.module.css'
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const PANEL_ID = 'menu-mobile'
+/** Liens de la nav, dans l'ordre : sections de la page (ancres communes aux deux langues). */
+const NAV_SECTIONS = ['projects', 'services', 'about'] as const
+const CTA_HREF = `#${site.sections.contact.id}`
 
 export function Nav() {
-  const { label, home, links, cta, menuOpen, menuClose } = site.nav
+  const { text, identity } = useContent()
+  const { label, home, cta, menuOpen, menuClose } = text.nav
+  const links = NAV_SECTIONS.map((key) => ({
+    href: `#${site.sections[key].id}`,
+    label: text.nav.links[key],
+  }))
   const reduced = useReducedMotion()
   const [open, setOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -71,8 +81,9 @@ export function Nav() {
                 </li>
               ))}
             </ul>
-            <Button href={cta.href} size="sm">
-              {cta.label}
+            <LangSwitch kind="home" />
+            <Button href={CTA_HREF} size="sm">
+              {cta}
             </Button>
           </nav>
 
@@ -122,8 +133,9 @@ export function Nav() {
                   ))}
                 </ul>
                 <div className={styles.mobileCta}>
-                  <Button href={cta.href} onClick={closeMenu}>
-                    {cta.label}
+                  <LangSwitch kind="home" variant="panel" onNavigate={closeMenu} />
+                  <Button href={CTA_HREF} onClick={closeMenu}>
+                    {cta}
                   </Button>
                 </div>
               </nav>

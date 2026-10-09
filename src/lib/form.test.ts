@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import contactPhp from '../../public/contact.php?raw'
+import { LOCALES } from '../content/locales'
 import {
   CONTACT_ENDPOINT,
+  PROJECT_TYPES,
   encodeForm,
   parseContactResponse,
   sendContact,
@@ -20,7 +23,30 @@ describe('encodeForm', () => {
   })
 })
 
+/** Clés d'un tableau PHP `const NOM = [ 'cle' => …, ];` de public/contact.php (premier niveau). */
+function phpKeys(name: string): string[] {
+  const block =
+    new RegExp(String.raw`const ${name} = \[([\s\S]*?)\n\];`).exec(contactPhp)?.[1] ?? ''
+  return [...block.matchAll(/^ {4}'([a-z]+)' =>/gm)].map((m) => m[1] ?? '')
+}
+
+describe('contact.php', () => {
+  it('mêmes types de projet que le formulaire, dans le même ordre', () => {
+    expect(phpKeys('PROJECT_TYPES')).toEqual([...PROJECT_TYPES])
+  })
+
+  it('une page sans JS par langue du site', () => {
+    expect(phpKeys('LANGS')).toEqual([...LOCALES])
+  })
+})
+
 describe('validateContact', () => {
+  it('accepte le type « outil développeur » (devtools)', () => {
+    expect(
+      validateContact({ name: 'Léa', email: 'lea@exemple.fr', type: 'devtools', message: 'x' }),
+    ).toEqual({})
+  })
+
   it('refuse un type de projet hors de la liste', () => {
     expect(
       validateContact({ name: 'Léa', email: 'lea@exemple.fr', type: 'casino', message: 'x' }),

@@ -2,7 +2,8 @@
 // Formulaire de contact du portfolio (src/ui/ContactForm.tsx, envoi dans src/lib/form.ts).
 // Copié tel quel de public/ vers dist/ au build, exécuté par Apache/PHP chez alwaysdata (PHP >= 8.1).
 // Réponse JSON { ok: true } ou { ok: false, error } avec le code HTTP adapté. Sans JS (POST natif du
-// navigateur, Accept: text/html), une page minimale remplace le JSON.
+// navigateur, Accept: text/html), une page minimale remplace le JSON, dans la langue de la page qui a
+// posté (champ caché `lang`, liste blanche fr/en, français par défaut).
 // Rien n'est stocké, sauf une empreinte de l'IP pendant RATE_WINDOW secondes (limitation du débit).
 declare(strict_types=1);
 
@@ -32,10 +33,32 @@ const PROJECT_TYPES = [
     'mobile' => 'Application mobile',
     'redesign' => 'Refonte ou maintenance',
     'adult' => 'Plateforme 18+ (contenu adulte)',
+    'devtools' => 'Outil pour développeurs / automatisation / IA',
     'other' => 'Autre',
 ];
 // Champ piège : identique à HONEYPOT_FIELD (src/lib/form.ts)
 const HONEYPOT = 'bot-field';
+// Langues du site (src/content/locales.ts) : page sans JS, accueil de retour, mention dans l'email
+const LANGS = [
+    'fr' => [
+        'sent_title' => 'Message envoyé',
+        'sent' => 'Message envoyé. Je vous réponds très vite.',
+        'failed_title' => 'Échec de l’envoi',
+        'failed' => 'L’envoi a échoué. Vous pouvez m’écrire directement à',
+        'back' => 'Retour au site',
+        'home' => '/',
+        'label' => 'français',
+    ],
+    'en' => [
+        'sent_title' => 'Message sent',
+        'sent' => 'Message sent. I’ll get back to you shortly.',
+        'failed_title' => 'Sending failed',
+        'failed' => 'Sending failed. You can email me directly at',
+        'back' => 'Back to the site',
+        'home' => '/en/',
+        'label' => 'anglais',
+    ],
+];
 
 // Limitation du débit : RATE_MAX requêtes par IP sur une fenêtre glissante de RATE_WINDOW secondes
 const RATE_MAX = 5;
@@ -49,19 +72,28 @@ function wants_html(): bool
         && !str_contains($accept, 'application/json');
 }
 
+/** Langue de la page qui a posté le formulaire : 'fr' ou 'en' (liste blanche), français par défaut. */
+function lang(): string
+{
+    $value = $_POST['lang'] ?? '';
+    return is_string($value) && array_key_exists($value, LANGS) ? $value : 'fr';
+}
+
 function html_page(bool $sent): string
 {
-    $title = $sent ? 'Message sent' : 'Sending failed';
+    $lang = lang();
+    $t = LANGS[$lang];
+    $title = $sent ? $t['sent_title'] : $t['failed_title'];
     $text = $sent
-        ? '<p>Message sent. I’ll get back to you shortly.</p>'
-        : '<p>Sending failed. You can email me directly at <a href="mailto:' . RECIPIENT . '">'
-            . RECIPIENT . '</a>.</p>';
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        ? '<p>' . $t['sent'] . '</p>'
+        : '<p>' . $t['failed'] . ' <a href="mailto:' . RECIPIENT . '">' . RECIPIENT . '</a>.</p>';
+    return '<!doctype html><html lang="' . $lang . '"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<meta name="robots" content="noindex"><title>' . $title . ' · Mathis Boulais</title>'
         . '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;'
         . 'background:#0a0a0c;color:#ededf0;font:1.125rem/1.5 system-ui,sans-serif}a{color:inherit}</style>'
-        . '</head><body><main>' . $text . '<p><a href="/#contact">Back to the site</a></p></main></body></html>';
+        . '</head><body><main>' . $text . '<p><a href="' . $t['home'] . '#contact">' . $t['back']
+        . '</a></p></main></body></html>';
 }
 
 /** Envoie la réponse et termine le script. $error null : succès. */
@@ -197,7 +229,9 @@ function send_mail(string $name, string $email, string $type, string $message): 
     $warning = $type === 'adult'
         ? "\n⚠ Projet 18+ : demander une pièce d'identité (canal sécurisé) avant tout travail.\n"
         : '';
-    $body = "Nom : {$name}\nEmail : {$email}\nType de projet : {$label}\nReçu le "
+    // Langue de la page : répondre au visiteur dans sa langue
+    $language = LANGS[lang()]['label'];
+    $body = "Nom : {$name}\nEmail : {$email}\nType de projet : {$label}\nLangue du site : {$language}\nReçu le "
         . date('d/m/Y à H:i') . "\n{$warning}\n{$message}\n";
     $headers = [
         'From' => SENDER,

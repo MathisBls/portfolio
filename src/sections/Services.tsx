@@ -2,8 +2,9 @@
 // Le progress 'services' (scrub, sans pin) pilote la rétractation des rayons dans la scène.
 // Reduced-motion : pas de trigger, la scène affiche son état statique.
 import { useRef } from 'react'
-import { type Service, services } from '../content/services'
+import type { LocalizedService } from '../content'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { stagger } from '../lib/stagger'
 import { useSectionProgress } from '../lib/useSectionProgress'
 import { useTilt } from '../lib/useTilt'
@@ -15,16 +16,14 @@ import styles from './Services.module.css'
 /** Inclinaison maximale d'une carte au survol, en degrés. */
 const TILT_MAX = 3
 
-/** Prix : « from » en petit devant le montant (priceFrom), sinon le montant seul (« Custom quote »). */
-function splitPrice(service: Service): { lead: string | undefined; value: string } {
-  return { lead: service.priceFrom ? site.services.fromLabel : undefined, value: service.price }
-}
-
-type ItemProps = { service: Service; index: number; sectionId: string }
+type ItemProps = { service: LocalizedService; index: number; sectionId: string }
 
 function ServiceItem({ service, index, sectionId }: ItemProps) {
-  const { forLabel, includesLabel } = site.services
-  const { lead, value } = splitPrice(service)
+  const { text } = useContent()
+  const { forLabel, includesLabel, fromLabel } = text.services
+  // Prix : « à partir de » en petit devant le montant (priceFrom), sinon le montant seul (« Sur devis »)
+  const lead = service.priceFrom ? fromLabel : undefined
+  const value = service.price
   const titleId = `${sectionId}-${service.id}`
   const itemRef = useRef<HTMLLIElement>(null)
   const cardRef = useRef<HTMLElement>(null)
@@ -72,8 +71,10 @@ function ServiceItem({ service, index, sectionId }: ItemProps) {
 }
 
 export function Services() {
-  const { id, label, title } = site.sections.services
-  const { intro, cta } = site.services
+  const { text, services } = useContent()
+  const { id } = site.sections.services
+  const { label, title } = text.sections.services
+  const { intro, cta } = text.services
   const sectionRef = useRef<HTMLElement>(null)
 
   // Progress de la section pour la scène (reduced-motion : 0 puis 1, sans scrub)
@@ -94,7 +95,7 @@ export function Services() {
       </ul>
 
       <div className={styles.cta} data-reveal>
-        <Button href={cta.href}>{cta.label}</Button>
+        <Button href={`#${site.sections.contact.id}`}>{cta}</Button>
       </div>
     </section>
   )

@@ -1,16 +1,16 @@
 // Easter egg, beat 3 (docs/storyboards/easter-park.md, route) : message façon jeu vidéo sur la route, tapé
 // lettre par lettre avec un caret qui clignote lentement (0.9 Hz, sous les 3 Hz), police mono avec un
 // halo. La ligne affichée vient du store (easterLine, posée par la timeline aux repères T.lines) ; textes
-// dans site.easter.lines, chaque ligne remplace la précédente. Cadence : typing.ts, horloge sans dérive
+// dans le dictionnaire de la page (easter.lines), chaque ligne remplace la précédente. Cadence : typing.ts, horloge sans dérive
 // (chaque lettre à son instant prévu, rattrapage si une image saute) : la durée réelle de frappe est
 // celle que times.ts réserve (correctif 3 : la dernière ligne s'écrit en entier puis tient ≥ 1.5 s). Le texte tapé est aria-hidden : la ligne
 // complète est annoncée une seule fois par la région aria-live de l'overlay (onLine). Un tic discret par
 // lettre (cue 'type', coupé quand le son est muet). Reduced-motion : ligne affichée d'un bloc, caret fixe.
 // Second niveau (docs/storyboards/easter-majestic.md, beat 7) : THANKS FOR PLAYING, tapé de la même façon
-// au centre de l'écran noir (store easterThanks, site.easter.majestic.thanks).
+// au centre de l'écran noir (store easterThanks, easter.majestic.thanks du dictionnaire).
 // Bundle initial : DOM seulement, aucun import de three.
 import { useEffect, useRef } from 'react'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { useReducedMotion } from '../lib/useReducedMotion'
 import { useScene } from '../scene/store'
 import { getEngine } from './audio'
@@ -77,18 +77,19 @@ export function EasterMessage({ onLine }: EasterMessageProps) {
   const line = useScene((s) => s.easterLine)
   const thanks = useScene((s) => s.easterThanks)
   const reduced = useReducedMotion()
+  const { lines, majestic } = useContent().text.easter
   if (thanks) {
     return (
       <TypedLine
         key="thanks"
-        text={site.easter.majestic.thanks}
+        text={majestic.thanks}
         reduced={reduced}
         onDone={onLine}
         className={styles.thanks}
       />
     )
   }
-  const text = site.easter.lines[line] ?? ''
+  const text = lines[line] ?? ''
   if (!text) return null
   return <TypedLine key={line} text={text} reduced={reduced} onDone={onLine} />
 }

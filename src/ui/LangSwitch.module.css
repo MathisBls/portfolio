@@ -1,0 +1,67 @@
+/* Sélecteur de langue : « FR | EN » en mono, la langue de la page en clair et soulignée d'un trait
+   d'accent, l'autre en gris (contraste AA). Séparateur dessiné en bordure (rien de lu par les lecteurs
+   d'écran). */
+.switch {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+}
+
+.item + .item {
+  border-left: 1px solid var(--line);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: 0.625rem;
+  text-decoration: none;
+  color: var(--fg-2);
+  transition: color 0.4s var(--ease);
+}
+
+.link[aria-current] {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.45em;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--fg);
+  }
+}
+
+/* Menu mobile : cibles plus larges, texte un cran au-dessus */
+.switch[data-variant='panel'] {
+  font-size: var(--text-sm);
+}
+
+.switch[data-variant='panel'] .link {
+  min-width: 3.5rem;
+  justify-content: center;
+}
+
+/* Pied de page : aligné sur le texte du footer (mono, majuscules) */
+.switch[data-variant='footer'] .link {
+  min-height: 2.75rem;
+}
+
+.switch[data-variant='bar'] .item:first-child .link,
+.switch[data-variant='footer'] .item:first-child .link {
+  padding-left: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react'
-import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { EasterOverlay } from '../easter/EasterOverlay'
 import { ScrollTrigger } from '../lib/gsap'
 import { startLenis } from '../lib/lenis'
@@ -17,6 +17,7 @@ import { Marquee } from '../ui/Marquee'
 import { Nav } from '../ui/Nav'
 
 export function HomePage() {
+  const { text } = useContent()
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function HomePage() {
   return (
     <>
       <a className="skip-link" href="#contenu">
-        {site.skipLink}
+        {text.skipLink}
       </a>
       <SceneMount />
       <Nav />

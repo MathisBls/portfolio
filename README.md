@@ -57,7 +57,7 @@ Tous les textes vivent dans `src/content/`. Une valeur commençant par `TODO:` r
 
 ## Déploiement (alwaysdata)
 
-Build statique (`dist/`) + `contact.php`, servis par Apache/PHP chez alwaysdata. `public/.htaccess` (MIME, compression, cache, https sans www, en-têtes de sécurité) et `public/contact.php` (formulaire de contact, envoi par `mail()`) sont copiés dans `dist/` au build. Chaque page est un vrai fichier (`index.html`, `legal/index.html`).
+Build statique (`dist/`) + `contact.php`, servis par Apache/PHP chez alwaysdata. `public/.htaccess` (MIME, compression, cache, https sans www, en-têtes de sécurité) et `public/contact.php` (formulaire de contact, envoi par `mail()`) sont copiés dans `dist/` au build. Chaque page est un vrai fichier, une par langue : `index.html` et `mentions-legales/index.html` (français, langue principale), `en/index.html` et `en/legal/index.html` (anglais).
 
 Procédure complète et checklist avant mise en ligne : [`docs/deploy-alwaysdata.md`](docs/deploy-alwaysdata.md). `npm run deploy` vérifie `dist/` et affiche les commandes d'envoi (rien n'est envoyé).
 

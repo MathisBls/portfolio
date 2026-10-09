@@ -4,8 +4,8 @@
 // Reduced-motion : aucun trigger scrubé, posters seulement (les objets 3D ne sont jamais montés). Seul
 // 'projects' passe de 0 à 1 à l'entrée de la section, pour que la scène ne garde pas l'éventail du hero.
 import { useLayoutEffect, useRef } from 'react'
-import { projects } from '../content/projects'
 import { site } from '../content/site'
+import { useContent } from '../content/useContent'
 import { ScrollTrigger, gsap } from '../lib/gsap'
 import { stagger } from '../lib/stagger'
 import { prefersReducedMotion, useReducedMotion } from '../lib/useReducedMotion'
@@ -16,8 +16,10 @@ import { SectionLabel } from '../ui/SectionLabel'
 import styles from './Projects.module.css'
 
 export function Projects() {
-  const { id, label, title } = site.sections.projects
-  const { intro } = site.projects
+  const { text, projects } = useContent()
+  const { id } = site.sections.projects
+  const { label, title } = text.sections.projects
+  const { intro } = text.projects
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)

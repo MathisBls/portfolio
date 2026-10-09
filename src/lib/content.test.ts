@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { displayUrl, isFilled, isTodo, telHref } from './content'
+import { displayUrl, formatEuros, formatPhone, isFilled, isTodo, telHref } from './content'
 
 describe('isTodo / isFilled', () => {
   it('repère les TODO', () => {
@@ -32,5 +32,26 @@ describe('displayUrl', () => {
   it('retire protocole, www et slash final', () => {
     expect(displayUrl('https://www.memerina.fr/')).toBe('memerina.fr')
     expect(displayUrl('https://github.com/MathisBls')).toBe('github.com/MathisBls')
+  })
+})
+
+describe('formatPhone', () => {
+  it('affiche un numéro français au format national en français', () => {
+    expect(formatPhone('+33 7 82 07 17 88', 'fr')).toBe('07 82 07 17 88')
+    expect(formatPhone('+33 1 84 16 23 40', 'fr')).toBe('01 84 16 23 40')
+  })
+
+  it('garde le format international en anglais et les numéros étrangers', () => {
+    expect(formatPhone('+33 7 82 07 17 88', 'en')).toBe('+33 7 82 07 17 88')
+    expect(formatPhone('+1 415 555 0100', 'fr')).toBe('+1 415 555 0100')
+  })
+})
+
+describe('formatEuros', () => {
+  it('place le symbole selon la langue', () => {
+    expect(formatEuros(900, 'en')).toBe('€900')
+    expect(formatEuros(900, 'fr')).toBe('900\u00a0€')
+    expect(formatEuros(60, 'en', '/month')).toBe('€60/month')
+    expect(formatEuros(60, 'fr', '/mois')).toBe('60\u00a0€/mois')
   })
 })

@@ -4,8 +4,8 @@
 //   comme avant 788666d (fondu au noir 0.3 s après l'éclat, en 0.5 s).
 // - Beats 2 et 3 : arène et cartes inchangées (décalées), puis la route de 19 s (correctif 2).
 // - Beats 4 à 7 : tous dérivés des clips (voice.ts : CLIPS, SPEAKER_MARKS), jamais recopiés.
-// Les lignes du message tiennent ≥ LINE_HOLD une fois tapées (correctif 3, times.test.ts).
-import { site } from '../content/site'
+// Les lignes du message tiennent ≥ LINE_HOLD une fois tapées (correctif 3, times.test.ts), dans les deux
+// langues : les repères sont fixes, le test vérifie chaque dictionnaire.
 import { typingDuration } from './typing'
 import { CLIPS, type ClipId, SPEAKER_MARKS, SUBTITLES } from './voice'
 
@@ -48,7 +48,7 @@ export const T = {
   dive: ARENA + 13.9,
   /** Bascule du dos de la carte vers la route (fondu rose). */
   road: ROAD,
-  /** Les trois lignes du message (site.easter.lines), chacune remplace la précédente. */
+  /** Les trois lignes du message (dictionnaire, easter.lines), chacune remplace la précédente. */
   lines: [ROAD + 1.2, ROAD + 8, ROAD + 14.4] as const,
   /** Sortie du warp : la dernière ligne s'efface, les traînées se résorbent, le cockpit s'allume. */
   warp: WARP,
@@ -138,9 +138,9 @@ export function cueAt(cues: readonly Cue[], t: number): number {
   return index
 }
 
-/** Fin de frappe de la ligne i (repère + durée de frappe), pour les tests. */
-export function lineTypedAt(i: number, reduced: boolean): number {
+/** Fin de frappe de la ligne i de `lines` (repère + durée de frappe), pour les tests. */
+export function lineTypedAt(lines: readonly string[], i: number, reduced: boolean): number {
   const times = reduced ? R : T
-  const text = site.easter.lines[i] ?? ''
+  const text = lines[i] ?? ''
   return (times.lines[i] ?? 0) + (reduced ? 0 : typingDuration(text))
 }
