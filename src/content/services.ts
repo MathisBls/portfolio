@@ -64,9 +64,9 @@ export const identity = {
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
   status: 'Sole proprietorship (French micro-entreprise)',
-  // ADRESSE FICTIVE (provisoire, demandée par Mathis) : à remplacer par une vraie adresse pro
-  // (domiciliation) avant la mise en production. Obligatoire dans les mentions légales (LCEN art. 6).
-  address: '12 rue de l’Exemple, 94600 Choisy-le-Roi, France',
+  // Adresse de l'entreprise, donnée par Mathis le 2026-10-09. Obligatoire dans les mentions légales
+  // (LCEN art. 6).
+  address: '59 rue Pernety, 75014 Paris, France',
   // Hébergeur (décision du 2026-10-06), relevé le 2026-10-06 : raison sociale et siège depuis les
   // mentions légales officielles (alwaysdata.com/fr/mentions-legales/ : « ALWAYSDATA, SARL au capital
   // de 200.000 €, RCS Paris 492 893 490 »), téléphone depuis alwaysdata.com/fr/contact/.

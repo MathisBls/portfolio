@@ -132,7 +132,7 @@ export const site = {
         'Identity documents (requested for 18+ projects) are never collected through this website.',
         'Your message is sent to me by email. It is not stored on the web server (hosted by alwaysdata).',
         'To prevent abuse, the server temporarily keeps a hashed form of your IP address (about 10 minutes). It is used for nothing else.',
-        'Retention period of messages in my mailbox: TODO: to be confirmed (suggested: 12 months after the last exchange, then deleted).',
+        'Messages are kept in my mailbox for 12 months after our last exchange, then deleted.',
         'You can request access to, correction or deletion of your data by writing to the email address above. You can also contact the French data protection authority, the CNIL (cnil.fr).',
       ],
     },
