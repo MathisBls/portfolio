@@ -1,11 +1,33 @@
 import react from '@vitejs/plugin-react'
-import { resolve } from 'node:path'
+import { createHash } from 'node:crypto'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join, relative, resolve, sep } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
 const root = import.meta.dirname
 
+// Empreinte de chaque GLB de public/models, ajoutée en ?v= à son URL (src/lib/assetVersion.ts) : un
+// visiteur qui revient après un déploiement ne garde jamais un ancien modèle avec le nouveau code.
+function modelVersions(): Record<string, string> {
+  const dir = resolve(root, 'public/models')
+  const versions: Record<string, string> = {}
+  const walk = (folder: string) => {
+    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+      const path = join(folder, entry.name)
+      if (entry.isDirectory()) walk(path)
+      else if (entry.name.endsWith('.glb')) {
+        const key = `/models/${relative(dir, path).split(sep).join('/')}`
+        versions[key] = createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 10)
+      }
+    }
+  }
+  walk(dir)
+  return versions
+}
+
 export default defineConfig({
   plugins: [react()],
+  define: { __MODEL_VERSIONS__: JSON.stringify(modelVersions()) },
   // Démo à distance du serveur de dev via un tunnel ngrok (sous-domaines *.ngrok-free.app)
   server: { allowedHosts: ['.ngrok-free.app'] },
   preview: { allowedHosts: ['.ngrok-free.app'] },

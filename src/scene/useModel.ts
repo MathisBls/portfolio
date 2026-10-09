@@ -2,6 +2,7 @@
 // À n'importer que depuis le chunk de la scène (drei/three ne doivent pas entrer dans le JS initial).
 import { useGLTF } from '@react-three/drei'
 import type { Project } from '../content/projects'
+import { versioned } from '../lib/assetVersion'
 import type {
   FitnessGLTF,
   GameFactoryGLTF,
@@ -25,7 +26,7 @@ type ModelMap = {
 export type ModelName = keyof ModelMap & Project['model']
 
 export const DRACO_PATH = '/draco/'
-const modelUrl = (name: ModelName) => `/models/${name}.glb`
+const modelUrl = (name: ModelName) => versioned(`/models/${name}.glb`)
 
 export function useModel<K extends ModelName>(name: K): ModelMap[K] {
   return useGLTF(modelUrl(name), DRACO_PATH) as unknown as ModelMap[K]

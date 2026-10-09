@@ -7,11 +7,12 @@
 // Matériaux : clones (le cache de useGLTF reste intact), émissifs réglés selon le palier (tuneEmissive).
 import { useGLTF } from '@react-three/drei'
 import { type Material, Mesh, MeshStandardMaterial, type Object3D } from 'three'
+import { versioned } from '../../lib/assetVersion'
 import { tuneEmissive } from '../arenaRig'
 import type { EasterGLTF } from '../models'
 import { buildFallbacks } from './fallbacks'
 
-export const MAJESTIC_URL = '/models/easter/majestic.glb'
+export const MAJESTIC_URL = versioned('/models/easter/majestic.glb')
 const DRACO_PATH = '/draco/'
 
 let available: Promise<boolean> | null = null

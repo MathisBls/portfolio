@@ -4,6 +4,7 @@
 // Sources : public/models/landing/*.glb et public/posters/landing/*.webp (scripts Blender, skill
 // blender-assets). Ce fichier est dans le JS initial des pages : aucun import de three.
 import type { LandingModelName } from '../../content/seo/types'
+import { versioned } from '../../lib/assetVersion'
 
 export type LandingAsset = {
   /** Poster décoratif, même cadrage que la vue 3D de départ (fondu de l'un à l'autre). */
@@ -18,25 +19,25 @@ export const LANDING_ASSETS: Record<LandingModelName, LandingAsset> = {
   // poster, boutique éclairée, store au survol)
   vitrine: {
     poster: { src: '/posters/landing/vitrine.webp', width: 1200, height: 1200 },
-    model: { url: '/models/landing/vitrine.glb' },
+    model: { url: versioned('/models/landing/vitrine.glb') },
   },
   // Établi d'artisan (scripts/blender/model_landing_etabli.py) : plateau en chêne, presse, outils et téléphone
   // qui affiche le site d'un ébéniste ; poster rendu à la vue de départ de views.ts, éclairé et tone-mappé
   // comme la visionneuse ; sans animation propre, rendu tel quel (Placeholder)
   etabli: {
     poster: { src: '/posters/landing/etabli.webp', width: 1200, height: 1200 },
-    model: { url: '/models/landing/etabli.glb' },
+    model: { url: versioned('/models/landing/etabli.glb') },
   },
   // Smartphone en vue éclatée (scripts/blender/model_landing_smartphone.py) : poster rendu à la vue de
   // départ de views.ts (yaw -0.45, size 2.9) ; sans animation propre, rendu tel quel (Placeholder)
   smartphone: {
     poster: { src: '/posters/landing/smartphone.webp', width: 1200, height: 1200 },
-    model: { url: '/models/landing/smartphone.glb' },
+    model: { url: versioned('/models/landing/smartphone.glb') },
   },
   // Diorama réaliste (scripts/blender/model_pizza_real.py) : pizza moins une part sur sa planche, part
   // soulevée et filaments de mozzarella ; sans animation propre, rendu tel quel (Placeholder)
   pizza: {
     poster: { src: '/posters/landing/pizza.webp', width: 1200, height: 1200 },
-    model: { url: '/models/landing/pizza.glb' },
+    model: { url: versioned('/models/landing/pizza.glb') },
   },
 }
