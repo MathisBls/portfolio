@@ -105,12 +105,18 @@ html:global(.has-3d-title) .word {
     0 0 1rem var(--bg);
 }
 
+/* Seconde phrase du pitch et indice « Faites défiler » : masqués sur mobile (moins de texte sous le nom) */
+.pitchMore {
+  display: none;
+}
+
 .actions {
   display: grid;
   gap: 0.75rem;
 }
 
 .hint {
+  display: none;
   position: absolute;
   right: var(--gutter);
   bottom: 1rem;
@@ -126,6 +132,14 @@ html:global(.has-3d-title) .word {
 @media (min-width: 640px) {
   .poster svg {
     width: 120vw;
+  }
+
+  .pitchMore {
+    display: inline;
+  }
+
+  .hint {
+    display: block;
   }
 
   .actions {

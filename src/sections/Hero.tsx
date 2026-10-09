@@ -16,10 +16,18 @@ import { Button } from '../ui/Button'
 import { HeroPoster } from './HeroPoster'
 import styles from './Hero.module.css'
 
+/** Première phrase (point compris) et la suite, sans l'espace qui les sépare. */
+function splitFirstSentence(text: string): [string, string] {
+  const match = /^(.+?[.!?])\s+(.+)$/s.exec(text)
+  return match ? [match[1] ?? text, match[2] ?? ''] : [text, '']
+}
+
 export function Hero() {
   const { id } = site.sections.hero
   const { text, identity } = useContent()
   const { titleLocation, ctaPrimary, ctaSecondary, scrollHint, captions } = text.hero
+  // Pitch coupé après sa première phrase : la suite n'est affichée qu'à partir de 640 px
+  const [pitchLead, pitchMore] = splitFirstSentence(identity.pitch)
   // Garde prefersReducedMotion : useReducedMotion vaut false pendant l'hydratation (snapshot serveur)
   const reducedMotion = useReducedMotion() || prefersReducedMotion()
   const sectionRef = useRef<HTMLElement>(null)
@@ -134,8 +142,10 @@ export function Hero() {
       </div>
 
       <div className={styles.bottom}>
+        {/* Mobile : la première phrase seulement (retour de Mathis du 2026-10-10 : « trop de texte ») */}
         <p className={styles.pitch} data-intro>
-          {identity.pitch}
+          {pitchLead}
+          {pitchMore && <span className={styles.pitchMore}> {pitchMore}</span>}
         </p>
         <div className={styles.actions} data-intro>
           <Button href={`#${site.sections.contact.id}`}>{ctaPrimary}</Button>
