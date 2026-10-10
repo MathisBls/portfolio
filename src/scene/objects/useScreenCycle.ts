@@ -2,16 +2,24 @@
 // d'écran du GLB : l'écran suivant apparaît en fondu par-dessus (second mesh, même géométrie), puis
 // devient l'écran courant. Commun à Fitness, Wegir et Meme Rina (docs/storyboards/projects.md §2).
 // Les matériaux sont mutés via les refs des meshes (le lint interdit de muter l'objet du useMemo).
+// Objets 3D sur mobile (2026-10-10, aucun gel) : les captures du diaporama sont décodées hors du thread
+// principal (ImageBitmapLoader, comme GLTFLoader, sauf vieux Safari et Firefox) puis envoyées au GPU une
+// par image (uploadQueue), au lieu d'un décodage et d'un envoi groupés au montage (drei useTexture).
+// useScreenTextures (easter egg) est inchangé.
 import { useTexture } from '@react-three/drei'
+import { useLoader, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   Color,
   DoubleSide,
+  ImageBitmapLoader,
+  ImageLoader,
   type Mesh,
   MeshBasicMaterial,
   SRGBColorSpace,
-  type Texture,
+  Texture,
 } from 'three'
+import { queueUpload } from '../uploadQueue'
 
 type ScreenCycleOptions = {
   /** Durée d'affichage d'un écran, puis du fondu vers le suivant (s, en temps de phase). */
@@ -51,11 +59,56 @@ export function useScreenTextures(urls: string[]) {
   })
 }
 
+/** Décodage hors du thread principal possible (mêmes exclusions que GLTFLoader de three). */
+function bitmapsSupported(): boolean {
+  if (typeof createImageBitmap === 'undefined') return false
+  const ua = navigator.userAgent
+  const safari = /^((?!chrome|android).)*safari/i.test(ua)
+  const safariVersion = Number(/Version\/(\d+)/.exec(ua)?.[1] ?? -1)
+  const firefoxVersion = Number(/Firefox\/(\d+)\./.exec(ua)?.[1] ?? -1)
+  return !(safari && safariVersion < 17) && !(ua.includes('Firefox') && firefoxVersion < 98)
+}
+
+type ScreenImage = ImageBitmap | HTMLImageElement
+const useBitmaps = (urls: string[]): ScreenImage[] => useLoader(ImageBitmapLoader, urls)
+const useElements = (urls: string[]): ScreenImage[] => useLoader(ImageLoader, urls)
+/** Choix fixé pour la session : l'ordre des hooks ne change jamais. */
+const useScreenImages =
+  typeof window !== 'undefined' && bitmapsSupported() ? useBitmaps : useElements
+
+/**
+ * Textures du diaporama : une par capture et par objet (libérées au démontage, l'image reste en cache),
+ * envoyées au GPU une par image dès le montage, avant le chapitre.
+ */
+function useCycleTextures(urls: string[]): Texture[] {
+  const images = useScreenImages(urls)
+  const textures = useMemo(
+    () =>
+      images.map((image) => {
+        const texture = new Texture(image)
+        prepare(texture)
+        return texture
+      }),
+    [images],
+  )
+  const gl = useThree((s) => s.gl)
+  useEffect(() => {
+    const cancel = queueUpload(gl, textures)
+    return () => {
+      cancel()
+      textures.forEach((texture) => {
+        texture.dispose()
+      })
+    }
+  }, [gl, textures])
+  return textures
+}
+
 export function useScreenCycle(
   urls: string[],
   { hold = 2.6, fade = 0.45, tint = 0.88 }: ScreenCycleOptions = {},
 ) {
-  const textures = useScreenTextures(urls)
+  const textures = useCycleTextures(urls)
   const materials = useMemo(
     () => ({
       shown: screenMaterial(textures[0] ?? null, tint),

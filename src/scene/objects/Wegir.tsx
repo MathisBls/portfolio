@@ -50,8 +50,10 @@ const SCREENS = ['intro', 'convoit', 'convoi', 'signalement', 'amis', 'qr-code-c
 /**
  * Téléphone grand format à gauche de la route (retour de Mathis : l'app doit se lire), tourné vers
  * elle ; il ne chevauche pas les voitures. La route occupe x ∈ [−2.5, 2.5] dans le groupe ancré.
+ * ×1.5 le 2026-10-10 (Mathis : « le téléphone Wegir plus grand », rien d'autre ne change de taille) :
+ * même base (y ≈ −0.74), bord droit toujours avant la route, l'ensemble tient dans l'emprise 6.1 × 3.
  */
-const PHONE = { position: [-3.05, 0.2, 0.35] as [number, number, number], scale: 1, turn: 0.3 }
+const PHONE = { position: [-3.27, 0.67, 0.35] as [number, number, number], scale: 1.5, turn: 0.3 }
 /** Recentrage de l'ensemble route + téléphone (x ∈ [−3.5, 2.5]) + logo (y jusqu'à ~2). */
 const SHIFT_X = 0.5
 const SHIFT_Y = -0.5

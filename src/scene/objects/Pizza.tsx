@@ -8,14 +8,16 @@
 // d'accroche) : ils filent avec le progress scrubé du chapitre (ScrollTrigger, lu via useAnchoredObject)
 // et un peu plus au survol, s'affinent en s'allongeant, et pendent toujours vers le bas de l'écran
 // (gravité recalculée à chaque image, jamais à travers la part).
-// Mobile, reduced-motion : rien n'est monté ici (ProjectObjects), le poster public/posters/pizza.webp
-// (même script Blender) tient lieu de version simple.
+// Reduced-motion : rien n'est monté ici (ProjectObjects), le poster public/posters/pizza.webp (même
+// script Blender) tient lieu de version simple. Mobile (2026-10-10) : monté aussi, les brins filent
+// pendant que l'emplacement traverse l'écran (progress de useAnchoredObject en une colonne).
 // Ajout du 2026-10-06 : fenêtre de navigateur derrière la part, qui fait défiler les captures du vrai
 // site (scripts/blender/model_pizza_browser.py, textures de Mathis) ; elle reste droite, face caméra.
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { type Group, type Mesh, Quaternion, Vector3 } from 'three'
 import { easeInOut, range } from '../../lib/math'
+import { queueUpload } from '../uploadQueue'
 import { useModel } from '../useModel'
 import { Part } from './Part'
 import { useAnchoredObject } from './useAnchoredObject'
@@ -108,20 +110,18 @@ export function Pizza({ slug }: PizzaProps) {
     [],
   )
 
-  // Cartes cuites envoyées au GPU dès le montage (avant le chapitre), pas à sa première image
+  // Cartes cuites envoyées au GPU dès le montage (avant le chapitre), pas à sa première image ; une par
+  // image (uploadQueue) : groupées, elles gelaient le défilement sur mobile
   const gl = useThree((s) => s.gl)
   useEffect(() => {
     const { PizzaSlice, PizzaBasil } = materials
-    const maps = [
+    return queueUpload(gl, [
       PizzaSlice.map,
       PizzaSlice.normalMap,
       PizzaSlice.roughnessMap,
       PizzaBasil.map,
       PizzaBasil.normalMap,
-    ]
-    maps.forEach((map) => {
-      if (map) gl.initTexture(map)
-    })
+    ])
   }, [gl, materials])
 
   useFrame(() => {

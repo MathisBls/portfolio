@@ -3,7 +3,7 @@
 // Storyboard hero (docs/storyboards/hero.md) §3 (Scene.tsx : monte Prism, HeroTitle3D, Effects ;
 // antialias selon composer) et §5 Budget (desktop / mobile / reduced-motion).
 // Storyboard projets (docs/storyboards/projects.md §3) : monte ProjectObjects (objets 3D des cards,
-// desktop hors reduced-motion, quand la section approche).
+// hors reduced-motion, quand la section approche ; sur mobile aussi depuis le 2026-10-10, sans composer).
 // docs/storyboards/story-v2.md, Contrats : ShardField (éclats de verre, z −10 à −1, plus quelques-uns
 // près de la caméra) remplace AmbientShapes (fichier gardé pour l'instant) ; son intro d'assemblage
 // démarre à la première frame rendue après Warmup et révèle le prisme.

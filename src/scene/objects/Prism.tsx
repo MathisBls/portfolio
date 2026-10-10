@@ -7,7 +7,7 @@
 // docs/storyboards/services-contact.md §2, 2.3 « Les rayons se rétractent » et 3.0–3.5 « Le prisme
 // redescend au centre, rotation z → 0 [...] lumière blanche seule. Flottement lent. » (timeline +1).
 // Retours de Mathis et de la review : pendant les projets, seul le rayon actif (fanOutT) ; le spectre
-// naît sur la face de sortie du prisme (buildRays, exit).
+// naît sur la face de sortie du prisme (buildRays, exit). Mobile : pas de visée des objets (prismFocus).
 // docs/storyboards/story-v2.md : « Chargement : des éclats s'assemblent en prisme » (getPrismReveal) ;
 // Work : levé, il suit la descente de la caméra (prismPath.ts) ; « Contact (arrivée) : vide, ni faisceau
 // ni rayons » ; « Contact (envoi réussi) : le spectre jaillit (≈ 2 s), puis se pose » (lib/burst.ts).
@@ -132,7 +132,8 @@ export function Prism({ mobile, reducedMotion }: PrismProps) {
     const burst = burstWeight(elapsed)
     burstFan(elapsed, fan)
     beginAim(ti, exit)
-    updateRayFocus(focus.current, state, delta)
+    // Mobile : pas de visée (objets 3D montés depuis le 2026-10-10, rayon peu lisible en une colonne)
+    updateRayFocus(focus.current, state, delta, !mobile)
     const mode = fanOutT(getProgress('projects')) * (1 - burst)
     const s = easeInOut(spreadT(p))
     const spread = lerp(lerp(1, SPREAD.length, s), fan.length, burst)

@@ -7,11 +7,17 @@
 // §7 : la position monde est exposée (registre, measureTarget) pour que le rayon actif vise l'objet.
 // Passe « motion » (sans storyboard) : au survol, l'objet suit le pointeur dans son emplacement
 // (±HOVER_LOOK rad, amorti, desktop à pointeur fin seulement : pointer.ts).
+// Objets 3D sur mobile (demande de Mathis du 2026-10-10 : « on dirait une image, ça ne bouge pas ») :
+// en une colonne (< 1024 px), l'emplacement n'est pas collé et le chapitre a une hauteur libre. Entrée,
+// sortie, plateau tournant et `progress` suivent alors la traversée de l'écran par l'emplacement lui-même
+// (mesure live du ScrollTrigger scrubé du chapitre), pas le progress de l'article : l'objet est entier
+// dès que l'emplacement est à l'écran, comme le poster qu'il remplace. Desktop inchangé.
 import { useFrame } from '@react-three/fiber'
 import { type RefObject, useEffect, useRef } from 'react'
 import { Box3, type Group, Vector3 } from 'three'
 import { type Vec3, clamp, easeInOut, lerp, range } from '../../lib/math'
-import { slotCenter } from '../../lib/projects'
+import { BREAKPOINTS, useMediaQuery } from '../../lib/media'
+import { type SlotMetrics, slotCenter } from '../../lib/projects'
 import { useAnchor, useContinuousInvalidate, useInView } from '../hooks'
 import { pointerInRect } from '../pointer'
 import { getAnchorMetrics, getProgress, useScene } from '../store'
@@ -35,6 +41,25 @@ const HOVER_RATE = 8
 const MAX_DT = 1 / 20
 /** Survol : rotation maximale (rad) vers le pointeur, sur x et y. */
 const HOVER_LOOK = 0.15
+/** Une colonne (ProjectChapter.module.css : sticky à partir de md) : emplacement non collé. */
+const COLUMN_QUERY = `(max-width: ${BREAKPOINTS.md - 0.02}px)`
+/** Une colonne : l'objet est entier quand cette part de l'emplacement est entrée par le bas. */
+const COLUMN_ENTER = 0.7
+
+/**
+ * Une colonne : traversée de l'écran par l'emplacement (0 : son haut touche le bas de l'écran, 1 : son
+ * bas passe le haut), entrée (part de l'emplacement entrée par le bas) et sortie (part sortie par le haut).
+ */
+const phases = { travel: 0, enter: 0, exit: 0 }
+
+/** Objet partagé (aucune allocation par frame), à lire tout de suite. */
+function columnPhases(m: SlotMetrics): Readonly<typeof phases> {
+  const seen = m.viewportH - m.top
+  phases.travel = range(seen, 0, m.viewportH + m.height)
+  phases.enter = range(seen, 0, m.height * COLUMN_ENTER)
+  phases.exit = range(-m.top, 0, m.height * COLUMN_ENTER)
+  return phases
+}
 
 const easeOut = (t: number) => 1 - (1 - t) ** 3
 
@@ -55,7 +80,7 @@ export type AnchoredObject = {
   ref: RefObject<Group | null>
   /** À poser sur le groupe enfant : ramène le centre du modèle sur l'origine. */
   offset: Vec3
-  /** Progress de la card (0..1). */
+  /** Progress de la card (0..1) ; en une colonne, traversée de l'écran par l'emplacement. */
   progress: RefObject<number>
   /** Survol de la card, lissé (0..1). */
   hover: RefObject<number>
@@ -80,6 +105,7 @@ export function useAnchoredObject({
   const visibleRef = useRef(false)
   const offset: Vec3 = [-center[0], -center[1], -center[2]]
   const look = usePointerDamp(5)
+  const column = useMediaQuery(COLUMN_QUERY)
 
   // Boucle continue tant que l'emplacement coupe le viewport (IntersectionObserver, pas de setState
   // dans useFrame). Sans ancre : rien (on ne fait pas tourner 5 boucles à l'aveugle).
@@ -104,7 +130,9 @@ export function useAnchoredObject({
     const target = measure(slug, state)
     if (!group || !target) return
     const p = getProgress(id)
-    progress.current = p
+    const m = getAnchorMetrics(id)
+    const col = column && m ? columnPhases(m) : null
+    progress.current = col ? col.travel : p
     visibleRef.current = target.visible
     target.bounds.makeEmpty()
     group.visible = target.visible
@@ -116,8 +144,8 @@ export function useAnchoredObject({
         target.slotWidth / width,
         height === undefined ? Infinity : target.slotHeight / height,
       )
-    const enter = easeOut(range(p, ...ENTER))
-    const exit = easeInOut(range(p, ...EXIT))
+    const enter = easeOut(col ? col.enter : range(p, ...ENTER))
+    const exit = easeInOut(col ? col.exit : range(p, ...EXIT))
     const scale = fit * enter * lerp(1, EXIT_SCALE, exit)
     group.position.copy(target.position)
     group.scale.setScalar(Math.max(scale, 1e-4))
@@ -128,11 +156,10 @@ export function useAnchoredObject({
     phase.current += dt * lerp(1, hoverSpeed, hover.current)
 
     // Pointeur relatif au centre de l'emplacement (±1 sur ses bords), pondéré par le survol lissé
-    const m = getAnchorMetrics(id)
     const h = m ? hover.current : 0
     const local = m ? pointerInRect(m.left, slotCenter(m), m.width, m.height, state.size) : null
     const d = look.to((local?.x ?? 0) * h, (local?.y ?? 0) * h, delta)
-    const turn = TURN * (2 * range(p, ...TURNTABLE) - 1)
+    const turn = TURN * (2 * (col ? col.travel : range(p, ...TURNTABLE)) - 1)
     group.rotation.set(-HOVER_LOOK * d.y, ENTER_ROTATION * (1 - enter) + turn + HOVER_LOOK * d.x, 0)
     // Bord visé par le rayon : boîtes des géométries, transforms de la frame (enfants : la précédente)
     target.bounds.setFromObject(group)

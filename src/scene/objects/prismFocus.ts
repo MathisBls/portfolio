@@ -84,8 +84,10 @@ const weights = projects.map(() => 0)
  * Présence de chaque rayon : projet actif (lissé), entrée et sortie de sa card (scroll). Le projet actif
  * n'est retenu que si son rayon ne croise pas la card précédente : sinon aucun rayon, puis fondu à
  * l'entrée dès que le chemin est libre. Appeler après beginAim (départ du rayon pour la frame).
+ * `aim` faux (mobile, 2026-10-10) : aucun projet retenu, les rayons restent rétractés pendant les projets
+ * (en une colonne, le prisme est au-dessus de l'écran et le rayon traverserait les titres).
  */
-export function updateRayFocus(focus: RayFocus, state: RootState, delta: number) {
+export function updateRayFocus(focus: RayFocus, state: RootState, delta: number, aim = true) {
   for (let j = 0; j < IDS.length; j++) {
     const id = IDS[j]
     progresses[j] = id ? getProgress(id) : 0
@@ -96,7 +98,10 @@ export function updateRayFocus(focus: RayFocus, state: RootState, delta: number)
     const project = projects[j]
     const target = project ? measureTarget(project.slug, state) : undefined
     const chosen =
-      j === active && target?.visible === true && !crossesPreviousCard(j, start, target, state)
+      aim &&
+      j === active &&
+      target?.visible === true &&
+      !crossesPreviousCard(j, start, target, state)
     const selection = lerp(focus.selection[j] ?? 0, chosen ? 1 : 0, k)
     focus.selection[j] = selection
     focus.targets[j] = target
