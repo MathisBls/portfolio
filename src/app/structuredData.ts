@@ -58,20 +58,25 @@ export function pageLabel(title: string): string {
 }
 
 /**
- * « 59 rue Pernety, 75014 Paris, France » → PostalAddress. Forme attendue dans services.ts : rue, code
- * postal et ville, pays. Une autre forme lève une erreur (test et prerender) plutôt qu'une adresse fausse.
+ * Adresse de services.ts → PostalAddress. Deux formes : « 12 rue X, 75001 Paris, France » (complète) ou
+ * « Paris, France » (ville seule, sans rue ni code postal). Une autre forme lève une erreur (test et
+ * prerender) plutôt qu'une adresse fausse.
  */
 export function postalAddress(address: string): JsonLdNode {
-  const match = /^(.+?),\s*(\d{5})\s+([^,]+?),\s*France$/.exec(address.trim())
-  if (!match) throw new Error(`[structuredData] adresse non reconnue : « ${address} »`)
-  const [, streetAddress, postalCode, addressLocality] = match
-  return {
-    '@type': 'PostalAddress',
-    streetAddress,
-    postalCode,
-    addressLocality,
-    addressCountry: 'FR',
+  const full = /^(.+?),\s*(\d{5})\s+([^,]+?),\s*France$/.exec(address.trim())
+  if (full) {
+    const [, streetAddress, postalCode, addressLocality] = full
+    return {
+      '@type': 'PostalAddress',
+      streetAddress,
+      postalCode,
+      addressLocality,
+      addressCountry: 'FR',
+    }
   }
+  const city = /^([^,\d]+?),\s*France$/.exec(address.trim())
+  if (!city?.[1]) throw new Error(`[structuredData] adresse non reconnue : « ${address} »`)
+  return { '@type': 'PostalAddress', addressLocality: city[1], addressCountry: 'FR' }
 }
 
 /** Un service de services.ts en Offer : prix « à partir de » en minPrice, prix mensuel à l'unité MON. */

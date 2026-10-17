@@ -26,9 +26,11 @@ export const identity = {
   phone: '+33 7 82 07 17 88',
   github: 'https://github.com/MathisBls',
   siren: '130 737 356',
-  // Adresse de l'entreprise, donnée par Mathis le 2026-10-09. Obligatoire dans les mentions légales
-  // (LCEN art. 6).
-  address: '59 rue Pernety, 75014 Paris, France',
+  // Adresse publique limitée à la ville (Mathis, 2026-10-17 : la rue donnée le 2026-10-09 était celle
+  // de son travail, elle n'a rien à faire sur le site). À compléter par l'adresse du siège déclaré ou
+  // d'une domiciliation : les mentions légales d'un professionnel en exigent une (LCEN art. 6).
+  // Forme « rue, code postal ville, France » ou « ville, France » (structuredData.ts, postalAddress).
+  address: 'Paris, France',
   // Hébergeur (décision du 2026-10-06), relevé le 2026-10-06 : raison sociale et siège depuis les
   // mentions légales officielles (alwaysdata.com/fr/mentions-legales/ : « ALWAYSDATA, SARL au capital
   // de 200.000 €, RCS Paris 492 893 490 »), téléphone depuis alwaysdata.com/fr/contact/.

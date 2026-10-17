@@ -94,16 +94,13 @@ describe.each(LOCALES)('structuredData(%s), accueil', (locale) => {
     expect(JSON.stringify(business.areaServed)).toContain('Île-de-France')
   })
 
-  it('donne une adresse postale complète, identique à celle de l’identité', () => {
+  it('donne l’adresse de l’identité, sans rien y ajouter', () => {
     const address = nodeOf(data, 'ProfessionalService').address as Record<string, string>
     expect(address['@type']).toBe('PostalAddress')
     expect(address.addressCountry).toBe('FR')
-    for (const key of ['streetAddress', 'postalCode', 'addressLocality'] as const) {
-      expect(address[key]).toBeTruthy()
-    }
-    expect(
-      `${address.streetAddress}, ${address.postalCode} ${address.addressLocality}, France`,
-    ).toBe(identity.address)
+    expect(address.addressLocality).toBeTruthy()
+    const street = address.streetAddress ? `${address.streetAddress}, ${address.postalCode} ` : ''
+    expect(`${street}${address.addressLocality}, France`).toBe(identity.address)
   })
 
   it('publie chaque service en offre, prix compris', () => {
@@ -205,6 +202,24 @@ describe('constantes', () => {
 })
 
 describe('postalAddress', () => {
+  it('découpe une adresse complète', () => {
+    expect(postalAddress('12 rue X, 75001 Paris, France')).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: '12 rue X',
+      postalCode: '75001',
+      addressLocality: 'Paris',
+      addressCountry: 'FR',
+    })
+  })
+
+  it('accepte la ville seule, sans rue ni code postal', () => {
+    expect(postalAddress('Paris, France')).toEqual({
+      '@type': 'PostalAddress',
+      addressLocality: 'Paris',
+      addressCountry: 'FR',
+    })
+  })
+
   it('refuse une adresse qu’elle ne sait pas découper', () => {
     expect(() => postalAddress('Paris')).toThrow()
   })
