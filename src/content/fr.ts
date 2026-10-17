@@ -23,7 +23,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
   lang: { label: 'Langue' },
   identity: {
     role: 'Développeur web et mobile',
-    location: 'Choisy-le-Roi, près de Paris',
+    location: 'Paris',
     status: 'Entrepreneur individuel (micro-entreprise)',
     pitch:
       'Je crée des sites et des applications pour les artisans, les commerçants et les projets qui démarrent. C’est moi qui dessine votre site, qui le code et qui le mets en ligne.',
@@ -157,7 +157,7 @@ export const fr: Dictionary = typesetFrench<Dictionary>({
     // Réécrit le 2026-10-10 (Mathis : l'ancien texte « fait beaucoup trop IA »). Faits seulement : lieu,
     // projets (docs/projets-contexte.md), réponse sous 24 h (déjà promise dans les services).
     lines: [
-      'Je développe des sites et des applications à Choisy-le-Roi, à côté de Paris.',
+      'Je développe des sites et des applications à Paris.',
       'J’ai sorti Wegir, une appli de GPS pour rouler en convoi, sur l’App Store. Je maintiens Zephyr, un gestionnaire de mods open source. Game Factory fait fabriquer des jeux mobiles par des agents IA.',
       'Côté clients, j’ai fait le site de Meme Rina, une pizzeria de Chatou, et je développe une appli de coaching sportif.',
       'Vous avez un projet ? Écrivez-moi, je réponds sous 24 h.',

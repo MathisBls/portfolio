@@ -19,7 +19,7 @@ export const en: Dictionary = {
   lang: { label: 'Language' },
   identity: {
     role: 'Full-stack developer',
-    location: 'Choisy-le-Roi, near Paris, France',
+    location: 'Paris, France',
     status: 'Sole proprietorship (French micro-entreprise)',
     pitch:
       'I design and build websites and apps for independents, small businesses and new ventures. I design your site, write the code and put it online myself.',
@@ -146,7 +146,7 @@ export const en: Dictionary = {
   about: {
     // Réécrit le 2026-10-10, comme la version française (mêmes faits).
     lines: [
-      'I build websites and apps in Choisy-le-Roi, just outside Paris.',
+      'I build websites and apps in Paris.',
       'I shipped Wegir, a GPS app for driving in a convoy, on the App Store. I maintain Zephyr, an open-source mod manager. Game Factory has AI agents build mobile games.',
       'For clients, I made the website of Meme Rina, a pizzeria in Chatou, and I’m building a fitness coaching app.',
       'Have a project? Write to me, I reply within 24 hours.',
